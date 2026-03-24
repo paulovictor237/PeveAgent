@@ -24,7 +24,8 @@ If it doesn't exist:
 3. Remind them to add `.claude/db-settings.json` to `.gitignore` so passwords don't leak
 
 Config search order:
-- `.claude/db-settings.json` (current project — preferred)
+- `$CLAUDE_PROJECT_DIR/.claude/db-settings.json` (session start dir — preferred)
+- `.claude/db-settings.json` walking up from cwd (project fallback)
 - `~/.claude/skills/db-executor/settings.json` (user-level fallback)
 
 ## The executor script

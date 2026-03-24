@@ -10,7 +10,7 @@ description: >
   "simula cenários do spec", "quero testar os cenários do brainstorming". Acionar com /sim.
 ---
 
-# simulation-flow
+# db-simulation
 
 Você transforma specs de brainstorming em artefatos de teste concretos: um `.sql` com cenários de
 simulação de banco e, se o usuário quiser, um script Python que valida o comportamento das APIs
@@ -20,23 +20,35 @@ A ideia central é que testar lógica de negócio complexa muitas vezes é mais 
 estados diretamente no banco do que acionando toda a camada de negócio. O `.sql` captura esses
 estados de forma reproduzível, e o Python fecha o loop validando que as APIs respondem corretamente.
 
-## Passo 1 — Escolher o spec
+## Caminhos
 
-Liste todos os arquivos em `docs/superpowers/specs/` e apresente ao usuário, mesmo que haja apenas um.
-O usuário escolhe qual spec usar como base.
+Todos os artefatos ficam em `.claude/simulations/` relativo ao cwd (diretório onde o Claude Code foi iniciado).
 
-Do spec selecionado, extraia:
+- Artefatos: `.claude/simulations/YYYY-MM-DD-<nome-cenario>/`
+- Config do banco: `.claude/db-settings.json`
+
+## Passo 1 — Escolher o spec / plano
+
+**Se um arquivo foi passado como argumento** (ex: `@docs/superpowers/plans/arquivo.md`), use-o diretamente como base — pule a listagem de specs.
+
+Caso contrário, liste todos os arquivos em `docs/superpowers/specs/` e apresente ao usuário.
+
+Ao ler o arquivo base, se ele for grande (>200 linhas), leia em partes usando `offset` e `limit`.
+
+Do arquivo selecionado, extraia:
 - Entidade principal (tabela/model afetado)
 - Campos relevantes e seus estados possíveis
 - Regras de negócio e comportamentos esperados
 - Ticket/issue de referência (se presente)
 
-O `<nome-cenario>` para nomear os artefatos é derivado do nome do arquivo spec removendo o prefixo
-de data e o sufixo `-design.md`. Ex: `2026-03-23-vehicle-review-design.md` → `vehicle-review`.
+O `<nome-cenario>` para nomear os artefatos é derivado do nome do arquivo removendo o prefixo
+de data e sufixos como `-design.md` ou `-reopen.md`. Ex:
+- `2026-03-23-vehicle-review-design.md` → `vehicle-review`
+- `2026-03-23-single-daily-review-reopen.md` → `single-daily-review-reopen`
 
 ## Passo 2 — Gerar o arquivo SQL
 
-Gere `.simulations/YYYY-MM-DD-<nome-cenario>.sql` seguindo esta estrutura:
+Gere `.claude/simulations/YYYY-MM-DD-<nome-cenario>/scenarios.sql` seguindo esta estrutura:
 
 ```sql
 -- ==========================================================================
@@ -131,20 +143,27 @@ antes de prosseguir.
 
 ### 4b — Token de autenticação
 
-O bearer token é obtido diretamente do banco usando as credenciais de `.claude/db-settings.json`.
-Pergunte ao usuário qual `user_id` (ou e-mail) deve ser usado para buscar o token — geralmente um
-usuário de teste ou admin. O script irá consultar a tabela de tokens do framework (ex:
-`personal_access_tokens` no Sanctum, `oauth_access_tokens` no Passport) filtrando por esse usuário.
+Antes de gerar o script, verifique se `.claude/CLAUDE.local.md` contém `driver_id` ou `user_id`
+pré-configurado. Se sim, use-o diretamente. Caso contrário, pergunte ao usuário.
+
+**Nunca consulte o banco manualmente para descobrir a tabela de tokens ou buscar IDs antes de
+gerar o script.** O script faz essas descobertas em runtime via psycopg2.
 
 ### 4c — Geração do script
 
-Gere `.simulations/YYYY-MM-DD-<nome-cenario>-validator.py` que:
+**Conexão com o banco:** O script usa `psycopg2` conectando diretamente via `host`/`port`/`database`/`user`/`password`
+do `bd-settings.json` (`bases[0]`). O campo `docker_container` é ignorado pelo script — nunca use
+`docker exec` para consultar o banco.
 
-1. Lê a conexão do banco de `.claude/db-settings.json` (campo `databases[0]` ou o DB selecionado)
-2. Consulta o banco para obter o bearer token do usuário informado (ex: `SELECT token FROM personal_access_tokens WHERE tokenable_id = <user_id> ORDER BY created_at DESC LIMIT 1`) — adapte a query à tabela de tokens do projeto
-3. Parseia o `.sql` extraindo blocos entre `[BEGIN SCENARIO N]` e `[END SCENARIO N]`
-4. Para a LIMPEZA e PRÉ-CONFIGURAÇÃO: executa uma vez fora das transações
-5. Para cada cenário:
+Gere `.claude/simulations/YYYY-MM-DD-<nome-cenario>/validator.py` que:
+
+1. Lê a conexão do banco de `.claude/db-settings.json` (campo `bases[0]`)
+2. Conecta via `psycopg2.connect(host=..., port=..., dbname=..., user=..., password=...)` — sem docker exec
+3. Descobre a tabela de tokens em runtime: tenta `driver_tokens` → `personal_access_tokens` → `oauth_access_tokens` (verifica `information_schema.tables`), seleciona o token mais recente não expirado do `driver_id` configurado
+4. Consulta o banco para obter o bearer token (ex: `SELECT token FROM driver_tokens WHERE driver_id = <driver_id> AND expired_at > NOW() ORDER BY expired_at DESC LIMIT 1`)
+5. Parseia `scenarios.sql` da mesma pasta extraindo blocos entre `[BEGIN SCENARIO N]` e `[END SCENARIO N]`
+6. Para a LIMPEZA e PRÉ-CONFIGURAÇÃO: executa uma vez fora das transações
+7. Para cada cenário:
    - Inicia uma transação individual
    - Executa o SQL de mutação (UPDATE/INSERT do cenário)
    - Chama a API com `Authorization: Bearer <token>`
@@ -154,23 +173,22 @@ Gere `.simulations/YYYY-MM-DD-<nome-cenario>-validator.py` que:
    - Compara campos esperados com resposta
    - Faz rollback da transação
    - Registra resultado
-6. **Se API retornar 401:** aborta imediatamente com mensagem `"token inválido ou expirado"` (não é falha de cenário)
-7. **Passou:** SQL executou sem erro E todos os campos do `-- Esperado:` presentes com valores exatos
-8. **Falhou:** qualquer campo divergente, ou 4xx/5xx (exceto 401), com status code registrado
-9. Salva `.simulations/YYYY-MM-DD-<nome-cenario>-report.md` e `-report.json`
+8. **Se API retornar 401:** aborta imediatamente com mensagem `"token inválido ou expirado"` (não é falha de cenário)
+9. **Passou:** SQL executou sem erro E todos os campos do `-- Esperado:` presentes com valores exatos
+10. **Falhou:** qualquer campo divergente, ou 4xx/5xx (exceto 401), com status code registrado
+11. Imprime resultado final no terminal: total / passou / falhou por cenário
+12. Pergunta ao usuário se deseja salvar `results.md` na mesma pasta
 
-**Estrutura do relatório:**
+Se confirmar, gera `results.md` com:
 
-```
-# Relatório de Simulação: <nome-cenario>
-Data, entidade, endpoints, status geral (N/M PASSOU)
+```markdown
+# <nome-cenario> — YYYY-MM-DD
+✓ N/M cenários passaram
 
-## Resumo
-total / passou / falhou / taxa de sucesso
-
-## Detalhes por Cenário
-### ✓/✗ Cenário N: <nome>
-Objetivo, SQL executado, campos esperados vs recebidos
+| # | Cenário | Status | Detalhe |
+|---|---------|--------|---------|
+| 1 | <nome> | ✓ | |
+| 2 | <nome> | ✗ | campo `x` esperado "a", recebido "b" |
 ```
 
 ## .gitignore
@@ -179,21 +197,20 @@ Verifique se existe `.gitignore` na raiz do monorepo. Se não existir, crie. Gar
 entradas estejam presentes:
 
 ```
-.simulations/*-validator.py
-.simulations/*-report.json
-.simulations/*-report.md
+.claude/simulations/*/validator.py
 ```
+
+`results.md` é commitável — serve como evidência de validação no histórico do projeto.
 
 ## Restrições
 
 - O `.sql` gerado é apenas o artefato de referência — nunca o execute automaticamente. A execução é sempre opt-in (via db-executor no Passo 3 ou manualmente pelo usuário).
 - O script Python nunca committa mutações: rollback por cenário, sempre.
 - Sem comentários no código Python gerado.
-- Opera exclusivamente em `.simulations/` e `px-torre-core/` (para busca de routes).
-- Arquivos legados em `.simulations/` sem prefixo de data são ignorados.
+- Opera exclusivamente em `.claude/simulations/` e `px-torre-core/` (para busca de routes).
+- Cada simulação vive em sua própria pasta `YYYY-MM-DD-<nome-cenario>/` com `scenarios.sql` e opcionalmente `validator.py`.
 - Nunca gere UPDATE ou DELETE sem cláusula WHERE nos cenários — mesma regra do db-queries.
 
 ## Referências
 
-- Modelo SQL de referência: `.simulations/vehicle-review-scenarios.sql`
-- Modelo de relatório: `.simulations/simulation_report.md` / `.simulations/simulation_report.json`
+- Modelo SQL de referência: `.claude/simulations/YYYY-MM-DD-<nome-cenario>/scenarios.sql`

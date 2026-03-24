@@ -25,6 +25,14 @@ from pathlib import Path
 # ── Config ────────────────────────────────────────────────────────────────────
 
 def find_config():
+    session_dir = os.environ.get("CLAUDE_PROJECT_DIR")
+    if session_dir:
+        for candidate in [
+            Path(session_dir) / ".claude" / "db-settings.json",
+            Path(session_dir) / ".db-operator" / "settings.json",
+        ]:
+            if candidate.exists():
+                return candidate
     for parent in [Path.cwd(), *Path.cwd().parents]:
         for candidate in [parent / ".claude" / "db-settings.json", parent / ".db-operator" / "settings.json"]:
             if candidate.exists():
@@ -213,6 +221,7 @@ def main():
     p.add_argument("query", nargs="?", help="SQL query to execute")
     p.add_argument("--db", help="Database name from settings.json")
     p.add_argument("--config", help="Path to settings.json")
+    p.add_argument("--config-path", action="store_true", help="Print resolved config path and exit")
     p.add_argument("--yes", "-y", action="store_true", help="Auto-confirm writes")
     p.add_argument("--list-tables", action="store_true", help="List all tables")
     p.add_argument("--inspect", metavar="TABLE", help="Show schema for TABLE")
@@ -224,11 +233,15 @@ def main():
     if not config_path or not config_path.exists():
         print(
             "ERROR: db-settings.json not found.\n"
-            "Create .claude/db-settings.json in your project root.\n"
+            "Create .claude/db-settings.json no diretório onde iniciou a sessão ($CLAUDE_PROJECT_DIR).\n"
             "See ~/.claude/skills/db-executor/settings.example.json for format.",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    if args.config_path:
+        print(str(config_path.resolve()))
+        sys.exit(0)
 
     config = json.loads(config_path.read_text())
     db = get_db(config, args.db)
