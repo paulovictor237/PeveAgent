@@ -26,10 +26,10 @@ from pathlib import Path
 
 def find_config():
     for parent in [Path.cwd(), *Path.cwd().parents]:
-        p = parent / ".db-operator" / "settings.json"
-        if p.exists():
-            return p
-    fallback = Path.home() / ".claude" / "skills" / "db-operator" / "settings.json"
+        for candidate in [parent / ".claude" / "db-settings.json", parent / ".db-operator" / "settings.json"]:
+            if candidate.exists():
+                return candidate
+    fallback = Path.home() / ".claude" / "skills" / "db-executor" / "settings.json"
     return fallback if fallback.exists() else None
 
 
@@ -223,9 +223,9 @@ def main():
     config_path = Path(args.config) if args.config else find_config()
     if not config_path or not config_path.exists():
         print(
-            "ERROR: settings.json not found.\n"
-            "Create .db-operator/settings.json in your project root.\n"
-            "See ~/.claude/skills/db-operator/settings.example.json for format.",
+            "ERROR: db-settings.json not found.\n"
+            "Create .claude/db-settings.json in your project root.\n"
+            "See ~/.claude/skills/db-executor/settings.example.json for format.",
             file=sys.stderr,
         )
         sys.exit(1)

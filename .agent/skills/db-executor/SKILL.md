@@ -1,5 +1,5 @@
 ---
-name: sql-operator
+name: db-executor
 description: >
   Safe, context-aware PostgreSQL operator. Use whenever the user wants to query, inspect, update,
   delete, or insert data in a database — even if they phrase it as "check the DB", "run this SQL",
@@ -16,22 +16,22 @@ modify PostgreSQL databases without ever causing accidental data loss.
 
 ## Setup (first time in a project)
 
-Before running any query, check if `.sql-operator/settings.json` exists in the project root.
+Before running any query, check if `.claude/db-settings.json` exists in the project root.
 
 If it doesn't exist:
-1. Show the user the example format from `~/.claude/skills/sql-operator/settings.example.json`
-2. Ask them to create `.sql-operator/settings.json` with their credentials
-3. Remind them to add `.sql-operator/` to `.gitignore` so passwords don't leak
+1. Show the user the example format from `~/.claude/skills/db-executor/settings.example.json`
+2. Ask them to create `.claude/db-settings.json` with their credentials
+3. Remind them to add `.claude/db-settings.json` to `.gitignore` so passwords don't leak
 
 Config search order:
-- `.sql-operator/settings.json` (current project — preferred)
-- `~/.claude/skills/sql-operator/settings.json` (user-level fallback)
+- `.claude/db-settings.json` (current project — preferred)
+- `~/.claude/skills/db-executor/settings.json` (user-level fallback)
 
 ## The executor script
 
 All database interaction goes through:
 ```
-python ~/.claude/skills/sql-operator/scripts/db_tool.py [OPTIONS] [QUERY]
+python ~/.claude/skills/db-executor/scripts/db_tool.py [OPTIONS] [QUERY]
 ```
 
 **psql not required.** When `psql` is not installed, the script auto-detects a running Docker
@@ -54,19 +54,19 @@ in settings.json to force a specific container.
 Use `--search-table` when the exact table name is uncertain — it's faster than `--list-tables`:
 
 ```bash
-python ~/.claude/skills/sql-operator/scripts/db_tool.py --search-table freight
+python ~/.claude/skills/db-executor/scripts/db_tool.py --search-table freight
 ```
 
 Inspect schema before writing queries with column names:
 
 ```bash
-python ~/.claude/skills/sql-operator/scripts/db_tool.py --inspect freights
+python ~/.claude/skills/db-executor/scripts/db_tool.py --inspect freights
 ```
 
 ## Running SELECT queries
 
 ```bash
-python ~/.claude/skills/sql-operator/scripts/db_tool.py "SELECT * FROM freights WHERE id = 123;"
+python ~/.claude/skills/db-executor/scripts/db_tool.py "SELECT * FROM freights WHERE id = 123;"
 ```
 
 **Output is CSV format for maximum token efficiency** — headers on first line, values comma-separated, row count appended.
@@ -88,7 +88,7 @@ will be affected and what they look like (also formatted compactly).
 **Step 4 — Execution**: Only runs after confirmation.
 
 ```bash
-python ~/.claude/skills/sql-operator/scripts/db_tool.py \
+python ~/.claude/skills/db-executor/scripts/db_tool.py \
   "UPDATE users SET active = false WHERE last_login < '2024-01-01';"
 ```
 
@@ -99,7 +99,7 @@ If a database has `"read_only": true` in settings.json, write operations are blo
 ## Multiple databases
 
 ```bash
-python ~/.claude/skills/sql-operator/scripts/db_tool.py --db postgresql-prod "SELECT ..."
+python ~/.claude/skills/db-executor/scripts/db_tool.py --db postgresql-prod "SELECT ..."
 ```
 
 ## Things to keep in mind

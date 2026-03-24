@@ -1,5 +1,5 @@
 ---
-name: sql-minimal
+name: db-queries
 description: >
   Formata queries SQL de conferência e alteração de dados com estrutura ultra-minimalista e padronizada.
   Use SEMPRE que o usuário pedir uma query SQL para: simular alteração, conferir dados antes de alterar,
