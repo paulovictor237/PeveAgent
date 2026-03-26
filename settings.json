@@ -9,9 +9,7 @@
       "mcp__codegraph__codegraph_node",
       "mcp__codegraph__codegraph_status"
     ],
-    "ask": [
-      "Git commit"
-    ],
+    "ask": ["Git commit"],
     "defaultMode": "default"
   },
   "hooks": {
@@ -77,6 +75,15 @@
             "async": true
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph sync-if-dirty"
+          }
+        ]
       }
     ],
     "Notification": [
@@ -126,6 +133,18 @@
             "type": "command",
             "command": "/Users/peve/.claude/hooks/peon-ping/peon.sh",
             "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph mark-dirty",
             "async": true
           }
         ]
