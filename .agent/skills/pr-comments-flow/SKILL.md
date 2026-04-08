@@ -238,7 +238,27 @@ Volte ao **Passo 4** com `pr-next-comment.sh` para o próximo comentário.
 
 ---
 
-## Passo 8 — Resumo final
+## Passo 8 — Commit das alterações (se houver)
+
+Antes do resumo final, verifique se houve alterações aplicadas:
+
+```bash
+git diff --name-only
+```
+
+Se houver arquivos modificados, use a skill `atomic-commits` para gerar e fazer o commit semântico. O commit deve referenciar o PR e descrever as mudanças aplicadas (ex: `fix: aplicar sugestões de code review do PR #123`).
+
+Só realize o commit se o usuário confirmar:
+
+```
+Há X arquivo(s) modificado(s) com as alterações aplicadas. Deseja fazer commit agora? [S/n]
+```
+
+Se "N", avise que as mudanças ficaram sem commit e prossiga para o resumo.
+
+---
+
+## Passo 9 — Resumo final
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-progress.sh {PR_NUMBER}
@@ -253,6 +273,7 @@ Volte ao **Passo 4** com `pr-next-comment.sh` para o próximo comentário.
   Resolvidos no GitHub: 4
 
   Regras adicionadas ao CLAUDE.md: 1
+  Commit realizado:     sim
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -266,4 +287,5 @@ Volte ao **Passo 4** com `pr-next-comment.sh` para o próximo comentário.
 - **Sempre re-fetche** — nunca use cache de comentários; sempre rode `pr-fetch.sh` ao iniciar para garantir sincronização com o GitHub.
 - **Não trave em erros de API** — se resolver o thread falhar, avise e continue.
 - **Sempre pergunte sobre CLAUDE.md** — após cada comentário aplicado, pergunte se o usuário quer criar uma instrução. Só elabore a regra após confirmação. Use sempre o `CLAUDE.md` mais próximo do CWD (busca subindo a partir do diretório atual). Só use `CLAUDE.local.md` se o usuário solicitar explicitamente.
+- **Commit ao finalizar** — ao terminar o fluxo, se houver arquivos modificados, proponha commit usando a skill `atomic-commits`. Nunca commite sem confirmação do usuário.
 - **Linguagem**: responda sempre em português.
