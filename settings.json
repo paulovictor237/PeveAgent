@@ -98,7 +98,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "codegraph sync-if-dirty"
+            "command": "mise exec -- codegraph sync-if-dirty"
           }
         ]
       }
@@ -161,7 +161,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "codegraph mark-dirty",
+            "command": "mise exec -- codegraph mark-dirty",
             "async": true
           }
         ]
