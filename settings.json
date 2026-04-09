@@ -9,9 +9,7 @@
       "mcp__codegraph__codegraph_node",
       "mcp__codegraph__codegraph_status"
     ],
-    "ask": [
-      "Git commit"
-    ],
+    "ask": ["Git commit"],
     "defaultMode": "default"
   },
   "hooks": {
@@ -98,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mise exec -- codegraph sync-if-dirty"
+            "command": "codegraph sync-if-dirty"
           }
         ]
       }
@@ -161,7 +159,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mise exec -- codegraph mark-dirty",
+            "command": "codegraph mark-dirty",
             "async": true
           }
         ]
@@ -195,5 +193,6 @@
     "frontend-design@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {},
-  "language": "portugues-br"
+  "language": "portugues-br",
+  "model": "opus[1m]"
 }
