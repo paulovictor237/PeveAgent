@@ -78,25 +78,78 @@ link_item() {
   info "$target -> $src"
 }
 
-echo ""
-echo "PeveWave → Claude Code"
-echo "Project: $PROJECT_DIR"
-echo "Target:  $CLAUDE_DIR"
-echo ""
+pull_item() {
+  local target="$1"
+  local dst="$2"
 
-# Asset subdirectories
-for entry in "${SUBDIR_LINKS[@]}"; do
-  src_name="${entry%%:*}"
-  dst_name="${entry##*:}"
-  link_item "$PROJECT_DIR/$ASSETS_DIR/$src_name" "$TARGET_DIR/$dst_name"
-done
+  if [ ! -e "$target" ]; then
+    warn "Not found in target, skipping pull: $target"
+    return 0
+  fi
 
-# Root-level files
-for entry in "${FILE_LINKS[@]}"; do
-  src_name="${entry%%:*}"
-  dst_name="${entry##*:}"
-  link_item "$PROJECT_DIR/$src_name" "$TARGET_DIR/$dst_name"
-done
+  if [ -L "$target" ]; then
+    warn "Already a symlink, skipping pull: $target"
+    return 0
+  fi
 
-echo ""
-echo "Done."
+  if [ -d "$target" ]; then
+    info "Pulling dir:  $target -> $dst"
+    rm -rf "$dst"
+    cp -r "$target" "$dst"
+  else
+    info "Pulling file: $target -> $dst"
+    cp "$target" "$dst"
+  fi
+}
+
+do_link() {
+  echo ""
+  echo "PeveWave → Claude Code"
+  echo "Project: $PROJECT_DIR"
+  echo "Target:  $CLAUDE_DIR"
+  echo ""
+
+  for entry in "${SUBDIR_LINKS[@]}"; do
+    src_name="${entry%%:*}"
+    dst_name="${entry##*:}"
+    link_item "$PROJECT_DIR/$ASSETS_DIR/$src_name" "$TARGET_DIR/$dst_name"
+  done
+
+  for entry in "${FILE_LINKS[@]}"; do
+    src_name="${entry%%:*}"
+    dst_name="${entry##*:}"
+    link_item "$PROJECT_DIR/$src_name" "$TARGET_DIR/$dst_name"
+  done
+
+  echo ""
+  echo "Done."
+}
+
+do_reverse() {
+  echo ""
+  echo "Claude Code → PeveWave (reverse pull)"
+  echo "Source:  $CLAUDE_DIR"
+  echo "Project: $PROJECT_DIR"
+  echo ""
+
+  for entry in "${SUBDIR_LINKS[@]}"; do
+    src_name="${entry%%:*}"
+    dst_name="${entry##*:}"
+    pull_item "$TARGET_DIR/$dst_name" "$PROJECT_DIR/$ASSETS_DIR/$src_name"
+  done
+
+  for entry in "${FILE_LINKS[@]}"; do
+    src_name="${entry%%:*}"
+    dst_name="${entry##*:}"
+    pull_item "$TARGET_DIR/$dst_name" "$PROJECT_DIR/$src_name"
+  done
+
+  echo ""
+  echo "Pull done. Running link..."
+  do_link
+}
+
+case "${1:-}" in
+  --reverse|-r) do_reverse ;;
+  *)            do_link ;;
+esac
