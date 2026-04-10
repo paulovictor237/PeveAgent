@@ -137,9 +137,11 @@ Adicionar validação no início do método para lançar InvalidArgumentExceptio
 quando $amount <= 0, antes da chamada ao gateway.
 
 Como quer prosseguir?
-  [1] Aplicar esta mudança
-  [2] Pular (não aplicar)
-  [3] Discutir / quero sugerir algo diferente
+  [1] Aplicar
+  [2] Aplicar 📚 + instrução para o CLAUDE.md
+  [3] Pular (não aplicar)
+  [4] Discutir / quero sugerir algo diferente
+  [5] Responder no PR
 ```
 
 Aguarde resposta antes de qualquer ação.
@@ -147,9 +149,10 @@ Aguarde resposta antes de qualquer ação.
 ### 4d. Respostas
 
 - **[1] Aplicar** — implemente. Após implementar, confirme brevemente.
-- **[2] Pular** — não altere nada. Passe para o próximo.
-- **[3] Discutir** — ouça a sugestão, atualize a proposta, pergunte novamente.
-- **[4] Responder no PR** — compor uma resposta para o thread do GitHub sem alterar código.
+- **[2] Aplicar + CLAUDE.md** — implemente e, após, vá direto ao Passo 6 para propor a instrução sem perguntar novamente.
+- **[3] Pular** — não altere nada. Passe para o próximo.
+- **[4] Discutir** — ouça a sugestão, atualize a proposta, pergunte novamente.
+- **[5] Responder no PR** — compor uma resposta para o thread do GitHub sem alterar código.
 
 Quando o usuário escolher **[4]**, elabore a resposta e mostre para aprovação:
 
@@ -188,13 +191,9 @@ Se `thread_id` for `null`, pule a resolução sem erro.
 
 ## Passo 6 — Propor aprendizado para o CLAUDE.md
 
-Após resolver cada comentário **aplicado**, pergunte sempre:
+Este passo só é executado quando o usuário escolheu a opção **[2] Aplicar + CLAUDE.md** no Passo 4d. Não pergunte de novo — vá direto à proposta.
 
-```
-Quer criar uma instrução para o CLAUDE.md do projeto com base neste comentário? [S/n]
-```
-
-**Se "S":** analise o padrão identificado e proponha uma regra concreta:
+Analise o padrão identificado e proponha uma regra concreta:
 
 ```
 📚 Sugestão para o CLAUDE.md:
@@ -224,6 +223,18 @@ Se nenhum arquivo for encontrado, crie `CLAUDE.md` no diretório atual.
 
 ---
 
+## Passo 6b — Commit incremental
+
+Após cada comentário **aplicado** (e após decidir sobre o CLAUDE.md), faça commit imediato. Gere uma mensagem semântica coerente com a mudança aplicada — baseada no que foi alterado no arquivo e no que o revisor pediu:
+
+```bash
+git add -A && git commit -m "{tipo}: {descrição coerente com a mudança aplicada}"
+```
+
+Exemplo: se o revisor pediu para extrair uma função e você a extraiu em `PaymentService.ts`, a mensagem seria `refactor: extrair cálculo de taxa para método dedicado`.
+
+---
+
 ## Passo 7 — Avançar para o próximo arquivo
 
 Ao terminar todos os comentários de um arquivo:
@@ -238,27 +249,33 @@ Volte ao **Passo 4** com `pr-next-comment.sh` para o próximo comentário.
 
 ---
 
-## Passo 8 — Commit das alterações (se houver)
+## Passo 8 — Commit final (se houver pendências)
 
-Antes do resumo final, verifique se houve alterações aplicadas:
+Antes do resumo final, verifique se sobrou alguma alteração sem commit (pode ocorrer se um commit incremental falhou):
 
 ```bash
 git diff --name-only
 ```
 
-Se houver arquivos modificados, use a skill `atomic-commits` para gerar e fazer o commit semântico. O commit deve referenciar o PR e descrever as mudanças aplicadas (ex: `fix: aplicar sugestões de code review do PR #123`).
+Se houver arquivos modificados, faça commit imediato:
 
-Só realize o commit se o usuário confirmar:
-
+```bash
+git add -A && git commit -m "{tipo}: {descrição coerente com as mudanças restantes}"
 ```
-Há X arquivo(s) modificado(s) com as alterações aplicadas. Deseja fazer commit agora? [S/n]
-```
-
-Se "N", avise que as mudanças ficaram sem commit e prossiga para o resumo.
 
 ---
 
-## Passo 9 — Resumo final
+## Passo 9 — Push
+
+Após o Passo 8, faça push imediato sem perguntar:
+
+```bash
+git push
+```
+
+---
+
+## Passo 10 — Resumo final
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-progress.sh {PR_NUMBER}
@@ -273,7 +290,8 @@ Se "N", avise que as mudanças ficaram sem commit e prossiga para o resumo.
   Resolvidos no GitHub: 4
 
   Regras adicionadas ao CLAUDE.md: 1
-  Commit realizado:     sim
+  Commits realizados:   3
+  Push realizado:       sim
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -286,6 +304,7 @@ Se "N", avise que as mudanças ficaram sem commit e prossiga para o resumo.
 - **Contexto mínimo** — use `pr-excerpt.sh` em vez de Read para arquivos; use `pr-next-comment.sh` em vez de ler o JSON inteiro.
 - **Sempre re-fetche** — nunca use cache de comentários; sempre rode `pr-fetch.sh` ao iniciar para garantir sincronização com o GitHub.
 - **Não trave em erros de API** — se resolver o thread falhar, avise e continue.
-- **Sempre pergunte sobre CLAUDE.md** — após cada comentário aplicado, pergunte se o usuário quer criar uma instrução. Só elabore a regra após confirmação. Use sempre o `CLAUDE.md` mais próximo do CWD (busca subindo a partir do diretório atual). Só use `CLAUDE.local.md` se o usuário solicitar explicitamente.
-- **Commit ao finalizar** — ao terminar o fluxo, se houver arquivos modificados, proponha commit usando a skill `atomic-commits`. Nunca commite sem confirmação do usuário.
+- **CLAUDE.md só sob demanda** — o Passo 6 só é executado quando o usuário escolhe `[2] Aplicar + CLAUDE.md`. Nunca pergunte automaticamente após aplicar. Quando acionado, proponha a regra direto, sem perguntar de novo. Use sempre o `CLAUDE.md` mais próximo do CWD. Só use `CLAUDE.local.md` se o usuário solicitar explicitamente.
+- **Commit incremental obrigatório** — após cada comentário aplicado (Passo 6b), faça commit imediato com mensagem coerente com a mudança. Não pergunte, apenas commite. O Passo 8 só trata pendências remanescentes.
+- **Push obrigatório ao final** — após o Passo 8, faça push sem perguntar.
 - **Linguagem**: responda sempre em português.
