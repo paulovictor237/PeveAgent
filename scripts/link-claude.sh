@@ -12,7 +12,7 @@ set -euo pipefail
 TARGET_DIR="$HOME/.claude"
 
 # Pasta de assets dentro do projeto
-ASSETS_DIR=".agent"
+ASSETS_DIR=".agents"
 
 # Subpastas de $ASSETS_DIR a serem linkadas em $TARGET_DIR
 # Formato: "pasta_fonte:nome_no_destino"
@@ -46,6 +46,7 @@ CLAUDE_DIR="$TARGET_DIR"
 # Formato: "caminho_fonte_absoluto:caminho_destino_absoluto"
 RAW_LINKS=(
   "$PROJECT_DIR/.tolls/zed.jsonc:$HOME/.config/zed/settings.json"
+  "$PROJECT_DIR/.agents:$HOME/.agents"
 )
 
 GREEN='\033[0;32m'

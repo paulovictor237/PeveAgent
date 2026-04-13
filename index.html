@@ -951,28 +951,28 @@ async function init() {
     loadSection({
       gridId: 'grid-skills',
       countId: 'count-skills',
-      apiPath: '.agent/skills',
+      apiPath: '.agents/skills',
       type: 'skill',
       mdFileName: 'SKILL.md'
     }),
     loadSection({
       gridId: 'grid-agents',
       countId: 'count-agents',
-      apiPath: '.agent/agents',
+      apiPath: '.agents/agents',
       type: 'agent',
       mdFileName: null
     }).catch(() =>
       loadSingleFileSection({
         gridId: 'grid-agents',
         countId: 'count-agents',
-        apiPath: '.agent/agents',
+        apiPath: '.agents/agents',
         type: 'agent'
       })
     ),
     loadSingleFileSection({
       gridId: 'grid-commands',
       countId: 'count-commands',
-      apiPath: '.agent/commands',
+      apiPath: '.agents/commands',
       type: 'command'
     }),
     loadSlidesSection()
