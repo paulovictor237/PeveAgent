@@ -1,2 +1,3 @@
 .draft
 .agent/skills/sql-operator/settings.json
+.agent/.env
