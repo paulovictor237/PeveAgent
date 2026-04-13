@@ -22,12 +22,18 @@ SUBDIR_LINKS=(
   "skills:skills"
 )
 
-# Arquivos na raiz do projeto a serem linkados em $TARGET_DIR
+# Arquivos dentro de $ASSETS_DIR a serem linkados em $TARGET_DIR
 # Formato: "arquivo_fonte:nome_no_destino"
 FILE_LINKS=(
   "AGENT.md:CLAUDE.md"
   "RTK.md:RTK.md"
   "settings.json:settings.json"
+)
+
+# Links com destino fora de $TARGET_DIR
+# Formato: "arquivo_fonte_em_ASSETS_DIR:caminho_destino_absoluto"
+CUSTOM_LINKS=(
+  "ccstatusline.json:$HOME/.config/ccstatusline/settings.json"
 )
 
 # ---------------------------------------------------------------------------
@@ -118,7 +124,14 @@ do_link() {
   for entry in "${FILE_LINKS[@]}"; do
     src_name="${entry%%:*}"
     dst_name="${entry##*:}"
-    link_item "$PROJECT_DIR/$src_name" "$TARGET_DIR/$dst_name"
+    link_item "$PROJECT_DIR/$ASSETS_DIR/$src_name" "$TARGET_DIR/$dst_name"
+  done
+
+  for entry in "${CUSTOM_LINKS[@]}"; do
+    src_name="${entry%%:*}"
+    dst_path="${entry##*:}"
+    mkdir -p "$(dirname "$dst_path")"
+    link_item "$PROJECT_DIR/$ASSETS_DIR/$src_name" "$dst_path"
   done
 
   echo ""
@@ -141,7 +154,13 @@ do_reverse() {
   for entry in "${FILE_LINKS[@]}"; do
     src_name="${entry%%:*}"
     dst_name="${entry##*:}"
-    pull_item "$TARGET_DIR/$dst_name" "$PROJECT_DIR/$src_name"
+    pull_item "$TARGET_DIR/$dst_name" "$PROJECT_DIR/$ASSETS_DIR/$src_name"
+  done
+
+  for entry in "${CUSTOM_LINKS[@]}"; do
+    src_name="${entry%%:*}"
+    dst_path="${entry##*:}"
+    pull_item "$dst_path" "$PROJECT_DIR/$ASSETS_DIR/$src_name"
   done
 
   echo ""

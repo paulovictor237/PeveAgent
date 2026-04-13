@@ -50,6 +50,7 @@ Notificações sonoras com vozes de personagens para o Claude Code.
 
 ```bash
 brew install peonping/tap/peon-ping
+peon-ping-setup
 ```
 
 ---
