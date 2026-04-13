@@ -42,6 +42,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLAUDE_DIR="$TARGET_DIR"
 
+# Links com caminhos absolutos arbitrários (source fora de $ASSETS_DIR)
+# Formato: "caminho_fonte_absoluto:caminho_destino_absoluto"
+RAW_LINKS=(
+  "$PROJECT_DIR/.tolls/zed.jsonc:$HOME/.config/zed/settings.json"
+)
+
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -115,6 +121,9 @@ do_link() {
   echo "Target:  $CLAUDE_DIR"
   echo ""
 
+  git -C "$PROJECT_DIR" config core.hooksPath .git-settings
+  info "Git hooks path set to .hooks"
+
   for entry in "${SUBDIR_LINKS[@]}"; do
     src_name="${entry%%:*}"
     dst_name="${entry##*:}"
@@ -132,6 +141,13 @@ do_link() {
     dst_path="${entry##*:}"
     mkdir -p "$(dirname "$dst_path")"
     link_item "$PROJECT_DIR/$ASSETS_DIR/$src_name" "$dst_path"
+  done
+
+  for entry in "${RAW_LINKS[@]}"; do
+    src_path="${entry%%:*}"
+    dst_path="${entry##*:}"
+    mkdir -p "$(dirname "$dst_path")"
+    link_item "$src_path" "$dst_path"
   done
 
   echo ""
@@ -161,6 +177,12 @@ do_reverse() {
     src_name="${entry%%:*}"
     dst_path="${entry##*:}"
     pull_item "$dst_path" "$PROJECT_DIR/$ASSETS_DIR/$src_name"
+  done
+
+  for entry in "${RAW_LINKS[@]}"; do
+    src_path="${entry%%:*}"
+    dst_path="${entry##*:}"
+    pull_item "$dst_path" "$src_path"
   done
 
   echo ""
