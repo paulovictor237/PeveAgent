@@ -33,7 +33,7 @@
   },
   "git_panel": {
     "sort_by_path": true,
-    "tree_view": false,
+    "tree_view": true,
   },
   "agent": {
     "inline_assistant_model": {
