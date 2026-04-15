@@ -32,7 +32,7 @@
     "allowed": true,
   },
   "git_panel": {
-    "sort_by_path": true,
+    "sort_by_path": false,
     "tree_view": true,
   },
   "agent": {
@@ -61,7 +61,7 @@
     },
   },
   "icon_theme": {
-    "mode": "dark",
+    "mode": "light",
     "light": "Catppuccin Frappé",
     "dark": "Catppuccin Frappé",
   },
@@ -100,7 +100,7 @@
   "theme": {
     "mode": "dark",
     "light": "Gruvbox Light Hard",
-    "dark": "Catppuccin Frappé",
+    "dark": "Gruvbox Dark Hard",
   },
   "experimental.theme_overrides": {
     "syntax": {
