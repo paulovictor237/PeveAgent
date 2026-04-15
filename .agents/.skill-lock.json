@@ -1,0 +1,17 @@
+{
+  "version": 3,
+  "skills": {
+    "agent-tools": {
+      "source": "inference-sh/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/inference-sh/skills.git",
+      "skillPath": "tools/agent-tools/SKILL.md",
+      "skillFolderHash": "2071a97c627653e044d6ffd8887c5365d08fd41f",
+      "installedAt": "2026-04-15T18:38:29.393Z",
+      "updatedAt": "2026-04-15T18:38:29.393Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  }
+}
