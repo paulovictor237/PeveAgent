@@ -5,7 +5,7 @@ description: Especialista em preencher formulários de candidatura a vagas de em
 
 # subscrible-job
 
-Skill especialista em preencher formulários de candidatura a vagas de emprego.
+Skill especialista em preencher formulários de candidatura a vagas de emprego via automação Playwright.
 
 ## Regras Hard — leia antes de qualquer ação
 
@@ -15,39 +15,103 @@ Skill especialista em preencher formulários de candidatura a vagas de emprego.
 4. **SEMPRE pause** quando encontrar campo de cover letter e peça o texto ao usuário
 5. **SEMPRE faça upload** do `Profile.pdf` quando encontrar campo de upload de arquivo
 
+## Ferramentas e Runtime
+
+- **Runtime:** `bun` (TypeScript nativo, sem compilação)
+- **Biblioteca:** `playwright` (instalar via `bun add playwright` em `/tmp/subscrible-job/` na primeira execução)
+- **Scripts:** escritos em `.ts`, salvos em `/tmp/subscrible-job/`
+
 ## Inicialização
 
-Ao ser invocada, execute este checklist antes de abrir o browser:
+Execute este checklist antes de abrir o browser:
 
-1. Leia o arquivo `.agents/skills/subscrible-job/assets/profile.json` e carregue todos os dados em memória
-2. Confirme que o arquivo `.agents/skills/subscrible-job/assets/Profile.pdf` existe
-3. Se a URL da vaga foi fornecida como argumento, abra-a no browser
-4. Se não foi fornecida, pergunte ao usuário: "Qual é a URL da vaga?"
-5. Aguarde o formulário renderizar completamente antes de inspecionar os campos
+1. Leia `.agents/skills/subscrible-job/assets/profile.json` e carregue todos os dados em memória
+2. Confirme que `.agents/skills/subscrible-job/assets/Profile.pdf` existe
+3. Garanta que o Playwright está instalado:
+   ```bash
+   mkdir -p /tmp/subscrible-job && cd /tmp/subscrible-job && bun add playwright 2>/dev/null || true
+   ```
+4. Se a URL da vaga foi fornecida como argumento, use-a; caso contrário, pergunte ao usuário
+5. Inicie pela Fase 1 (Inspeção)
 
 **Caminho absoluto do profile:** `.agents/skills/subscrible-job/assets/profile.json`
-**Caminho absoluto do PDF:** `.agents/skills/subscrible-job/assets/Profile.pdf`
+**Caminho absoluto do PDF:** `<working-dir>/.agents/skills/subscrible-job/assets/Profile.pdf`
 
-## Inspeção de Campos
+## Fase 1 — Inspeção
 
-Para cada página/step do formulário, inspecione todos os elementos:
-- `input` (text, email, tel, date, number, radio, checkbox, file)
-- `select`
-- `textarea`
+Escreva `/tmp/subscrible-job/inspect.ts` com o template abaixo, substituindo `URL_DA_VAGA`:
 
-Para cada elemento, colete:
-- `label` associado (via `for` ou elemento pai)
-- `placeholder`
-- `name`
-- `aria-label`
-- `aria-labelledby`
-- Se é `required`
+```typescript
+import { chromium } from "playwright";
 
-Normalize o texto coletado: remova acentos, converta para minúsculas, remova pontuação.
+const url = "URL_DA_VAGA";
+
+const browser = await chromium.launch({ headless: false });
+const page = await browser.newPage();
+await page.goto(url);
+await page.waitForLoadState("networkidle");
+
+const fields = await page.evaluate(() => {
+  const results: object[] = [];
+  const els = document.querySelectorAll("input, select, textarea");
+
+  els.forEach((el) => {
+    const input = el as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    const id = input.id;
+
+    let label = "";
+    if (id) {
+      const labelEl = document.querySelector(`label[for="${id}"]`);
+      if (labelEl) label = labelEl.textContent?.trim() ?? "";
+    }
+    if (!label) {
+      const parent = input.closest("label, [class*='field'], [class*='form-group'], [class*='input-wrapper']");
+      if (parent) {
+        const clone = parent.cloneNode(true) as Element;
+        clone.querySelectorAll("input, select, textarea").forEach((e) => e.remove());
+        label = clone.textContent?.trim() ?? "";
+      }
+    }
+
+    const options: string[] = [];
+    if (input.tagName === "SELECT") {
+      Array.from((input as HTMLSelectElement).options).forEach((o) => {
+        if (o.value) options.push(o.text.trim());
+      });
+    }
+
+    results.push({
+      tag: input.tagName.toLowerCase(),
+      type: (input as HTMLInputElement).type ?? "",
+      name: input.name,
+      id,
+      label,
+      placeholder: (input as HTMLInputElement).placeholder ?? "",
+      ariaLabel: input.getAttribute("aria-label") ?? "",
+      required: input.hasAttribute("required") || input.getAttribute("aria-required") === "true",
+      options,
+    });
+  });
+
+  return results;
+});
+
+console.log(JSON.stringify(fields, null, 2));
+console.log("\n--- Pressione Enter para fechar o browser ---");
+await new Promise((r) => process.stdin.once("data", r));
+await browser.close();
+```
+
+Execute:
+```bash
+cd /tmp/subscrible-job && bun inspect.ts
+```
+
+Analise o JSON retornado e siga para o Mapeamento.
 
 ## Mapeamento de Campos → profile.json
 
-Use heurística por palavras-chave. Para cada campo, verifique se o texto normalizado contém alguma das palavras-chave abaixo:
+Para cada campo inspecionado, normalize o texto (`label + placeholder + ariaLabel + name`) removendo acentos, convertendo para minúsculas e removendo pontuação. Verifique se contém alguma das palavras-chave:
 
 | Palavras-chave | Valor a usar |
 |---|---|
@@ -60,11 +124,11 @@ Use heurística por palavras-chave. Para cada campo, verifique se o texto normal
 | linkedin | `linkedin` |
 | github, portfolio, portfólio | `github` |
 | cidade, city, municipio | `address.city` → "Joinville" |
-| estado, state, uf | `address.state_abbr` → "SC" (ou `address.state` conforme o contexto) |
-| cep, zip, postal | perguntar ao usuário |
-| endereço, rua, street, logradouro | concatenar `address.street` + ", " + `address.number` |
+| estado, state, uf | `address.state_abbr` → "SC" (ou `address.state` conforme contexto) |
+| cep, zip, postal | verificar `extra_fields.cep`; se ausente, perguntar ao usuário |
+| endereço, rua, street, logradouro | `address.street` + ", " + `address.number` |
 | número, number, num | `address.number` → "610" |
-| bairro, neighborhood, district | perguntar ao usuário |
+| bairro, neighborhood, district | verificar `extra_fields.bairro`; se ausente, perguntar ao usuário |
 | pais, country, nação | `address.country` → "Brasil" |
 | cargo atual, posição atual, current role, titulo | `current_role` |
 | salário, pretensão, remuneração, expectativa salarial | "PJ: R$ 18.000 ~ R$ 21.000 / CLT: R$ 14.000 ~ R$ 16.000" |
@@ -86,111 +150,152 @@ Use heurística por palavras-chave. Para cada campo, verifique se o texto normal
 | formação, escolaridade, graduação, education | "Bacharelado em Mecatrônica — UFSC (2020)" |
 | experiência, anos de experiência, tempo de experiência | "3 anos 9 meses na Motorista PX como Tech Lead" |
 
-## Preenchimento de Campos
+Inclua também as chaves de `extra_fields` (se existirem no `profile.json`) como palavras-chave adicionais.
 
-### Campos de texto (input text, email, tel, number, textarea)
+### Campos sem mapeamento
 
-```javascript
-const el = document.querySelector('selector');
-el.focus();
-el.value = 'valor';
-el.dispatchEvent(new Event('input', { bubbles: true }));
-el.dispatchEvent(new Event('change', { bubbles: true }));
-```
+- Se `required`: avise o usuário, aguarde resposta, salve em `extra_fields` do `profile.json`
+- Se opcional: deixe em branco, registre no relatório final
 
-### Campos select (dropdown)
+## Fase 2 — Preenchimento
 
-```javascript
-const el = document.querySelector('select[name="campo"]');
-const options = Array.from(el.options);
-const match = options.find(o => o.text.toLowerCase().includes('valor'));
-if (match) {
-  el.value = match.value;
-  el.dispatchEvent(new Event('change', { bubbles: true }));
+Após mapear todos os campos (e coletar cover letter / campos desconhecidos do usuário), escreva `/tmp/subscrible-job/fill.ts` com o template abaixo. Preencha `URL_DA_VAGA` e a lista `actions` com os dados mapeados:
+
+```typescript
+import { chromium, Page } from "playwright";
+import * as readline from "readline";
+
+const url = "URL_DA_VAGA";
+
+type Action =
+  | { type: "fill"; selector: string; value: string }
+  | { type: "select"; selector: string; label: string }
+  | { type: "click"; selector: string }
+  | { type: "check"; selector: string }
+  | { type: "upload"; selector: string; path: string }
+  | { type: "date"; selector: string; value: string };
+
+const actions: Action[] = [
+  // Exemplos — substitua pelos campos reais mapeados:
+  // { type: "fill", selector: 'input[name="firstName"]', value: "Paulo" },
+  // { type: "select", selector: 'select[name="state"]', label: "Santa Catarina" },
+  // { type: "click", selector: 'label:has-text("Masculino") input[type="radio"]' },
+  // { type: "upload", selector: 'input[type="file"]', path: "/abs/path/Profile.pdf" },
+  // { type: "date", selector: 'input[type="date"]', value: "1992-10-25" },
+];
+
+async function resolveSelector(page: Page, selector: string) {
+  const locator = page.locator(selector).first();
+  return locator;
 }
-```
 
-### Radio buttons e checkboxes
+const browser = await chromium.launch({ headless: false });
+const page = await browser.newPage();
+await page.goto(url);
+await page.waitForLoadState("networkidle");
 
-```javascript
-const labels = document.querySelectorAll('label');
-const target = Array.from(labels).find(l => l.textContent.toLowerCase().includes('valor'));
-if (target) {
-  const input = target.querySelector('input') || document.getElementById(target.htmlFor);
-  if (input) input.click();
+for (const action of actions) {
+  const el = await resolveSelector(page, action.selector);
+  await el.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
+
+  switch (action.type) {
+    case "fill":
+      await el.fill(action.value);
+      break;
+    case "select":
+      await el.selectOption({ label: action.label });
+      break;
+    case "click":
+      await el.click();
+      break;
+    case "check":
+      await el.check();
+      break;
+    case "upload":
+      await el.setInputFiles(action.path);
+      break;
+    case "date":
+      await el.fill(action.value);
+      break;
+  }
+
+  await page.waitForTimeout(200);
 }
+
+// Detectar botão de avanço (NUNCA clicar em submit)
+const advanceKeywords = ["próximo", "next", "continue", "continuar", "avançar", "prosseguir", "seguinte"];
+const submitKeywords = ["enviar", "submit", "finalizar", "candidatar", "aplicar", "apply", "concluir", "terminar", "send"];
+
+const buttons = await page.locator("button, input[type='submit'], a[role='button']").all();
+let advanceButton = null;
+let hasSubmit = false;
+
+for (const btn of buttons) {
+  const text = (await btn.textContent() ?? "").toLowerCase().trim();
+  if (submitKeywords.some((k) => text.includes(k))) hasSubmit = true;
+  if (advanceKeywords.some((k) => text.includes(k))) advanceButton = btn;
+}
+
+if (advanceButton) {
+  console.log("✓ Botão de avanço encontrado — clicando...");
+  await advanceButton.click();
+  await page.waitForLoadState("networkidle");
+  console.log("✓ Avançou para o próximo step. Feche o browser e rode nova inspeção.");
+} else if (hasSubmit) {
+  console.log("⛔ Botão de SUBMIT detectado — NÃO foi clicado. Revise e submeta manualmente.");
+} else {
+  console.log("○ Nenhum botão de navegação encontrado.");
+}
+
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+await new Promise<void>((r) => rl.question("\nRevise o formulário e pressione Enter para fechar o browser... ", () => { rl.close(); r(); }));
+await browser.close();
 ```
 
-### Campos de data
+Execute:
+```bash
+cd /tmp/subscrible-job && bun fill.ts
+```
 
-Formate conforme o campo pede:
-- Se `type="date"` → formato `YYYY-MM-DD`: `1992-10-25`
-- Se texto livre → use o formato do placeholder como referência: `25/10/1992`
+### Estratégia de seletor (cascata)
+
+Para cada campo, tente os seletores nesta ordem até encontrar um que funcione:
+1. `[name="valor"]`
+2. `[id="valor"]`
+3. `[aria-label*="valor"]`
+4. `label:has-text("Texto do Label") input` (ou `select`, `textarea`)
+5. `[placeholder*="valor"]`
+
+Use `.first` se houver ambiguidade.
 
 ## Cover Letter
 
-Quando detectar campo de cover letter:
-1. **Pare de preencher outros campos**
-2. Avise o usuário: "Encontrei um campo de carta de apresentação. Por favor, forneça o texto que deseja usar:"
-3. Aguarde o usuário fornecer o texto
-4. Preencha o campo com o texto fornecido
-5. Continue o preenchimento dos demais campos
+Quando detectar campo de cover letter durante o mapeamento:
+1. **Pare** — não inclua na lista de actions ainda
+2. Avise: "Encontrei um campo de carta de apresentação. Por favor, forneça o texto que deseja usar:"
+3. Aguarde o texto do usuário
+4. Inclua na action como `{ type: "fill", selector: "...", value: "texto fornecido" }`
 
 ## Upload de Arquivo (CV/Currículo)
 
-Quando detectar campo de upload:
-1. Use o caminho absoluto: `.agents/skills/subscrible-job/assets/Profile.pdf`
-2. Injete o arquivo via JavaScript ou use a interação direta do browser extension
-3. Aguarde o upload completar antes de continuar
+Use o caminho absoluto do PDF:
+```typescript
+{ type: "upload", selector: 'input[type="file"]', path: "/abs/path/.agents/skills/subscrible-job/assets/Profile.pdf" }
+```
 
-## Campos Sem Mapeamento
-
-- Se o campo tem `required` ou `aria-required="true"`:
-  1. Avise o usuário: "Encontrei o campo obrigatório '[label do campo]' que não tenho dados para preencher. O que devo usar?"
-  2. Aguarde a resposta
-  3. Preencha com o valor fornecido
-  4. Salve no `profile.json` sob uma chave descritiva em `extra_fields`
-
-- Se o campo é opcional:
-  - Deixe em branco
-  - Adicione à lista de "campos deixados em branco" do relatório
+O caminho deve ser absoluto. Substitua `/abs/path/` pelo working directory da sessão.
 
 ## Navegação Multi-Step
 
-Após preencher todos os campos visíveis na página atual:
-
-### 1. Detectar tipo de botão disponível
-
-```javascript
-const buttons = Array.from(document.querySelectorAll('button, input[type="submit"], a[role="button"]'));
-const labels = buttons.map(b => ({ text: b.textContent.trim().toLowerCase(), el: b }));
-```
-
-### 2. Classificar botões
-
-**Botões de AVANÇO** (clique nestes):
-- Texto contém: `próximo`, `next`, `continue`, `continuar`, `avançar`, `prosseguir`, `seguinte`, `›`, `→`
-
-**Botões de SUBMIT** (NUNCA clique):
-- Texto contém: `enviar`, `submit`, `finalizar`, `candidatar`, `aplicar`, `apply`, `concluir`, `terminar`, `send`
-
-### 3. Ação
-
-- Se encontrou botão de AVANÇO → clique, aguarde a próxima página carregar, repita o processo de inspeção e preenchimento
-- Se encontrou APENAS botão de SUBMIT → **não clique**, siga para o relatório final
-- Se não encontrou nenhum botão → siga para o relatório final
-
-### 4. Indicador de progresso
-
-Informe o usuário a cada step: "Preenchendo step N..." (se o formulário indicar o total de steps)
+Após cada execução do `fill.ts`:
+- Se o script clicou no botão de avanço → aguarde o usuário confirmar, então rode `inspect.ts` novamente na nova URL/estado
+- Repita Fase 1 → Mapeamento → Fase 2 até não haver mais botão de avanço
+- Informe o usuário: "Preenchendo step N..."
 
 ## Persistência de Novos Dados
 
-Quando o usuário fornecer dados para campos obrigatórios sem mapeamento:
-
-1. Identifique uma chave descritiva para o dado (ex: `cep`, `bairro`, `portfolio_url`)
-2. Adicione ao `profile.json` dentro de um objeto `extra_fields`:
-
+Quando o usuário fornecer dados para campos sem mapeamento:
+1. Adicione ao `profile.json` dentro de `extra_fields`:
 ```json
 {
   "extra_fields": {
@@ -199,13 +304,11 @@ Quando o usuário fornecer dados para campos obrigatórios sem mapeamento:
   }
 }
 ```
-
-3. Use o Write tool para salvar o arquivo atualizado
-4. Na próxima candidatura, inclua `extra_fields` nas verificações de mapeamento
+2. Use o Write tool para salvar o arquivo atualizado
 
 ## Relatório Final
 
-Ao finalizar o preenchimento de todos os steps, exiba:
+Ao finalizar todos os steps:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -223,14 +326,9 @@ RELATÓRIO DE CANDIDATURA
 
 ○ DEIXADO EM BRANCO — opcional (N campos)
   • "Portfolio pessoal" (opcional)
-  • [... demais campos ...]
 
 ⛔ FORMULÁRIO PAUSADO
   O botão "Enviar candidatura" foi detectado mas NÃO foi clicado.
   Revise o formulário e submeta manualmente quando estiver pronto.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-
-## Campos Adicionais no profile.json (extra_fields)
-
-Ao inicializar, verifique se existe `extra_fields` no `profile.json` e inclua esses dados no mapeamento, usando o nome da chave como palavra-chave de busca.
