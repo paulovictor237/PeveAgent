@@ -1,10 +1,4 @@
 {
-  "envv": {
-    "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
-    "ANTHROPIC_AUTH_TOKEN": "sk-...",
-    "ANTHROPIC_MODEL": "MiniMax-M2.7",
-    "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.7"
-  },
   "permissions": {
     "allow": [
       "mcp__codegraph__codegraph_search",
@@ -15,7 +9,9 @@
       "mcp__codegraph__codegraph_node",
       "mcp__codegraph__codegraph_status"
     ],
-    "ask": ["Git commit"],
+    "ask": [
+      "Git commit"
+    ],
     "defaultMode": "default"
   },
   "hooks": {
@@ -199,5 +195,12 @@
     "frontend-design@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {},
-  "language": "portugues-br"
+  "language": "portugues-br",
+  "envv": {
+    "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "sk-...",
+    "ANTHROPIC_MODEL": "MiniMax-M2.7",
+    "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.7"
+  },
+  "skipDangerousModePermissionPrompt": true
 }

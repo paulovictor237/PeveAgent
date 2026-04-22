@@ -100,7 +100,7 @@
   "theme": {
     "mode": "dark",
     "light": "Gruvbox Light Hard",
-    "dark": "Gruvbox Dark Hard",
+    "dark": "Pink Candy Dark",
   },
   "experimental.theme_overrides": {
     "syntax": {

@@ -1,6 +1,7 @@
 {
   "name": "Paulo Victor Duarte",
   "cpf": "066.688.869-81",
+  "rg": "5823237",
   "birth_date": "25/10/1992",
   "gender": "Masculino",
   "pronoun": "Ele/Dele",
@@ -17,7 +18,7 @@
     "state_abbr": "SC",
     "country": "Brasil"
   },
-  "linkedin": "https://www.linkedin.com/in/paulo-victor-duarte/",
+  "linkedin": "https://www.linkedin.com/in/paulo-victor-duarte",
   "github": "https://github.com/paulovictor237",
   "current_role": "Tech Lead | Senior Front Engineer at MotoristaPX",
   "job_preferences": {
@@ -42,9 +43,7 @@
     { "language": "Inglês", "level": "Professional Working" },
     { "language": "Português", "level": "Native or Bilingual" }
   ],
-  "certifications": [
-    { "name": "React the complete guide" }
-  ],
+  "certifications": [{ "name": "React the complete guide" }],
   "experience": [
     {
       "company": "Motorista PX",
@@ -66,7 +65,19 @@
           "duration": "2 anos 1 mês",
           "location": "Joinville, Santa Catarina, Brasil",
           "description": "Desenvolvimento do painel web para gerenciamento de viagens e contratação de motoristas (Next.js, React, Tailwind). Desenvolvimento do app mobile para motoristas (React Native, Expo) com checklist de inspeção de caminhões e gerenciamento de perfil. Tarefas full-stack com PHP para APIs consumidas pelo frontend. Criação de servidor Python com Serverless, Docker e AWS para integração com APIs de terceiros. Uso de Tesseract OCR para extração de dados de PDFs.",
-          "technologies": ["Next.js", "React", "Tailwind CSS", "React Native", "Expo", "PHP", "Python", "Serverless", "Docker", "AWS", "Tesseract OCR"]
+          "technologies": [
+            "Next.js",
+            "React",
+            "Tailwind CSS",
+            "React Native",
+            "Expo",
+            "PHP",
+            "Python",
+            "Serverless",
+            "Docker",
+            "AWS",
+            "Tesseract OCR"
+          ]
         }
       ]
     },
