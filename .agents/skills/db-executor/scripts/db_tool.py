@@ -104,7 +104,7 @@ def build_args(db_config, runner, container, extra_flags=(), query=None):
         for flag, key in [("-h", "host"), ("-p", "port"), ("-U", "user"), ("-d", "database")]:
             if key in cfg:
                 args += [flag, str(cfg[key])]
-        args += ["--connect-timeout", "10"]
+        env["PGCONNECT_TIMEOUT"] = "10"
 
     args += list(extra_flags)
     if query:
