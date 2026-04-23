@@ -86,8 +86,69 @@ Se houver um ticket Jira vinculado, mencione-o no final: *(APX-1234)*
 Liste limitações conhecidas ou decisões técnicas que ficaram para depois. Se não houver, escreva "N/A".
 
 ### 📁 Evidências
-Não inclua prints reais (você não tem acesso). Deixe um placeholder claro:
 
+Se o usuário pedir para adicionar evidências/imagens, estruture-as usando **tabelas Markdown com até 4 colunas**. Use o formato abaixo conforme o padrão:
+
+#### **Padrão 1: Fluxo (Tela 1–N)**
+Para fluxos com múltiplas telas (ex: autenticação 4 etapas). Use 4 colunas e múltiplas linhas se necessário:
+
+```markdown
+## Screens
+
+**Objetivo:** Fluxo de autenticação em 4 etapas
+
+| Tela 1: Login | Tela 2: 2FA | Tela 3: Sucesso | Tela 4: Erro |
+|-----------|-----------|-----------|-----------|
+| <img src="" width="250"/> | <img src="" width="250"/> | <img src="" width="250"/> | <img src="" width="250"/> |
+
+**Notas (opcional):**
+- Transição suave entre telas
+- Validação em tempo real no 2FA
+```
+
+#### **Padrão 2: Antes vs Depois**
+Para comparações (ex: refactor de UI, bug fix visual). Use 2 colunas:
+
+```markdown
+## Screens
+
+**Objetivo:** Melhoria na renderização de contratos
+
+| Antes | Depois |
+|-----------|-----------|
+| <img src="" width="250"/> | <img src="" width="250"/> |
+
+**Notas (opcional):**
+- Corrigido alinhamento de botões
+- Melhorada legibilidade de datas
+```
+
+#### **Padrão 3: Estados (Erro / Sucesso / Casos Especiais)**
+Para diferentes estados de um componente/tela. Use até 3 colunas:
+
+```markdown
+## Screens
+
+**Objetivo:** Estados da validação de formulário
+
+| Erro | Aviso | Sucesso |
+|-----------|-----------|-----------|
+| <img src="" width="250"/> | <img src="" width="250"/> | <img src="" width="250"/> |
+
+**Notas (opcional):**
+- Mensagens de erro em vermelho
+- Feedback visual claro para cada estado
+```
+
+#### **Regras ao adicionar evidências:**
+- Máximo 4 colunas por tabela (se exceder, criar nova tabela)
+- Cada coluna nomeia a imagem (ex: "Tela 1: Login", "Antes", "Erro")
+- URLs em `src=""` devem ser preenchidas pelo usuário após gerar a PR (ex: links de upload ou GitHub)
+- `width="250"` é padrão; ajuste se necessário
+- Seção "Notas" é opcional; use apenas se houver pontos importantes
+- Se não houver imagens reais disponíveis, deixe os `src=""` vazios como placeholders
+
+Se o usuário **não pedir explicitamente** por imagens, deixe um placeholder simples:
 ```
 <!-- Adicionar prints/logs/vídeos que comprovem o funcionamento -->
 ```
