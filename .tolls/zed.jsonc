@@ -7,23 +7,24 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  // "collaboration_panel": { "dock": "left" },
+  // "git_panel": { "dock": "left" },
+  // "outline_panel": { "dock": "left" },
+  // "project_panel": { "dock": "left" },
+  // "completion_detail_alignment": "left",
+  // "agent": { "sidebar_side": "right", "dock": "right" },
+  // "tabs": { "close_position": "right" },
+  "icon_theme": "Catppuccin Frappé",
   "agent_servers": {
     "claude-acp": {
-      "type": "registry"
-    }
-  },
-  "icon_theme": "Catppuccin Frappé",
-  "theme": {
-    "mode": "dark",
-    "light": "One Light",
-    "dark": "One Dark"
-  },
-  "experimental.theme_overrides": {
-    "syntax": {
-      "constant.comment.todo": { "color": "#000", "background_color": "#f00" },
-      "property.comment.error": { "color": "#000", "background_color": "#d33" },
-      "string.comment.info": { "color": "#000", "background_color": "#17d" },
-      "keyword.comment.warn": { "color": "#000", "background_color": "#fa0" },
+      "type": "registry",
     },
+  },
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": {
+    "mode": "system",
+    "light": "One Dark",
+    "dark": "One Dark",
   },
 }
