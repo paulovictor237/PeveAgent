@@ -7,85 +7,16 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "zoomed_padding": true,
-  "tab_bar": {
-    "show_tab_bar_buttons": true,
-  },
-  "auto_update_extensions": {
-    "pink-candy-theme": false,
-  },
-  "agent_buffer_font_size": 16.0,
-  "agent_ui_font_size": 18.0,
-  "ui_font_size": 16,
-  "buffer_font_size": 16,
-  "edit_predictions": {
-    "provider": "zed",
-  },
-  "terminal": {
-    "font_size": 16.0,
-    "font_family": "FiraCode Nerd Font",
-    "option_as_meta": true,
-  },
-  "format_on_save": "on",
-  "code_actions_on_format": {
-    "source.removeUnusedImports": true,
-    "source.addMissingImports": true,
-    "source.fixAll.eslint": true,
-    // "source.organizeImports": true,
-  },
-  "languages": {
-    "Git Commit": {
-      "tab_size": 1,
-    },
-    "PHP": {
-      "language_servers": ["intelephense", "!phpactor", "!phptools", "..."],
-    },
-  },
-  "diff_view_style": "split",
-  "prettier": {
-    "allowed": true,
-  },
-  // "outline_panel": { "button": false, "dock": "left" },
-  // "collaboration_panel": { "button": false, "dock": "left" },
-  // "git_panel": { "dock": "left" },
-  // "project_panel": { "dock": "left" },
-  // "agent": { "sidebar_side": "right", "dock": "right" },
   "agent_servers": {
     "claude-acp": {
-      "type": "registry",
-    },
+      "type": "registry"
+    }
   },
-  "icon_theme": {
-    "mode": "light",
-    "light": "Bearded Icon Theme",
-    "dark": "Catppuccin Frappé",
-  },
-
-  "base_keymap": "VSCode",
-  "sticky_scroll": {
-    "enabled": false,
-  },
-  "minimap": {
-    "show": "never",
-  },
-  "scrollbar": {
-    "axes": {
-      "horizontal": true,
-      "vertical": true,
-    },
-  },
-  "buffer_font_family": "FiraCode Nerd Font",
-  "auto_indent_on_paste": false,
-  "use_on_type_format": false,
-  "use_auto_surround": true,
-  "semantic_tokens": "off",
-  "wrap_guides": [80, 120],
-  "hard_tabs": false,
-  "tab_size": 2,
+  "icon_theme": "Catppuccin Frappé",
   "theme": {
     "mode": "dark",
-    "light": "Gruvbox Light Hard",
-    "dark": "One Dark",
+    "light": "One Light",
+    "dark": "One Dark"
   },
   "experimental.theme_overrides": {
     "syntax": {
