@@ -45,30 +45,11 @@
   "prettier": {
     "allowed": true,
   },
-  "git_panel": {
-    "sort_by_path": false,
-    "tree_view": true,
-  },
-  "agent": {
-    "inline_assistant_model": {
-      "provider": "copilot_chat",
-      "model": "claude-sonnet-4.6",
-      "enable_thinking": false,
-    },
-    "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-sonnet-4.6",
-      "enable_thinking": false,
-    },
-    "favorite_models": [
-      {
-        "provider": "copilot_chat",
-        "model": "claude-sonnet-4.6",
-        "enable_thinking": false,
-      },
-    ],
-    "model_parameters": [],
-  },
+  // "outline_panel": { "button": false, "dock": "left" },
+  // "collaboration_panel": { "button": false, "dock": "left" },
+  // "git_panel": { "dock": "left" },
+  // "project_panel": { "dock": "left" },
+  // "agent": { "sidebar_side": "right", "dock": "right" },
   "agent_servers": {
     "claude-acp": {
       "type": "registry",
@@ -80,10 +61,6 @@
     "dark": "Catppuccin Frappé",
   },
 
-  "project_panel": {
-    "hide_gitignore": false,
-    "auto_fold_dirs": false,
-  },
   "base_keymap": "VSCode",
   "sticky_scroll": {
     "enabled": false,
