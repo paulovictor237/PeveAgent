@@ -1,0 +1,43 @@
+{
+  "source": {
+    "url": "https://www.aicoders.academy/",
+    "extractedAt": "2026-04-26T22:10:30.374Z",
+    "extractor": "dembrandt"
+  },
+  "colors": {
+    "palette": [],
+    "cssVariables": {}
+  },
+  "typography": {
+    "headingFont": "Geist",
+    "bodyFont": "Geist"
+  },
+  "spacing": {
+    "scale": [
+      "2px",
+      "4px",
+      "6px",
+      "8px",
+      "10px",
+      "12px",
+      "16px",
+      "24px",
+      "32px",
+      "40px",
+      "42px",
+      "48px",
+      "64px",
+      "80px",
+      "96px",
+      "128px",
+      "243px",
+      "271px"
+    ]
+  },
+  "radius": {
+    "scale": []
+  },
+  "shadows": {
+    "scale": []
+  }
+}
