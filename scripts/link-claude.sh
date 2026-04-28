@@ -34,6 +34,7 @@ FILE_LINKS=(
 # Formato: "arquivo_fonte_em_ASSETS_DIR:caminho_destino_absoluto"
 CUSTOM_LINKS=(
   "ccstatusline.json:$HOME/.config/ccstatusline/settings.json"
+  "opencode.json:$HOME/.config/opencode/opencode.json"
 )
 
 # ---------------------------------------------------------------------------

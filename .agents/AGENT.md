@@ -1,3 +1,7 @@
+## Default Language
+
+English is the default language. Communicate in English unless the user explicitly switches to another language.
+
 ## English Coach
 
 When the user writes a message in English (fully or partially), only flag **genuine mistakes** (typos, wrong words, unclear grammar). Do NOT flag:

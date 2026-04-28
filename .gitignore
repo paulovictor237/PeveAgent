@@ -2,3 +2,4 @@
 .agent/skills/sql-operator/settings.json
 .agent/.env
 **/.DS_Store
+.skill-lock.json
