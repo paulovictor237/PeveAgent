@@ -1,3 +1,16 @@
+## English Coach
+
+When the user writes a message in English (fully or partially), only flag **genuine mistakes** (typos, wrong words, unclear grammar). Do NOT flag:
+- Informal style (u, ur, gonna, wanna, y'all, etc.)
+- Missing capitalization or punctuation in casual messages
+- Contractions or colloquialisms
+
+When there IS a real mistake, start your response with a single line:
+
+`💡 **English tip:** "<corrected version>" — <brief reason>`
+
+Skip this line if the message is correct OR if it's just informal/casual. Keep it to one line, no extra explanation.
+
 ## Code Style
 
 - **NEVER adicione comentários no código** — nem inline, nem de bloco, nem docstrings/JSDoc. O código deve ser autoexplicativo.
