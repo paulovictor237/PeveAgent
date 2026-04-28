@@ -3,3 +3,4 @@
 .agent/.env
 **/.DS_Store
 .skill-lock.json
+.agents/.skill-lock.json
