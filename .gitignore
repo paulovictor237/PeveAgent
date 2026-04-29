@@ -4,3 +4,4 @@
 **/.DS_Store
 .skill-lock.json
 .agents/.skill-lock.json
+.agents/skills/subscrible-job/scripts/lib
