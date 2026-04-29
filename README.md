@@ -51,6 +51,7 @@ Notificações sonoras com vozes de personagens para o Claude Code.
 ```bash
 brew install peonping/tap/peon-ping
 peon-ping-setup
+curl -fsSL https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode.sh | bash
 ```
 
 ---
@@ -64,5 +65,11 @@ Grafo semântico de código para navegação inteligente.
 ```bash
 npx @colbymchenry/codegraph
 ```
+
+---
+
+### Superpowers
+
+Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md to install superpowers in opencode.
 
 ---
