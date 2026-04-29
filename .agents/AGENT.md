@@ -29,7 +29,9 @@ When the user writes in English (fully or partially), only flag **genuine mistak
 
 When there IS a real mistake, start the response with a single line:
 
-`💡 **English tip:** "<corrected version>" — <brief reason>`
+`💡 **English tip:** "<corrected version with **bold** on the fixed word>" — <brief reason>`
+
+- Always put the corrected word in **bold** within the corrected version.
 
 Skip this line if the message is correct OR if it's just informal/casual. One line, no extra explanation.
 
