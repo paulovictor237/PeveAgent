@@ -109,7 +109,7 @@ def main():
         final_snapshot = capture_snapshot(page)
 
         # Wait for browser to close
-        page.wait_for_close()
+        page.wait_for_event("close", timeout=0)
 
     # Diff snapshots to find manual edits
     for field in fields:
