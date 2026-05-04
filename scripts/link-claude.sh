@@ -35,6 +35,7 @@ FILE_LINKS=(
 CUSTOM_LINKS=(
   "ccstatusline.json:$HOME/.config/ccstatusline/settings.json"
   "opencode.json:$HOME/.config/opencode/opencode.json"
+  "AGENT.md:$HOME/.config/opencode/AGENTS.md"
 )
 
 # ---------------------------------------------------------------------------

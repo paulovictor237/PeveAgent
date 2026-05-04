@@ -73,12 +73,18 @@
         "model": [
           "google/gemini-3-pro-preview",
           "google/gemini-3-flash-preview",
+          "minimax/MiniMax-M2.7",
+          "deepseek/deepseek-v4-pro",
+          "deepseek/deepseek-v4-flash"
         ],
       },
       "type": "registry",
     },
     "claude-acp": {
       "favorite_config_option_values": {
+        "effort": [
+          "medium"
+        ],
         "mode": ["plan"],
       },
       "type": "registry",
