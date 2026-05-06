@@ -46,6 +46,20 @@ Se negar ou falhar, peça o número: `Qual o número do PR? #`
 
 ---
 
+## Passo 1b — Guardar alterações locais
+
+Logo após confirmar o PR, guarde silenciosamente quaisquer alterações não commitadas:
+
+```bash
+git stash --include-untracked
+```
+
+- Se o output contiver `Saved working directory` → registre `HAS_STASH=true`
+- Se o output for `No local changes to save` → registre `HAS_STASH=false`
+- **Não informe o usuário** — prossiga silenciosamente.
+
+---
+
 ## Passo 2 — Pré-processar comentários
 
 Sempre re-fetche do GitHub para garantir dados atualizados:
@@ -275,6 +289,22 @@ git push
 
 ---
 
+## Passo 9b — Restaurar alterações locais
+
+Após o push, se `HAS_STASH=true`, restaure as alterações guardadas:
+
+```bash
+git stash pop
+```
+
+Se falhar (conflito), informe:
+```
+⚠️ Não foi possível restaurar as alterações guardadas automaticamente.
+Execute `git stash pop` manualmente para resolver os conflitos.
+```
+
+---
+
 ## Passo 10 — Resumo final
 
 ```bash
@@ -299,6 +329,7 @@ git push
 
 ## Princípios de condução
 
+- **Stash automático obrigatório** — logo após confirmar o PR (Passo 1b), sempre execute `git stash --include-untracked` para garantir working tree limpo. Restaure com `git stash pop` após o push (Passo 9b) se havia alterações guardadas.
 - **Sempre proponha antes de agir** — nunca altere sem confirmação.
 - **Use os scripts, não a API inline** — nunca chame `gh api` diretamente quando há script disponível.
 - **Contexto mínimo** — use `pr-excerpt.sh` em vez de Read para arquivos; use `pr-next-comment.sh` em vez de ler o JSON inteiro.
