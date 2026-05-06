@@ -1,6 +1,23 @@
 {
   "permissions": {
-    "ask": ["Git commit"],
+    "allow": [
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-fetch.sh)",
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-next-comment.sh)",
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-excerpt.sh)",
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh)",
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-resolve.sh)",
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-update-progress.sh)",
+      "Bash(~/.claude/skills/pr-comments-flow/scripts/pr-progress.sh)",
+      "Bash(gh pr view)",
+      "Bash(git stash)",
+      "Bash(git push)",
+      "Bash(git pull)",
+      "Bash(git diff)",
+      "Bash(jq)"
+    ],
+    "ask": [
+      "Git commit"
+    ],
     "defaultMode": "default"
   },
   "hooks": {
