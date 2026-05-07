@@ -7,13 +7,31 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always"
+          }
+        },
+        "javascript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always"
+          }
+        }
+      },
+      "enable_lsp_tasks": true
+    }
+  },
   "cli_default_open_behavior": "existing_window",
   "diagnostics": { "button": false },
   "debugger": { "button": false },
   "search": { "button": false },
   "preview_tabs": { "enabled": false },
   "collaboration_panel": { "button": false, "dock": "left" },
-  "git_panel": { "dock": "right" },
+  "git_panel": { "tree_view": true,
+                 "dock": "right" },
   "outline_panel": { "button": false, "dock": "left" },
   "project_panel": { "dock": "left" },
   "completion_detail_alignment": "left",
@@ -76,16 +94,14 @@
           "google/gemini-3-flash-preview",
           "minimax/MiniMax-M2.7",
           "deepseek/deepseek-v4-pro",
-          "deepseek/deepseek-v4-flash"
+          "deepseek/deepseek-v4-flash",
         ],
       },
       "type": "registry",
     },
     "claude-acp": {
       "favorite_config_option_values": {
-        "effort": [
-          "medium"
-        ],
+        "effort": ["medium"],
         "mode": ["plan"],
       },
       "type": "registry",
@@ -94,8 +110,8 @@
   "ui_font_size": 16,
   "buffer_font_size": 15,
   "theme": {
-    "mode": "light",
+    "mode": "dark",
     "light": "One Dark",
-    "dark": "One Dark",
+    "dark": "Dracula Solid",
   },
 }

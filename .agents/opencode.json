@@ -11,12 +11,14 @@
         "npx",
         "-y",
         "figma-developer-mcp",
-        "--figma-api-key=_key_",
+        "--figma-api-key=figd_uKlMMSFsJ5Bw8VgjRkw7idsdIl1zIZCakqHxdVjl",
         "--stdio"
       ]
     }
   },
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"],
+  "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git"
+  ],
   "permission": {
     "bash": {
       "*": "allow",
