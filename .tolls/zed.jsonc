@@ -7,22 +7,8 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "lsp": {
-    "vtsls": {
-      "settings": {
-        "typescript": {
-          "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
-        },
-        "javascript": {
-          "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
-        }
-      },
-      "enable_lsp_tasks": true
-    }
+  "git_panel": {
+    "tree_view": true
   },
   "cli_default_open_behavior": "existing_window",
   "diagnostics": { "button": false },
@@ -30,17 +16,21 @@
   "search": { "button": false },
   "preview_tabs": { "enabled": false },
   "collaboration_panel": { "button": false, "dock": "left" },
-  "git_panel": { "tree_view": true,
-                 "dock": "right" },
   "outline_panel": { "button": false, "dock": "left" },
-  "project_panel": { "dock": "left" },
-  "completion_detail_alignment": "left",
-  "tabs": { "close_position": "right" },
+  // "git_panel": { "tree_view": false, "dock": "right" },
+  // "project_panel": { "dock": "left" },
+  // "completion_detail_alignment": "left",
+  // "tabs": { "close_position": "right" },
   // "agent": { "sidebar_side": "right", "dock": "right" },
   "agent": {
-    "sidebar_side": "left",
-    "dock": "right",
+    // "sidebar_side": "left",
+    // "dock": "right",
     "default_model": {
+      "provider": "google",
+      "model": "gemini-3-flash-preview",
+      "enable_thinking": false,
+    },
+    "inline_assistant_model": {
       "provider": "google",
       "model": "gemini-3-flash-preview",
       "enable_thinking": false,
@@ -58,6 +48,23 @@
       },
     ],
     "model_parameters": [],
+  },
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+        "javascript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+      },
+      "enable_lsp_tasks": true,
+    },
   },
   "language_models": {
     "openai_compatible": {
@@ -112,6 +119,6 @@
   "theme": {
     "mode": "dark",
     "light": "One Dark",
-    "dark": "Dracula Solid",
+    "dark": "One Dark",
   },
 }
