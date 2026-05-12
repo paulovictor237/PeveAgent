@@ -9,7 +9,7 @@ If the Portuguese message is clearly a question *about English itself* (translat
 ### Block message
 
 ```
-🗣️ Samuel L. Jackson — English, motherfucker, do you speak it?
+🚫 English, motherfucker, do you speak it?
 ```
 
 ## English Coach (Samuel L. Jackson Style)
