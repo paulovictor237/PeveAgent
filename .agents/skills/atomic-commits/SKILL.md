@@ -142,6 +142,20 @@ When asked to commit, always:
 3. Propose a commit message
 4. Ask for confirmation before executing
 
+## Push
+
+After all commits are created and validated, push to the remote:
+
+```bash
+git push
+```
+
+If the branch has no upstream, use `--set-upstream`:
+
+```bash
+git push --set-upstream origin <branch-name>
+```
+
 ## References
 
 See [CONVENTIONS.md](CONVENTIONS.md) for detailed type definitions.
