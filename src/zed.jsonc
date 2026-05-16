@@ -1,5 +1,5 @@
 {
-  "icon_theme": "Catppuccin Frappé",
+  "icon_theme": "Catppuccin Mocha",
   "agent": {
     "default_model": {
       "provider": "google",
