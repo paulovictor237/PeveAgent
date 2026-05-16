@@ -1,5 +1,5 @@
 ---
-name: acli-jira
+name: cli-jira
 description: Use acli to manage Jira tickets -- search, view, create, edit, transition, assign, comment, and more from the command line.
 ---
 
