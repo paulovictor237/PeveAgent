@@ -12,7 +12,7 @@ set -euo pipefail
 TARGET_DIR="$HOME/.claude"
 
 # Pasta de assets dentro do projeto
-ASSETS_DIR=".agents"
+ASSETS_DIR="src"
 
 # Subpastas de $ASSETS_DIR a serem linkadas em $TARGET_DIR
 # Formato: "pasta_fonte:nome_no_destino"
@@ -47,8 +47,8 @@ CLAUDE_DIR="$TARGET_DIR"
 # Links com caminhos absolutos arbitrários (source fora de $ASSETS_DIR)
 # Formato: "caminho_fonte_absoluto:caminho_destino_absoluto"
 RAW_LINKS=(
-  "$PROJECT_DIR/.tolls/zed.jsonc:$HOME/.config/zed/settings.json"
-  "$PROJECT_DIR/.agents:$HOME/.agents"
+  "$PROJECT_DIR/src/zed.jsonc:$HOME/.config/zed/settings.json"
+  "$PROJECT_DIR/src:$HOME/.agents"
 )
 
 GREEN='\033[0;32m'
@@ -123,9 +123,6 @@ do_link() {
   echo "Project: $PROJECT_DIR"
   echo "Target:  $CLAUDE_DIR"
   echo ""
-
-  git -C "$PROJECT_DIR" config core.hooksPath .git-settings
-  info "Git hooks path set to .hooks"
 
   for entry in "${SUBDIR_LINKS[@]}"; do
     src_name="${entry%%:*}"
