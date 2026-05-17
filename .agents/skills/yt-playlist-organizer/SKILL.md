@@ -6,15 +6,15 @@ version: 1.0.0
 
 # YouTube Playlist Organizer
 
-Esta skill gerencia playlists do YouTube via YouTube Data API v3 usando OAuth 2.0.
+This skill manages YouTube playlists via the YouTube Data API v3 using OAuth 2.0.
 
-## Fluxo de Autorização
+## Authorization Flow
 
-**ANTES de qualquer operação de escrita (criar, editar, remover), SEMPRE confirme com o usuário.**
+**BEFORE any write operation (create, edit, remove), ALWAYS confirm with the user.**
 
-### Passo 1: Verificar credenciais
+### Step 1: Check credentials
 
-Verifique se existem credenciais OAuth em `~/.config/yt-playlist-organizer/`:
+Check if OAuth credentials exist in `~/.config/yt-playlist-organizer/`:
 
 ```
 CLIENT_ID=$(cat ~/.config/yt-playlist-organizer/client_id 2>/dev/null)
@@ -23,62 +23,62 @@ ACCESS_TOKEN=$(cat ~/.config/yt-playlist-organizer/access_token 2>/dev/null)
 REFRESH_TOKEN=$(cat ~/.config/yt-playlist-organizer/refresh_token 2>/dev/null)
 ```
 
-### Passo 2: Se não existirem — guiar OAuth
+### Step 2: If they don't exist — guide OAuth
 
-O script `scripts/auth.py` automatiza todo o fluxo: abre o navegador, captura o código automaticamente via servidor local e salva os tokens. O usuário só precisa clicar em "Permitir".
+The script `scripts/auth.py` automates the entire flow: opens the browser, automatically captures the code via a local server, and saves the tokens. The user only needs to click "Allow".
 
-**Opção A — com arquivo JSON** (mais fácil, usuário já tem o JSON do Google Cloud):
+**Option A — with JSON file** (easiest, user already has the Google Cloud JSON):
 ```bash
 python ~/.claude/skills/yt-playlist-organizer/scripts/auth.py setup \
-  --from-json /caminho/para/client_secrets.json
+  --from-json /path/to/client_secrets.json
 ```
 
-**Opção B — com credenciais avulsas:**
+**Option B — with individual credentials:**
 ```bash
 python ~/.claude/skills/yt-playlist-organizer/scripts/auth.py setup \
   --client-id CLIENT_ID \
   --client-secret CLIENT_SECRET
 ```
 
-Se o usuário ainda não tem as credenciais, instruí-lo a:
-1. Ir em https://console.cloud.google.com/
-2. Criar projeto (ou selecionar existente)
-3. APIs e Serviços → Biblioteca → Ativar "YouTube Data API v3"
-4. APIs e Serviços → Credenciais → Criar Credenciais → ID do cliente OAuth
-5. Tipo: **"App para desktop"**
-6. Baixar o JSON — pode passar direto com `--from-json`
+If the user does not have credentials yet, instruct them to:
+1. Go to https://console.cloud.google.com/
+2. Create a project (or select an existing one)
+3. APIs & Services → Library → Enable "YouTube Data API v3"
+4. APIs & Services → Credentials → Create Credentials → OAuth client ID
+5. Type: **"Desktop app"**
+6. Download the JSON — can be passed directly with `--from-json`
 
-### Passo 3: Tokens existentes — validar e refrescar se necessário
+### Step 3: Existing tokens — validate and refresh if necessary
 
-Testar token atual:
+Test current token:
 
 ```bash
 curl -s -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&maxResults=1
 ```
 
-Se retornar 401, refrescar com o script:
+If it returns 401, refresh with the script:
 
 ```bash
 python ~/.claude/skills/yt-playlist-organizer/scripts/auth.py refresh
 ```
 
-O `access_token` salvo será atualizado automaticamente.
+The saved `access_token` will be updated automatically.
 
-## Operações
+## Operations
 
-Todas as operações usam a base URL: `https://www.googleapis.com/youtube/v3`
+All operations use the base URL: `https://www.googleapis.com/youtube/v3`
 
-### Listar todas as playlists
+### List all playlists
 
 ```bash
 curl -s -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   "https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50"
 ```
 
-Parsear com `jq` para extrair ID, título, contagem de vídeos.
+Parse with `jq` to extract ID, title, video count.
 
-### Criar playlist
+### Create playlist
 
 ```bash
 curl -s -X POST \
@@ -86,15 +86,15 @@ curl -s -X POST \
   -H "Content-Type: application/json" \
   -d '{
     "snippet": {
-      "title": "NOME DA PLAYLIST",
-      "description": "Descrição opcional"
+      "title": "PLAYLIST NAME",
+      "description": "Optional description"
     },
     "status": {"privacyStatus": "private"}
   }' \
   "https://www.googleapis.com/youtube/v3/playlists?part=snippet,status"
 ```
 
-### Renomear playlist
+### Rename playlist
 
 ```bash
 curl -s -X PUT \
@@ -102,13 +102,13 @@ curl -s -X PUT \
   -H "Content-Type: application/json" \
   -d '{
     "id": "PLAYLIST_ID",
-    "snippet": {"title": "NOVO TÍTULO", "description": "Atualizada em '"$(date)"'"},
+    "snippet": {"title": "NEW TITLE", "description": "Updated on '"$(date)"'"},
     "status": {"privacyStatus": "PRIVACY"}
   }' \
   "https://www.googleapis.com/youtube/v3/playlists?part=snippet,status"
 ```
 
-### Deletar playlist
+### Delete playlist
 
 ```bash
 curl -s -X DELETE \
@@ -116,14 +116,14 @@ curl -s -X DELETE \
   "https://www.googleapis.com/youtube/v3/playlists?id=PLAYLIST_ID"
 ```
 
-### Listar vídeos de uma playlist
+### List videos from a playlist
 
 ```bash
 curl -s -H "Authorization: Bearer ${ACCESS_TOKEN}" \
   "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=PLAYLIST_ID&maxResults=50"
 ```
 
-### Adicionar vídeo a playlist
+### Add video to playlist
 
 ```bash
 curl -s -X POST \
@@ -138,13 +138,13 @@ curl -s -X POST \
   "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet"
 ```
 
-Para obter `VIDEO_ID` de uma URL YouTube:
+To get `VIDEO_ID` from a YouTube URL:
 
-- `youtube.com/watch?v=VIDEO_ID` → extrair `v`
-- `youtu.be/VIDEO_ID` → extrair após domínio
-- `youtube.com/shorts/VIDEO_ID` → extrair após `shorts/`
+- `youtube.com/watch?v=VIDEO_ID` → extract `v`
+- `youtu.be/VIDEO_ID` → extract after domain
+- `youtube.com/shorts/VIDEO_ID` → extract after `shorts/`
 
-### Remover vídeo de playlist
+### Remove video from playlist
 
 ```bash
 curl -s -X DELETE \
@@ -152,16 +152,16 @@ curl -s -X DELETE \
   "https://www.googleapis.com/youtube/v3/playlistItems?id=PLAYLIST_ITEM_ID"
 ```
 
-### Reordenar vídeos (playlistItems.update não suporta posição diretamente)
+### Reorder videos (playlistItems.update does not support position directly)
 
-O YouTube não permite reordenar via API facilmente. Workarounds:
+YouTube does not allow reordering via API easily. Workarounds:
 
-1. **Recriar playlist na ordem desejada** (mais confiável):
-   - Listar todos os vídeos
-   - Deletar playlist
-   - Recriar com nova ordem
+1. **Recreate playlist in desired order** (more reliable):
+   - List all videos
+   - Delete playlist
+   - Recreate with new order
 
-2. **Usar playlistItems.insert com position** (pode não funcionar em todas as contas):
+2. **Use playlistItems.insert with position** (may not work on all accounts):
    ```bash
    curl -s -X POST \
      -H "Authorization: Bearer ${ACCESS_TOKEN}" \
@@ -176,54 +176,54 @@ O YouTube não permite reordenar via API facilmente. Workarounds:
      "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet"
    ```
 
-### Buscar vídeos duplicados em uma playlist
+### Find duplicate videos in a playlist
 
-Listar playlist e comparar `contentDetails.videoId` — duplicados têm mesmo `videoId`.
+List playlist and compare `contentDetails.videoId` — duplicates have the same `videoId`.
 
-## Confirmação Antes de Ações
+## Confirmation Before Actions
 
-**REGRA DE OURO: Antes de QUALQUER operação de escrita, PARE e confirme:**
+**GOLDEN RULE: Before ANY write operation, STOP and confirm:**
 
-1. Listar exatamente o que vai mudar
-2. Mostrar o comando que será executado
-3. Pedir confirmação explícita: "Confirma? (sim/não)"
+1. List exactly what will change
+2. Show the command to be executed
+3. Ask for explicit confirmation: "Confirm? (yes/no)"
 
-Exemplo de confirmação:
-
-```
-⚠️ VOU FAZER AS SEGUINTES MUDANÇAS:
-
-1. CRIAR playlist: "Minha nova playlist"
-2. ADICIONAR vídeo: "https://youtube.com/watch?v=ABC123" à playlist "Existente"
-
-Confirma? (sim/não)
-```
-
-## Formato de Saída
-
-Ao listar playlists, usar tabela formatada:
+Confirmation example:
 
 ```
-| # | Playlist                    | Vídeos | Privacidade |
+⚠️ I WILL MAKE THE FOLLOWING CHANGES:
+
+1. CREATE playlist: "My new playlist"
+2. ADD video: "https://youtube.com/watch?v=ABC123" to "Existing" playlist
+
+Confirm? (yes/no)
+```
+
+## Output Format
+
+When listing playlists, use a formatted table:
+
+```
+| # | Playlist                    | Videos | Privacy     |
 |---|-----------------------------|--------|-------------|
-| 1 | Nome da Playlist            |    42  | pública     |
-| 2 | Outra Playlist              |   128  | privada     |
+| 1 | Playlist Name               |    42  | public      |
+| 2 | Another Playlist            |   128  | private     |
 ```
 
-Ao listar vídeos:
+When listing videos:
 
 ```
-| # | Título do Vídeo                         | Adicionado em     |
+| # | Video Title                             | Added on          |
 |---|------------------------------------------|--------------------|
 | 1 | Video Example                           | 2024-01-15         |
 | 2 | Another Video                           | 2024-02-20         |
 ```
 
-## Erros Comuns
+## Common Errors
 
-| Erro                   | Solução                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| 401 Unauthorized       | Refresh token expirado ou revoke — precisa re-autenticar |
-| 403 Quota Exceeded     | API quota diária esgotada — esperar até amanhã           |
-| 404 Playlist Not Found | ID da playlist incorreto ou playlist deletada            |
-| 400 Bad Request        | Parâmetros inválidos — verificar sintaxe do JSON         |
+| Error                  | Solution                                                  |
+| ---------------------- | --------------------------------------------------------- |
+| 401 Unauthorized       | Refresh token expired or revoked — need to re-authenticate |
+| 403 Quota Exceeded     | API daily quota exceeded — wait until tomorrow            |
+| 404 Playlist Not Found | Incorrect playlist ID or playlist deleted                 |
+| 400 Bad Request        | Invalid parameters — check JSON syntax                    |

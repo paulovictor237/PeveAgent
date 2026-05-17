@@ -1,59 +1,59 @@
 ---
 name: db-queries
 description: >
-  Formata queries SQL de conferência e alteração de dados com estrutura ultra-minimalista e padronizada.
-  Use SEMPRE que o usuário pedir uma query SQL para: simular alteração, conferir dados antes de alterar,
-  escrever UPDATE, DELETE, ou qualquer SQL que modifica dados. Também acione quando o usuário disser
-  "monta o SQL", "gera o SQL de alteração", "cria um UPDATE para", "faz um DELETE onde",
-  "quero conferir antes de alterar", "me dá o SQL pra mudar", "simula a alteração", ou qualquer variação
-  de solicitar SQL que leia ou altere dados em banco. Na dúvida, use esta skill — o custo de usá-la
-  quando não necessário é mínimo, e o custo de não usá-la é o usuário receber um formato incorreto.
+  Formats SQL queries for data verification and modification with an ultra-minimalist and standardized structure.
+  Use ALWAYS when the user requests an SQL query to: simulate a change, verify data before modifying,
+  write UPDATE, DELETE, or any SQL that modifies data. Also trigger when the user says
+  "prepare the SQL", "generate the modification SQL", "create an UPDATE for", "do a DELETE where",
+  "I want to check before changing", "give me the SQL to change", "simulate the change", or any variation
+  of requesting SQL that reads or modifies data in the database. When in doubt, use this skill — the cost of using it
+  when unnecessary is minimal, and the cost of not using it is the user receiving an incorrect format.
 ---
 
-## Regra de ouro
+## Golden Rule
 
-Entregue **um único bloco SQL** com toda a resposta dentro. Sem texto fora do bloco, sem múltiplos blocos separados.
+Deliver **a single SQL block** with the entire response inside. No text outside the block, no multiple separate blocks.
 
 ---
 
-## Estrutura do bloco
+## Block Structure
 
-Cada operação tem um SELECT de conferência seguido do UPDATE/DELETE. Quando houver múltiplas operações, use um título de seção visualmente destacado com `-- ======`.
+Each operation has a verification SELECT followed by the UPDATE/DELETE. When there are multiple operations, use a visually highlighted section title with `-- ======`.
 
 ```sql
--- ====== Descrição da operação ======
+-- ====== Operation description ======
 
-SELECT id, <coluna_1>, <coluna_2>
-FROM <tabela>
-WHERE <mesma condição do UPDATE/DELETE>;
+SELECT id, <column_1>, <column_2>
+FROM <table>
+WHERE <same condition as UPDATE/DELETE>;
 
--- <coluna>: 'valor1', 'valor2', 'valor3'
-UPDATE <tabela>
-SET <coluna> = '<novo_valor>'
-WHERE <condição>;
+-- <column>: 'value1', 'value2', 'value3'
+UPDATE <table>
+SET <column> = '<new_value>'
+WHERE <condition>;
 ```
 
 **SELECT:**
-- Sempre inclua `id` como primeira coluna.
-- Liste apenas as colunas que serão alteradas — não faça `SELECT *`.
-- O `WHERE` deve ser idêntico ao do UPDATE/DELETE.
+- Always include `id` as the first column.
+- List only the columns that will be changed — do not use `SELECT *`.
+- The `WHERE` must be identical to that of the UPDATE/DELETE.
 
 **UPDATE/DELETE:**
-- Antes do `UPDATE`, inclua obrigatoriamente `-- <coluna>: 'valor1', 'valor2', ...` para cada coluna alterada.
-- **Infira os enums** a partir do contexto da conversa, arquivos de schema abertos (migrations, models, enums), ou tipagens TypeScript/PHP. Prioridade: (1) enums explícitos no código, (2) exemplos mencionados na conversa, (3) placeholder `'<PREENCHER>'`.
-- `DELETE` não precisa do comentário de valores.
+- Before the `UPDATE`, it is mandatory to include `-- <column>: 'value1', 'value2', ...` for each changed column.
+- **Infer enums** from the conversation context, open schema files (migrations, models, enums), or TypeScript/PHP typings. Priority: (1) explicit enums in the code, (2) examples mentioned in the conversation, (3) placeholder `'<FILL_IN>'`.
+- `DELETE` does not need the values comment.
 
 ---
 
-## Segurança obrigatória
+## Mandatory Safety
 
-**NUNCA gere `UPDATE` ou `DELETE` sem cláusula `WHERE`.** Se o usuário pedir uma alteração sem condição, recuse e peça que ele especifique o filtro antes de continuar. Isso previne alterações acidentais em toda a tabela.
+**NEVER generate `UPDATE` or `DELETE` without a `WHERE` clause.** If the user asks for a change without a condition, refuse and ask them to specify the filter before continuing. This prevents accidental changes to the entire table.
 
 ---
 
-## Exemplo de output correto
+## Correct Output Example
 
-Pedido: "Monta o SQL pra ativar o driver 463"
+Request: "Prepare the SQL to activate driver 463"
 
 ```sql
 SELECT id, status
@@ -66,10 +66,10 @@ SET status = 'active'
 WHERE id = 463;
 ```
 
-Pedido com múltiplas operações: "Simula falha e depois o reset"
+Request with multiple operations: "Simulate failure and then reset"
 
 ```sql
--- ====== Simula falha ======
+-- ====== Simulate failure ======
 
 SELECT id, status
 FROM drivers
@@ -95,10 +95,10 @@ WHERE id = 463;
 
 ---
 
-## O que NÃO fazer
+## What NOT to do
 
-- Não escreva frases como "Aqui estão as queries:" ou "Lembre-se de conferir antes de executar."
-- Não adicione explicações fora do bloco SQL.
-- Não use múltiplos blocos de código separados — tudo vai dentro de um único bloco SQL.
-- Não omita o comentário de valores possíveis antes do UPDATE.
-- Não gere UPDATE ou DELETE sem WHERE — nunca, sob nenhuma circunstância.
+- Do not write phrases like "Here are the queries:" or "Remember to check before executing."
+- Do not add explanations outside the SQL block.
+- Do not use multiple separate code blocks — everything goes inside a single SQL block.
+- Do not omit the possible values comment before the UPDATE.
+- Do not generate UPDATE or DELETE without WHERE — never, under any circumstances.

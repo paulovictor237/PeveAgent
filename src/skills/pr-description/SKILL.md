@@ -1,204 +1,204 @@
 ---
 name: pr-description
-description: 'Gera a descrição de Pull Request preenchendo o template do projeto com linguagem clara e não técnica, detecta automaticamente o branch base e abre o PR. Use esta skill sempre que o usuário pedir para: descrever um PR, escrever a descrição de PR, gerar o corpo do PR, preencher o template de PR, "descrever o que mudou no PR", "escrever o PR", "montar a descrição do pull request", "fill PR description", "write PR body", ou qualquer variação de escrever/preparar/montar a descrição de um pull request. Também acione quando o usuário diz "bora descrever o PR", "monta o PR", "descreve o PR pra mim", "preciso da descrição do PR", "preciso do body do PR", "abre o PR", "cria o PR".'
+description: 'Generates a Pull Request description by filling the project template with clear and non-technical language, automatically detects the base branch, and opens the PR. Use this skill whenever the user asks to: describe a PR, write the PR description, generate the PR body, fill the PR template, "describe what changed in the PR", "write the PR", "prepare the pull request description", "fill PR description", "write PR body", or any variation of writing/preparing/assembling a pull request description. Also trigger when the user says "let''s describe the PR", "prepare the PR", "describe the PR for me", "I need the PR description", "I need the PR body", "open the PR", "create the PR".'
 ---
 
-# Skill: Descrição e Abertura de Pull Request
+# Skill: Pull Request Description and Opening
 
-Você vai gerar o texto completo da descrição de um Pull Request, preenchendo o template do projeto com linguagem acessível — focada no *o quê* e *por quê*, não nos detalhes técnicos de implementação — e em seguida **abrir o PR** apontando para o branch base correto.
+You will generate the full text of a Pull Request description, filling the project template with accessible language — focusing on *what* and *why*, not on technical implementation details — and then **open the PR** pointing to the correct base branch.
 
-## Passo 1 — Carregar o template
+## Step 1 — Load the template
 
-Leia o arquivo `/.github/pull_request_template.md` na **raiz do projeto atual** (working directory).
+Read the file `/.github/pull_request_template.md` at the **root of the current project** (working directory).
 
-- Se o arquivo existir: use-o como estrutura base, mantendo todos os campos e seções.
-- Se não existir: use a estrutura padrão abaixo.
+- If the file exists: use it as the base structure, keeping all fields and sections.
+- If it doesn't exist: use the default structure below.
 
 ```markdown
-## 🔖 Escopo
+## 🔖 Scope
 
 ## 🚩 Known issues
 
-## 📁 Evidências
+## 📁 Evidence
 
-## Roteiro de testes: Caminho feliz
+## Test Script: Happy Path
 
-### Critério(s) de aceitação
+### Acceptance Criteria
 
-## 💥 Pontos de impacto
+## 💥 Impact Points
 ```
 
-## Passo 2 — Detectar o branch base
+## Step 2 — Detect the base branch
 
-O script de detecção de branch base está na **pasta da própria skill**. Execute-o assim:
+The base branch detection script is in the **skill's own folder**. Execute it like this:
 
 ```bash
 python ~/.claude/skills/pr-description/scripts/find_parent_branch.py
 ```
 
-O script retorna até 3 candidatos ordenados por relevância (menor distância de commits). Apresente os candidatos ao usuário no formato:
+The script returns up to 3 candidates ordered by relevance (shortest commit distance). Present the candidates to the user in the format:
 
 ```
-Encontrei os seguintes branches de origem com commit em comum:
+Found the following source branches with a common commit:
 
-  #1 origin/main (recomendado)
-  #2 origin/feature/outra-branch
+  #1 origin/main (recommended)
+  #2 origin/feature/another-branch
   #3 origin/staging
 
-Qual branch deve ser o destino do PR? [Enter para usar o #1]
+Which branch should be the PR destination? [Enter to use #1]
 ```
 
-Aguarde a resposta do usuário. Se o usuário pressionar Enter ou confirmar sem especificar, use o **#1 (primeiro candidato)** como branch base.
+Wait for the user's response. If the user presses Enter or confirms without specifying, use **#1 (first candidate)** as the base branch.
 
-> **Se o script não existir**: use `git log --oneline -10` + `git branch -r` para inferir o branch base, ou pergunte ao usuário.
+> **If the script doesn't exist**: use `git log --oneline -10` + `git branch -r` to infer the base branch, or ask the user.
 
-## Passo 3 — Coletar contexto
+## Step 3 — Collect context
 
-Com o branch base definido (`BASE_BRANCH`), colete informações para preencher o template:
+With the base branch defined (`BASE_BRANCH`), collect information to fill the template:
 
-1. **Diff das mudanças** — `git diff origin/BASE_BRANCH...HEAD` para ver o que foi alterado.
-2. **Commits do branch** — `git log origin/BASE_BRANCH...HEAD --oneline` para entender a narrativa.
-3. **Arquivos modificados** — `git diff origin/BASE_BRANCH...HEAD --name-only` para visão rápida do escopo.
-4. **Ticket do Jira** — se o branch ou commits tiverem um ID de ticket (ex: `APX-1234`), **antes de consultar**, pergunte ao usuário:
+1. **Changes diff** — `git diff origin/BASE_BRANCH...HEAD` to see what was changed.
+2. **Branch commits** — `git log origin/BASE_BRANCH...HEAD --oneline` to understand the narrative.
+3. **Modified files** — `git diff origin/BASE_BRANCH...HEAD --name-only` for a quick scope overview.
+4. **Jira Ticket** — if the branch or commits have a ticket ID (e.g., `APX-1234`), **before searching**, ask the user:
 
 ```
-Encontrei o ticket APX-1234 no branch. Deseja que eu busque mais informações no Jira para enriquecer a descrição? [S/n]
+I found ticket APX-1234 on the branch. Do you want me to search for more information in Jira to enrich the description? [Y/n]
 ```
 
-Se confirmar, execute: `acli jira issue view APX-1234`
+If confirmed, execute: `acli jira issue view APX-1234`
 
-Não peça ao usuário informações que você pode descobrir sozinho com essas ferramentas.
-Fontes externas (Jira, etc.) devem ser consultadas **apenas com confirmação explícita do usuário**.
+Do not ask the user for information that you can discover yourself with these tools.
+External sources (Jira, etc.) should be consulted **only with explicit user confirmation**.
 
-## Passo 4 — Preencher o template
+## Step 4 — Fill the template
 
-Preencha cada seção do template seguindo estas diretrizes:
+Fill each section of the template following these guidelines:
 
-### 🔖 Escopo
-Explique **o que foi feito e por que** em 2-5 frases. Foque no benefício ou problema resolvido, não nos arquivos modificados. Exemplos:
+### 🔖 Scope
+Explain **what was done and why** in 2-5 sentences. Focus on the benefit or problem solved, not on the modified files. Examples:
 
-- ❌ "Adicionado método `calculateDiscount()` em `DiscountService` e atualizado o model `Contract`"
-- ✅ "Corrige o cálculo de desconto que estava gerando valores negativos para contratos com antecipação"
+- ❌ "Added `calculateDiscount()` method in `DiscountService` and updated the `Contract` model"
+- ✅ "Fixes the discount calculation that was generating negative values for contracts with advance payment"
 
-Se houver um ticket Jira vinculado, mencione-o no final: *(APX-1234)*
+If there is a linked Jira ticket, mention it at the end: *(APX-1234)*
 
 ### 🚩 Known issues
-Liste limitações conhecidas ou decisões técnicas que ficaram para depois. Se não houver, escreva "N/A".
+List known limitations or technical decisions left for later. If none, write "N/A".
 
-### 📁 Evidências
+### 📁 Evidence
 
-Se o usuário pedir para adicionar evidências/imagens, estruture-as usando **tabelas Markdown com até 4 colunas**. Use o formato abaixo conforme o padrão:
+If the user asks to add evidence/images, structure them using **Markdown tables with up to 4 columns**. Use the format below according to the pattern:
 
-#### **Padrão 1: Fluxo (Tela 1–N)**
-Para fluxos com múltiplas telas (ex: autenticação 4 etapas). Use 4 colunas e múltiplas linhas se necessário:
+#### **Pattern 1: Flow (Screen 1–N)**
+For flows with multiple screens (e.g., 4-step authentication). Use 4 columns and multiple rows if necessary:
 
 ```markdown
 ## Screens
 
-**Objetivo:** Fluxo de autenticação em 4 etapas
+**Goal:** 4-step authentication flow
 
-| Tela 1: Login | Tela 2: 2FA | Tela 3: Sucesso | Tela 4: Erro |
+| Screen 1: Login | Screen 2: 2FA | Screen 3: Success | Screen 4: Error |
 |-----------|-----------|-----------|-----------|
 | <img src="" width="250"/> | <img src="" width="250"/> | <img src="" width="250"/> | <img src="" width="250"/> |
 
-**Notas (opcional):**
-- Transição suave entre telas
-- Validação em tempo real no 2FA
+**Notes (optional):**
+- Smooth transition between screens
+- Real-time validation on 2FA
 ```
 
-#### **Padrão 2: Antes vs Depois**
-Para comparações (ex: refactor de UI, bug fix visual). Use 2 colunas:
+#### **Pattern 2: Before vs After**
+For comparisons (e.g., UI refactor, visual bug fix). Use 2 columns:
 
 ```markdown
 ## Screens
 
-**Objetivo:** Melhoria na renderização de contratos
+**Goal:** Improvement in contract rendering
 
-| Antes | Depois |
+| Before | After |
 |-----------|-----------|
 | <img src="" width="250"/> | <img src="" width="250"/> |
 
-**Notas (opcional):**
-- Corrigido alinhamento de botões
-- Melhorada legibilidade de datas
+**Notes (optional):**
+- Fixed button alignment
+- Improved date readability
 ```
 
-#### **Padrão 3: Estados (Erro / Sucesso / Casos Especiais)**
-Para diferentes estados de um componente/tela. Use até 3 colunas:
+#### **Pattern 3: States (Error / Success / Special Cases)**
+For different states of a component/screen. Use up to 3 columns:
 
 ```markdown
 ## Screens
 
-**Objetivo:** Estados da validação de formulário
+**Goal:** Form validation states
 
-| Erro | Aviso | Sucesso |
+| Error | Warning | Success |
 |-----------|-----------|-----------|
 | <img src="" width="250"/> | <img src="" width="250"/> | <img src="" width="250"/> |
 
-**Notas (opcional):**
-- Mensagens de erro em vermelho
-- Feedback visual claro para cada estado
+**Notes (optional):**
+- Error messages in red
+- Clear visual feedback for each state
 ```
 
-#### **Regras ao adicionar evidências:**
-- Máximo 4 colunas por tabela (se exceder, criar nova tabela)
-- Cada coluna nomeia a imagem (ex: "Tela 1: Login", "Antes", "Erro")
-- URLs em `src=""` devem ser preenchidas pelo usuário após gerar a PR (ex: links de upload ou GitHub)
-- `width="250"` é padrão; ajuste se necessário
-- Seção "Notas" é opcional; use apenas se houver pontos importantes
-- Se não houver imagens reais disponíveis, deixe os `src=""` vazios como placeholders
+#### **Rules when adding evidence:**
+- Maximum 4 columns per table (if exceeded, create a new table)
+- Each column names the image (e.g., "Screen 1: Login", "Before", "Error")
+- URLs in `src=""` must be filled by the user after generating the PR (e.g., upload links or GitHub)
+- `width="250"` is default; adjust if necessary
+- "Notes" section is optional; use only if there are important points
+- If no real images are available, leave `src=""` empty as placeholders
 
-Se o usuário **não pedir explicitamente** por imagens, deixe um placeholder simples:
+If the user **does not explicitly ask** for images, leave a simple placeholder:
 ```
-<!-- Adicionar prints/logs/vídeos que comprovem o funcionamento -->
-```
-
-### Roteiro de testes: Caminho feliz
-Descreva como alguém sem conhecimento do código pode verificar que a mudança funciona. Use passos simples e concretos:
-
-- "Acesse a tela X"
-- "Execute a ação Y"
-- "Verifique que Z acontece"
-
-### Critério(s) de aceitação
-Liste 2-4 critérios observáveis (comportamento esperado), derivados dos passos de teste.
-
-### 💥 Pontos de impacto
-Identifique partes do sistema que podem ser afetadas. Prefira linguagem de negócio:
-
-- ❌ "Model `Contract`, Service `PaymentService`, Job `ProcessPaymentJob`"
-- ✅ "Cálculo de pagamentos de frete", "Tela de contratos no app do motorista"
-
-### Campos com checkboxes (se existirem no template)
-Deixe todos os checkboxes desmarcados — é responsabilidade do time preenchê-los.
-
-## Passo 5 — Confirmar e abrir o PR
-
-Após gerar a descrição, mostre o texto ao usuário e pergunte:
-
-```
-Descrição gerada. Deseja abrir o PR agora apontando para `BASE_BRANCH`? [S/n]
+<!-- Add screenshots/logs/videos that prove the functionality -->
 ```
 
-Se o usuário confirmar (Enter ou "S"), abra o PR com:
+### Test Script: Happy Path
+Describe how someone without code knowledge can verify that the change works. Use simple and concrete steps:
+
+- "Access screen X"
+- "Perform action Y"
+- "Verify that Z happens"
+
+### Acceptance Criteria
+List 2-4 observable criteria (expected behavior), derived from the test steps.
+
+### 💥 Impact Points
+Identify parts of the system that may be affected. Prefer business language:
+
+- ❌ "`Contract` Model, `PaymentService` Service, `ProcessPaymentJob` Job"
+- ✅ "Freight payment calculation", "Contracts screen in the driver app"
+
+### Checkbox fields (if they exist in the template)
+Leave all checkboxes unchecked — it is the team's responsibility to fill them out.
+
+## Step 5 — Confirm and open the PR
+
+After generating the description, show the text to the user and ask:
+
+```
+Description generated. Do you want to open the PR now pointing to `BASE_BRANCH`? [Y/n]
+```
+
+If the user confirms (Enter or "Y"), open the PR with:
 
 ```bash
 gh pr create \
   --base BASE_BRANCH \
-  --title "TITULO_SUGERIDO" \
+  --title "SUGGESTED_TITLE" \
   --body "$(cat <<'EOF'
-[DESCRICAO_GERADA]
+[GENERATED_DESCRIPTION]
 EOF
 )"
 ```
 
-O título deve ser gerado automaticamente a partir do nome do branch e/ou ticket Jira, seguindo o padrão `[APX-1234] Descrição curta do que foi feito`. Se não houver ticket, use uma descrição concisa do que foi feito.
+The title should be automatically generated from the branch name and/or Jira ticket, following the pattern `[APX-1234] Short description of what was done`. If there is no ticket, use a concise description of what was done.
 
-Retorne a URL do PR criado ao usuário.
+Return the created PR URL to the user.
 
-## Linguagem
+## Language
 
-- Escreva em **português** (a não ser que o template esteja em outro idioma)
-- Frases curtas e diretas
-- Sem jargões técnicos desnecessários — imagine que o leitor é um QA ou PM, não o dev que escreveu o código
-- Evite voz passiva excessiva
+- Write in **Portuguese** (unless the template is in another language)
+- Short and direct sentences
+- No unnecessary technical jargon — imagine the reader is a QA or PM, not the dev who wrote the code
+- Avoid excessive passive voice

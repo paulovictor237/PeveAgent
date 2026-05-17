@@ -84,7 +84,7 @@ The script enforces this flow automatically:
 **Step 2 — Dry run preview**: Runs a SELECT COUNT and SELECT preview to show how many rows
 will be affected and what they look like (also formatted compactly).
 
-**Step 3 — Explicit confirmation**: Solicita que o usuário digite `yes` por extenso para confirmar. Qualquer outra resposta cancela a operação.
+**Step 3 — Explicit confirmation**: Asks the user to type `yes` in full to confirm. Any other response cancels the operation.
 
 **Step 4 — Execution**: Only runs after confirmation.
 

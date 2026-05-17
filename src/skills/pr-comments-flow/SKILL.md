@@ -1,210 +1,210 @@
 ---
 name: pr-comments-flow
-description: "Revisão interativa de comentários de PR — percorre cada sugestão de revisão uma por uma, decide com o usuário como proceder, marca como resolvido no GitHub e aprende padrões para o CLAUDE.md. Use esta skill sempre que o usuário quiser revisar comentários de PR, responder sugestões de code review, resolver threads de PR, ou dizer: 'bora revisar os comentários do PR', 'vamos ver os comentários do PR', 'tem comentários no PR pra resolver', 'me mostra o que o revisor pediu', 'vamos caminhando pelos comentários', '/pr-comments-flow', ou qualquer variação de querer trabalhar em cima de feedback de code review."
+description: "Interactive PR comment review — goes through each review suggestion one by one, decides with the user how to proceed, marks as resolved on GitHub, and learns patterns for CLAUDE.md. Use this skill whenever the user wants to review PR comments, respond to code review suggestions, resolve PR threads, or says: 'let's review the PR comments', 'let's see the PR comments', 'there are comments on the PR to resolve', 'show me what the reviewer asked for', 'let's go through the comments', '/pr-comments-flow', or any variation of wanting to work on code review feedback."
 ---
 
-# Skill: Revisão Interativa de Comentários de PR
+# Skill: Interactive PR Comment Review
 
-## Scripts disponíveis
+## Available Scripts
 
-Todos os scripts estão em `~/.claude/skills/pr-comments-flow/scripts/` e devem ser chamados via Bash tool.
+All scripts are in `~/.claude/skills/pr-comments-flow/scripts/` and must be called via the Bash tool.
 
-| Script | Uso | Descrição |
-|--------|-----|-----------|
-| `pr-fetch.sh <PR>` | Passo 2 | Busca, deduplica e salva comentários em `/tmp/pr-{N}-comments.json` |
-| `pr-next-comment.sh [PR]` | Passo 4 | Retorna próximo comentário pendente como JSON |
-| `pr-excerpt.sh <file> <line> [ctx=15]` | Passo 4 | Extrai trecho do arquivo ao redor de uma linha |
-| `pr-reply.sh <comment_id> <body>` | Passo 5 | Posta resposta no thread do comentário |
-| `pr-resolve.sh <thread_id>` | Passo 5 | Marca thread como resolvido no GitHub |
-| `pr-update-progress.sh <PR> <id> <status>` | Passo 5 | Atualiza arquivo de progresso (`applied`/`skipped`) |
-| `pr-progress.sh [PR]` | Qualquer momento | Exibe resumo do progresso atual |
+| Script | Use | Description |
+|--------|-----|-------------|
+| `pr-fetch.sh <PR>` | Step 2 | Fetches, deduplicates, and saves comments to `/tmp/pr-{N}-comments.json` |
+| `pr-next-comment.sh [PR]` | Step 4 | Returns the next pending comment as JSON |
+| `pr-excerpt.sh <file> <line> [ctx=15]` | Step 4 | Extracts file snippet around a specific line |
+| `pr-reply.sh <comment_id> <body>` | Step 5 | Posts a reply to the comment thread |
+| `pr-resolve.sh <thread_id>` | Step 5 | Marks thread as resolved on GitHub |
+| `pr-update-progress.sh <PR> <id> <status>` | Step 5 | Updates progress file (`applied`/`skipped`) |
+| `pr-progress.sh [PR]` | Anytime | Displays current progress summary |
 
-**Arquivos de estado em `/tmp/`:**
-- `/tmp/pr-{N}-comments.json` — comentários pré-processados e deduplicados
-- `/tmp/pr-{N}-progress.json` — rastreamento de progresso da sessão
+**State files in `/tmp/`:**
+- `/tmp/pr-{N}-comments.json` — pre-processed and deduplicated comments
+- `/tmp/pr-{N}-progress.json` — session progress tracking
 
 ---
 
-## Passo 1 — Identificar o PR
+## Step 1 — Identify PR
 
 ```bash
 gh pr view --json number,title,url 2>/dev/null
 ```
 
-Se encontrar, prossiga diretamente — apenas informe na primeira mensagem:
+If found, proceed directly — just inform in the first message:
 
 ```
-PR #123 — Título do PR
-Buscando comentários...
+PR #123 — PR Title
+Fetching comments...
 ```
 
-Se falhar ou não encontrar, use AskUserQuestion:
+If it fails or is not found, use AskUserQuestion:
 
 ```
-question: "Não encontrei um PR aberto nesta branch. Qual é o número?"
+question: "I couldn't find an open PR on this branch. What is the number?"
 header: "PR"
 options:
-  - label: "Informar número"
-    description: "Digite o número do PR no campo 'Other'"
-  - label: "Cancelar"
-    description: "Encerra a revisão"
+  - label: "Provide number"
+    description: "Enter the PR number in the 'Other' field"
+  - label: "Cancel"
+    description: "Ends the review"
 ```
 
-Se o usuário cancelar, encerre. Se informar via "Other", use o número fornecido.
+If the user cancels, end. If provided via "Other", use the given number.
 
 ---
 
-## Passo 1b — Guardar alterações locais
+## Step 1b — Save local changes
 
-Logo após confirmar o PR, guarde silenciosamente quaisquer alterações não commitadas:
+Immediately after confirming the PR, silently save any uncommitted changes:
 
 ```bash
 git stash --include-untracked
 ```
 
-- Se o output contiver `Saved working directory` → registre `HAS_STASH=true`
-- Se o output for `No local changes to save` → registre `HAS_STASH=false`
-- **Não informe o usuário** — prossiga silenciosamente.
+- If output contains `Saved working directory` → record `HAS_STASH=true`
+- If output is `No local changes to save` → record `HAS_STASH=false`
+- **Do not inform the user** — proceed silently.
 
 ---
 
-## Passo 2 — Pré-processar comentários
+## Step 2 — Pre-process comments
 
-Sempre re-fetche do GitHub para garantir dados atualizados:
+Always re-fetch from GitHub to ensure up-to-date data:
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-fetch.sh {PR_NUMBER}
 ```
 
-Se existir progresso anterior (`/tmp/pr-{N}-progress.json`), após o fetch use AskUserQuestion:
+If previous progress exists (`/tmp/pr-{N}-progress.json`), after fetching use AskUserQuestion:
 
 ```
-question: "Encontrei progresso de uma sessão anterior (X aplicados, Y pulados). Como prosseguir?"
-header: "Progresso"
+question: "I found progress from a previous session (X applied, Y skipped). How should we proceed?"
+header: "Progress"
 options:
-  - label: "Continuar de onde parei"
-    description: "Pula comentários já tratados"
-  - label: "Recomeçar do zero"
-    description: "Revisita todos os comentários, inclusive os já tratados"
+  - label: "Continue from where I left off"
+    description: "Skips already handled comments"
+  - label: "Start from scratch"
+    description: "Revisits all comments, including those already handled"
 ```
 
-Se "Recomeçar do zero", delete o arquivo de progresso:
+If "Start from scratch", delete the progress file:
 ```bash
 rm /tmp/pr-{PR_NUMBER}-progress.json
 ```
 
-Se não houver comentários pendentes, informe: `Nenhum comentário de review aberto encontrado neste PR.`
+If no pending comments are found, inform: `No open review comments found for this PR.`
 
 ---
 
-## Passo 3 — Apresentar o resumo
+## Step 3 — Present summary
 
-Leia o arquivo de comentários e mostre o resumo organizado por arquivo. **Leia apenas os campos necessários para o resumo:**
+Read the comments file and show the summary organized by file. **Read only the necessary fields for the summary:**
 
 ```bash
-jq -r '.files[] | "  📄 \(.path) (\(.comments | length) comentário(s))"' /tmp/pr-{N}-comments.json
+jq -r '.files[] | "  📄 \(.path) (\(.comments | length) comment(s))"' /tmp/pr-{N}-comments.json
 ```
 
 ```
-Encontrei X comentários em Y arquivo(s):
+Found X comments in Y file(s):
 
-  📄 src/services/PaymentService.ts (2 comentários)
-  📄 src/Models/Contract.ts (1 comentário)
+  📄 src/services/PaymentService.ts (2 comments)
+  📄 src/Models/Contract.ts (1 comment)
 ```
 
-Prossiga diretamente para o Passo 4 sem aguardar resposta.
+Proceed directly to Step 4 without waiting for a response.
 
 ---
 
-## Passo 4 — Revisar comentário por comentário
+## Step 4 — Review comment by comment
 
-### 4a. Obter próximo comentário
+### 4a. Get next comment
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-next-comment.sh {PR_NUMBER}
 ```
 
-Isso retorna um JSON com: `id`, `path`, `line`, `body`, `thread_id`, `diff_hunk`, `duplicate_count`.
+This returns a JSON with: `id`, `path`, `line`, `body`, `thread_id`, `diff_hunk`, `duplicate_count`.
 
-Se `duplicate_count > 0`, adicione nota: `⚠️ Este comentário apareceu {N+1}x de revisores diferentes.`
+If `duplicate_count > 0`, add a note: `⚠️ This comment appeared {N+1}x from different reviewers.`
 
-### 4b. Obter contexto do arquivo (lazy — só as linhas relevantes)
+### 4b. Get file context (lazy — only relevant lines)
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-excerpt.sh "{path}" {line}
 ```
 
-**Não use o Read tool para ler o arquivo inteiro.** Use `pr-excerpt.sh` que retorna ±15 linhas ao redor da linha comentada. Só use Read se precisar de contexto muito mais amplo e isso for claramente necessário.
+**Do not use the Read tool to read the entire file.** Use `pr-excerpt.sh` which returns ±15 lines around the commented line. Only use Read if you need much broader context and it is clearly necessary.
 
-### 4c. Exibir e propor
+### 4c. Display and propose
 
-Mostre sempre neste formato:
+Always show in this format:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📄 src/services/PaymentService.ts — linha 42
+📄 src/services/PaymentService.ts — line 42
 [X/TOTAL]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💬 Revisor:
-"Esse método pode lançar uma exceção não tratada se $amount for negativo."
+💬 Reviewer:
+"This method can throw an unhandled exception if $amount is negative."
 
 📌 Diff:
-  (últimas linhas do diff_hunk)
+  (last lines of diff_hunk)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Analise o comentário + contexto do arquivo, escreva a proposta em texto, então use AskUserQuestion:
+Analyze the comment + file context, write the proposal in text, then use AskUserQuestion:
 
 ```
-question: "💡 O que pretendo fazer: {proposta resumida}. Como prosseguir?"
-header: "Comentário X/TOTAL"
+question: "💡 What I plan to do: {summarized proposal}. How should we proceed?"
+header: "Comment X/TOTAL"
 options:
-  - label: "Aplicar"
-    description: "Implementa a mudança proposta"
-  - label: "Aplicar + CLAUDE.md"
-    description: "Implementa e adiciona regra ao CLAUDE.md para reforçar o padrão"
-  - label: "Pular"
-    description: "Não aplica; marca como tratado e segue para o próximo"
-  - label: "Discutir / Responder no PR"
-    description: "Sugere algo diferente ou posta uma resposta no thread sem alterar código"
+  - label: "Apply"
+    description: "Implements the proposed change"
+  - label: "Apply + CLAUDE.md"
+    description: "Implements and adds a rule to CLAUDE.md to reinforce the pattern"
+  - label: "Skip"
+    description: "Does not apply; marks as handled and moves to the next"
+  - label: "Discuss / Reply on PR"
+    description: "Suggests something different or posts a reply to the thread without changing code"
 ```
 
-Aguarde resposta antes de qualquer ação.
+Wait for a response before any action.
 
-### 4d. Respostas
+### 4d. Responses
 
-- **Aplicar** — implemente. Após implementar, confirme brevemente.
-- **Aplicar + CLAUDE.md** — implemente e, após, vá direto ao Passo 6 para propor a instrução sem perguntar novamente.
-- **Pular** — não altere nada. Passe para o próximo.
-- **Discutir / Responder no PR** — use AskUserQuestion para distinguir:
+- **Apply** — implement. After implementing, briefly confirm.
+- **Apply + CLAUDE.md** — implement and then go directly to Step 6 to propose the instruction without asking again.
+- **Skip** — do not change anything. Move to the next.
+- **Discuss / Reply on PR** — use AskUserQuestion to distinguish:
 
 ```
-question: "Como quer prosseguir?"
-header: "Ação"
+question: "How do you want to proceed?"
+header: "Action"
 options:
-  - label: "Discutir"
-    description: "Sugira uma abordagem diferente e atualizo a proposta"
-  - label: "Responder no PR"
-    description: "Elaboro uma resposta para o thread do GitHub sem alterar código"
+  - label: "Discuss"
+    description: "Suggest a different approach and I will update the proposal"
+  - label: "Reply on PR"
+    description: "I will draft a reply for the GitHub thread without changing code"
 ```
 
-Se **Discutir**: ouça a sugestão via "Other", atualize a proposta e use AskUserQuestion novamente (Passo 4c).
+If **Discuss**: listen to the suggestion via "Other", update the proposal, and use AskUserQuestion again (Step 4c).
 
-Se **Responder no PR**: elabore a resposta em texto e use AskUserQuestion para confirmar:
+If **Reply on PR**: draft the reply in text and use AskUserQuestion to confirm:
 
 ```
-question: "Confirma o envio desta resposta para o thread?\n\n{texto da resposta}"
-header: "Resposta no PR"
+question: "Confirm sending this reply to the thread?\n\n{reply text}"
+header: "Reply on PR"
 options:
-  - label: "Postar"
-    description: "Envia a resposta para o thread no GitHub"
-  - label: "Cancelar"
-    description: "Não posta nada"
+  - label: "Post"
+    description: "Sends the reply to the GitHub thread"
+  - label: "Cancel"
+    description: "Does not post anything"
 ```
 
-Só poste após confirmar "Postar":
+Only post after confirming "Post":
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "{REPLY_BODY}"
@@ -212,44 +212,44 @@ Só poste após confirmar "Postar":
 
 ---
 
-## Passo 5 — Atualizar progresso e resolver thread
+## Step 5 — Update progress and resolve thread
 
-Após cada comentário (aplicado ou pulado conscientemente), execute **em paralelo**:
+After each comment (applied or consciously skipped), execute **in parallel**:
 
 ```bash
-# Atualizar progresso local
+# Update local progress
 ~/.claude/skills/pr-comments-flow/scripts/pr-update-progress.sh {PR_NUMBER} {COMMENT_ID} {applied|skipped}
 
-# Marcar thread como resolvido no GitHub
+# Mark thread as resolved on GitHub
 ~/.claude/skills/pr-comments-flow/scripts/pr-resolve.sh {THREAD_ID}
 ```
 
-Se `thread_id` for `null`, pule a resolução sem erro.
+If `thread_id` is `null`, skip resolution without error.
 
-> Se o script de resolução falhar, avise e continue.
+> If the resolution script fails, notify and continue.
 
 ---
 
-## Passo 6 — Propor aprendizado para o CLAUDE.md
+## Step 6 — Propose learning for CLAUDE.md
 
-Este passo só é executado quando o usuário escolheu a opção **[2] Aplicar + CLAUDE.md** no Passo 4d. Não pergunte de novo — vá direto à proposta.
+This step is only executed when the user chose the **[2] Apply + CLAUDE.md** option in Step 4d. Do not ask again — go straight to the proposal.
 
-Analise o padrão identificado, formule a regra e use AskUserQuestion:
+Analyze the identified pattern, formulate the rule, and use AskUserQuestion:
 
 ```
-question: "📚 Adicionar ao CLAUDE.md:\n\n\"{regra proposta}\""
+question: "📚 Add to CLAUDE.md:\n\n\"{proposed rule}\""
 header: "CLAUDE.md"
 options:
-  - label: "Adicionar"
-    description: "Salva a regra no CLAUDE.md mais próximo do CWD"
-  - label: "Não adicionar"
-    description: "Segue para o próximo comentário sem salvar"
+  - label: "Add"
+    description: "Saves the rule to the nearest CLAUDE.md from the CWD"
+  - label: "Don't add"
+    description: "Moves to the next comment without saving"
 ```
 
-Se "Adicionar", encontre o CLAUDE.md mais próximo do diretório atual e adicione à seção `## Regras derivadas de Code Review` (crie a seção se não existir):
+If "Add", find the nearest CLAUDE.md from the current directory and add to the `## Rules derived from Code Review` section (create the section if it doesn't exist):
 
 ```bash
-# Encontra o CLAUDE.md mais próximo subindo a partir do CWD
+# Finds the nearest CLAUDE.md by moving up from CWD
 dir=$(pwd)
 while [[ "$dir" != "/" ]]; do
   [[ -f "$dir/CLAUDE.md" ]] && { echo "$dir/CLAUDE.md"; break; }
@@ -257,59 +257,59 @@ while [[ "$dir" != "/" ]]; do
 done
 ```
 
-Se nenhum arquivo for encontrado, crie `CLAUDE.md` no diretório atual.
+If no file is found, create `CLAUDE.md` in the current directory.
 
-> Use `CLAUDE.local.md` apenas se o usuário solicitar explicitamente (ex: "adiciona no local", "não quero versionar").
+> Use `CLAUDE.local.md` only if the user explicitly requests it (e.g., "add to local", "I don't want to version it").
 
-**Se "Não adicionar":** siga para o próximo comentário sem nenhuma ação adicional.
+**If "Don't add":** proceed to the next comment without any additional action.
 
 ---
 
-## Passo 6b — Commit incremental
+## Step 6b — Incremental commit
 
-Após cada comentário **aplicado** (e após decidir sobre o CLAUDE.md), faça commit imediato. Gere uma mensagem semântica coerente com a mudança aplicada — baseada no que foi alterado no arquivo e no que o revisor pediu:
+After each **applied** comment (and after deciding on CLAUDE.md), commit immediately. Generate a semantic message consistent with the applied change — based on what was changed in the file and what the reviewer requested:
 
 ```bash
-git add -A && git commit -m "{tipo}: {descrição coerente com a mudança aplicada}"
+git add -A && git commit -m "{type}: {description consistent with the applied change}"
 ```
 
-Exemplo: se o revisor pediu para extrair uma função e você a extraiu em `PaymentService.ts`, a mensagem seria `refactor: extrair cálculo de taxa para método dedicado`.
+Example: if the reviewer asked to extract a function and you extracted it in `PaymentService.ts`, the message would be `refactor: extract fee calculation to dedicated method`.
 
 ---
 
-## Passo 7 — Avançar para o próximo arquivo
+## Step 7 — Move to next file
 
-Ao terminar todos os comentários de um arquivo:
+When finished with all comments in a file:
 
 ```
-✅ src/services/PaymentService.ts concluído (2/2 comentários tratados).
+✅ src/services/PaymentService.ts completed (2/2 comments handled).
 
-Próximo: 📄 src/Models/Contract.ts (1 comentário).
+Next: 📄 src/Models/Contract.ts (1 comment).
 ```
 
-Volte ao **Passo 4** com `pr-next-comment.sh` para o próximo comentário.
+Go back to **Step 4** with `pr-next-comment.sh` for the next comment.
 
 ---
 
-## Passo 8 — Commit final (se houver pendências)
+## Step 8 — Final commit (if there are pending changes)
 
-Antes do resumo final, verifique se sobrou alguma alteração sem commit (pode ocorrer se um commit incremental falhou):
+Before the final summary, check if there are any uncommitted changes left (could happen if an incremental commit failed):
 
 ```bash
 git diff --name-only
 ```
 
-Se houver arquivos modificados, faça commit imediato:
+If there are modified files, commit immediately:
 
 ```bash
-git add -A && git commit -m "{tipo}: {descrição coerente com as mudanças restantes}"
+git add -A && git commit -m "{type}: {description consistent with the remaining changes}"
 ```
 
 ---
 
-## Passo 9 — Push
+## Step 9 — Push
 
-Após o Passo 8, faça push imediato sem perguntar:
+After Step 8, push immediately without asking:
 
 ```bash
 git push
@@ -317,23 +317,23 @@ git push
 
 ---
 
-## Passo 9b — Restaurar alterações locais
+## Step 9b — Restore local changes
 
-Após o push, se `HAS_STASH=true`, restaure as alterações guardadas:
+After pushing, if `HAS_STASH=true`, restore the saved changes:
 
 ```bash
 git stash pop
 ```
 
-Se falhar (conflito), informe:
+If it fails (conflict), inform:
 ```
-⚠️ Não foi possível restaurar as alterações guardadas automaticamente.
-Execute `git stash pop` manualmente para resolver os conflitos.
+⚠️ Could not restore saved changes automatically.
+Run `git stash pop` manually to resolve conflicts.
 ```
 
 ---
 
-## Passo 10 — Resumo final
+## Step 10 — Final summary
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-progress.sh {PR_NUMBER}
@@ -341,30 +341,30 @@ Execute `git stash pop` manualmente para resolver os conflitos.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Revisão concluída — PR #123
+✅ Review completed — PR #123
 
-  Aplicados:            3
-  Pulados:              1
-  Resolvidos no GitHub: 4
+  Applied:              3
+  Skipped:              1
+  Resolved on GitHub:   4
 
-  Regras adicionadas ao CLAUDE.md: 1
-  Commits realizados:   3
-  Push realizado:       sim
+  Rules added to CLAUDE.md: 1
+  Commits made:         3
+  Push made:            yes
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
-## Princípios de condução
+## Guiding Principles
 
-- **Stash automático obrigatório** — logo após confirmar o PR (Passo 1b), sempre execute `git stash --include-untracked` para garantir working tree limpo. Restaure com `git stash pop` após o push (Passo 9b) se havia alterações guardadas.
-- **Sempre use AskUserQuestion** — toda decisão do usuário deve ser feita via AskUserQuestion, nunca via texto livre `[S/n]` ou listas numeradas no output.
-- **Sempre proponha antes de agir** — nunca altere sem confirmação.
-- **Use os scripts, não a API inline** — nunca chame `gh api` diretamente quando há script disponível.
-- **Contexto mínimo** — use `pr-excerpt.sh` em vez de Read para arquivos; use `pr-next-comment.sh` em vez de ler o JSON inteiro.
-- **Sempre re-fetche** — nunca use cache de comentários; sempre rode `pr-fetch.sh` ao iniciar para garantir sincronização com o GitHub.
-- **Não trave em erros de API** — se resolver o thread falhar, avise e continue.
-- **CLAUDE.md só sob demanda** — o Passo 6 só é executado quando o usuário escolhe `[2] Aplicar + CLAUDE.md`. Nunca pergunte automaticamente após aplicar. Quando acionado, proponha a regra direto, sem perguntar de novo. Use sempre o `CLAUDE.md` mais próximo do CWD. Só use `CLAUDE.local.md` se o usuário solicitar explicitamente.
-- **Commit incremental obrigatório** — após cada comentário aplicado (Passo 6b), faça commit imediato com mensagem coerente com a mudança. Não pergunte, apenas commite. O Passo 8 só trata pendências remanescentes.
-- **Push obrigatório ao final** — após o Passo 8, faça push sem perguntar.
-- **Linguagem**: responda sempre em português.
+- **Mandatory automatic stash** — immediately after confirming the PR (Step 1b), always run `git stash --include-untracked` to ensure a clean working tree. Restore with `git stash pop` after pushing (Step 9b) if there were saved changes.
+- **Always use AskUserQuestion** — every user decision must be made via AskUserQuestion, never via free text `[y/N]` or numbered lists in the output.
+- **Always propose before acting** — never change anything without confirmation.
+- **Use scripts, not inline API** — never call `gh api` directly when a script is available.
+- **Minimal context** — use `pr-excerpt.sh` instead of Read for files; use `pr-next-comment.sh` instead of reading the entire JSON.
+- **Always re-fetch** — never use a comments cache; always run `pr-fetch.sh` at the start to ensure synchronization with GitHub.
+- **Don't get stuck on API errors** — if resolving the thread fails, notify and continue.
+- **CLAUDE.md only on demand** — Step 6 is only executed when the user chooses `[2] Apply + CLAUDE.md`. Never ask automatically after applying. When triggered, propose the rule directly without asking again. Always use the `CLAUDE.md` nearest to the CWD. Only use `CLAUDE.local.md` if the user explicitly requests it.
+- **Mandatory incremental commit** — after each applied comment (Step 6b), commit immediately with a message consistent with the change. Do not ask, just commit. Step 8 only handles remaining pending changes.
+- **Mandatory push at the end** — after Step 8, push without asking.
+- **Language**: always respond in English.
