@@ -1,20 +1,24 @@
 {
+  "outline_panel": { "button": false },
+  "collaboration_panel": { "button": false },
+  "search": { "button": false },
+  "debugger": { "button": false },
   "cli_default_open_behavior": "new_window",
   "edit_predictions": {
     "ollama": {
       "api_url": "http://localhost:11434",
-      "model": "qwen2.5-coder:7b-base"
-    }
+      "model": "qwen2.5-coder:7b-base",
+    },
   },
   "theme": {
     "mode": "dark",
     "light": "One Light",
-    "dark": "Pink Candy Dark"
+    "dark": "Pink Candy Dark",
   },
   "icon_theme": {
     "mode": "light",
     "light": "Catppuccin Mocha",
-    "dark": "Catppuccin Mocha"
+    "dark": "Catppuccin Mocha",
   },
   "agent": {
     "default_model": {
@@ -62,10 +66,8 @@
   },
   "agent_servers": {
     "pi-acp": {
-      "favorite_models": [
-        "google/gemini-3-flash-preview"
-      ],
-      "type": "registry"
+      "favorite_models": ["google/gemini-3-flash-preview"],
+      "type": "registry",
     },
     "codex-acp": {
       "type": "registry",
