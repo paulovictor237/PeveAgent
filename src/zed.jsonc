@@ -1,5 +1,20 @@
 {
-  "icon_theme": "Catppuccin Mocha",
+  "edit_predictions": {
+    "ollama": {
+      "api_url": "http://localhost:11434",
+      "model": "qwen2.5-coder:7b-base"
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "Pink Candy Dark"
+  },
+  "icon_theme": {
+    "mode": "light",
+    "light": "Catppuccin Mocha",
+    "dark": "Catppuccin Mocha"
+  },
   "agent": {
     "default_model": {
       "provider": "google",
@@ -46,6 +61,9 @@
   },
   "agent_servers": {
     "pi-acp": {
+      "favorite_models": [
+        "google/gemini-3-flash-preview"
+      ],
       "type": "registry"
     },
     "codex-acp": {

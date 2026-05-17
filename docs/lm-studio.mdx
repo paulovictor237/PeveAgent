@@ -1,0 +1,49 @@
+# LM Studio Model Guide
+
+This guide covers model selection and optimization for LM Studio, focusing on Apple Silicon (MLX) and memory-efficient configurations.
+
+## Core Concepts
+
+### Model Architectures: Dense vs. MoE
+
+*   **Dense:** All parameters are active for every token.
+    *   *Examples:* Qwen2.5-Coder, Qwen3.
+*   **MoE (Mixture of Experts):** Only a subset of parameters is active per token, allowing for larger total parameter counts with lower computational cost during inference.
+    *   *Example:* DeepSeek V2 Lite.
+
+### Benchmarks: HumanEval
+**HumanEval** is a widely recognized benchmark used to measure the code generation capabilities of AI models. It consists of a set of programming problems that models must solve, and their performance is measured by the percentage of correct solutions they produce (often using the "Pass@1" metric). Higher scores indicate better reasoning and syntax accuracy in coding tasks.
+
+### Quantization & Optimization
+
+Quantization is a compression technique used to shrink model size and reduce RAM usage.
+
+*   **Q4_K_M:** A balanced 4-bit method that offers a good trade-off between quality and size. Recommended for most users.
+*   **Q8:** 8-bit quantization. Better quality but requires significantly more RAM.
+*   **GGUF:** The standard file format for quantized models used by LM Studio and Ollama. It is a universal alternative to MLX (which is Apple-only).
+*   **MLX:** Apple Silicon optimized format. Typically 15-20% faster on M-series chips (M1/M2/M3/M4) but limited to the macOS ecosystem.
+
+## Model Recommendations (Target: 16GB RAM)
+
+| Use Case | Recommended Model |
+| :--- | :--- |
+| **Daily Coding & IDE Autocomplete** | Qwen2.5-Coder 7B |
+| **General Purpose (Code + Text + Research)** | Qwen3 8B |
+| **Complex Projects & Debugging** | DeepSeek-Coder V2 Lite |
+| **Maximum Performance** (Requires closing other apps) | DeepSeek-Coder V2 Lite |
+| **Maximum RAM Efficiency** | Qwen2.5-Coder 7B |
+
+## Models to Consider
+
+The following models are excellent choices for 16GB RAM systems:
+
+*   **Qwen Series:**
+    *   Qwen2.5-Coder 7B
+    *   Qwen3 8B
+    *   Qwen3.5-Coder-9B-Instruct
+*   **Llama Series:**
+    *   Llama 3.1 8B
+*   **DeepSeek Series:**
+    *   DeepSeek-Coder V2 Lite
+*   **Google Gemma:**
+    *   Gemma 4 26B-A4B (MoE Architecture)

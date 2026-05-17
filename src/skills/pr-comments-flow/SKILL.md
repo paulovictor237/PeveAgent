@@ -31,18 +31,26 @@ Todos os scripts estão em `~/.claude/skills/pr-comments-flow/scripts/` e devem 
 gh pr view --json number,title,url 2>/dev/null
 ```
 
-Se encontrar, confirme com o usuário:
+Se encontrar, prossiga diretamente — apenas informe na primeira mensagem:
 
 ```
-Encontrei o PR aberto nesta branch:
-
-  #123 — Título do PR
-  https://github.com/org/repo/pull/123
-
-É este PR que vamos revisar? [S/n]
+PR #123 — Título do PR
+Buscando comentários...
 ```
 
-Se negar ou falhar, peça o número: `Qual o número do PR? #`
+Se falhar ou não encontrar, use AskUserQuestion:
+
+```
+question: "Não encontrei um PR aberto nesta branch. Qual é o número?"
+header: "PR"
+options:
+  - label: "Informar número"
+    description: "Digite o número do PR no campo 'Other'"
+  - label: "Cancelar"
+    description: "Encerra a revisão"
+```
+
+Se o usuário cancelar, encerre. Se informar via "Other", use o número fornecido.
 
 ---
 
@@ -68,15 +76,19 @@ Sempre re-fetche do GitHub para garantir dados atualizados:
 ~/.claude/skills/pr-comments-flow/scripts/pr-fetch.sh {PR_NUMBER}
 ```
 
-Se existir progresso anterior (`/tmp/pr-{N}-progress.json`), após o fetch pergunte:
-```
-Encontrei progresso de uma sessão anterior:
-  Aplicados: X | Pulados: Y
+Se existir progresso anterior (`/tmp/pr-{N}-progress.json`), após o fetch use AskUserQuestion:
 
-Deseja manter este progresso (não revisitar comentários já tratados)? [S/n]
+```
+question: "Encontrei progresso de uma sessão anterior (X aplicados, Y pulados). Como prosseguir?"
+header: "Progresso"
+options:
+  - label: "Continuar de onde parei"
+    description: "Pula comentários já tratados"
+  - label: "Recomeçar do zero"
+    description: "Revisita todos os comentários, inclusive os já tratados"
 ```
 
-Se "N", delete o arquivo de progresso:
+Se "Recomeçar do zero", delete o arquivo de progresso:
 ```bash
 rm /tmp/pr-{PR_NUMBER}-progress.json
 ```
@@ -98,9 +110,9 @@ Encontrei X comentários em Y arquivo(s):
 
   📄 src/services/PaymentService.ts (2 comentários)
   📄 src/Models/Contract.ts (1 comentário)
-
-Vamos começar. [Enter para continuar]
 ```
+
+Prossiga diretamente para o Passo 4 sem aguardar resposta.
 
 ---
 
@@ -143,41 +155,56 @@ Mostre sempre neste formato:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Analise o comentário + contexto do arquivo, então **proponha o que pretende fazer**:
+Analise o comentário + contexto do arquivo, escreva a proposta em texto, então use AskUserQuestion:
 
 ```
-💡 O que pretendo fazer:
-Adicionar validação no início do método para lançar InvalidArgumentException
-quando $amount <= 0, antes da chamada ao gateway.
-
-Como quer prosseguir?
-  [1] Aplicar
-  [2] Aplicar 📚 + instrução para o CLAUDE.md
-  [3] Pular (não aplicar)
-  [4] Discutir / quero sugerir algo diferente
-  [5] Responder no PR
+question: "💡 O que pretendo fazer: {proposta resumida}. Como prosseguir?"
+header: "Comentário X/TOTAL"
+options:
+  - label: "Aplicar"
+    description: "Implementa a mudança proposta"
+  - label: "Aplicar + CLAUDE.md"
+    description: "Implementa e adiciona regra ao CLAUDE.md para reforçar o padrão"
+  - label: "Pular"
+    description: "Não aplica; marca como tratado e segue para o próximo"
+  - label: "Discutir / Responder no PR"
+    description: "Sugere algo diferente ou posta uma resposta no thread sem alterar código"
 ```
 
 Aguarde resposta antes de qualquer ação.
 
 ### 4d. Respostas
 
-- **[1] Aplicar** — implemente. Após implementar, confirme brevemente.
-- **[2] Aplicar + CLAUDE.md** — implemente e, após, vá direto ao Passo 6 para propor a instrução sem perguntar novamente.
-- **[3] Pular** — não altere nada. Passe para o próximo.
-- **[4] Discutir** — ouça a sugestão, atualize a proposta, pergunte novamente.
-- **[5] Responder no PR** — compor uma resposta para o thread do GitHub sem alterar código.
-
-Quando o usuário escolher **[4]**, elabore a resposta e mostre para aprovação:
+- **Aplicar** — implemente. Após implementar, confirme brevemente.
+- **Aplicar + CLAUDE.md** — implemente e, após, vá direto ao Passo 6 para propor a instrução sem perguntar novamente.
+- **Pular** — não altere nada. Passe para o próximo.
+- **Discutir / Responder no PR** — use AskUserQuestion para distinguir:
 
 ```
-💬 Resposta proposta:
-"[texto da resposta]"
-
-Postar no thread? [S/n]
+question: "Como quer prosseguir?"
+header: "Ação"
+options:
+  - label: "Discutir"
+    description: "Sugira uma abordagem diferente e atualizo a proposta"
+  - label: "Responder no PR"
+    description: "Elaboro uma resposta para o thread do GitHub sem alterar código"
 ```
 
-Só poste após confirmação:
+Se **Discutir**: ouça a sugestão via "Other", atualize a proposta e use AskUserQuestion novamente (Passo 4c).
+
+Se **Responder no PR**: elabore a resposta em texto e use AskUserQuestion para confirmar:
+
+```
+question: "Confirma o envio desta resposta para o thread?\n\n{texto da resposta}"
+header: "Resposta no PR"
+options:
+  - label: "Postar"
+    description: "Envia a resposta para o thread no GitHub"
+  - label: "Cancelar"
+    description: "Não posta nada"
+```
+
+Só poste após confirmar "Postar":
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "{REPLY_BODY}"
@@ -207,18 +234,19 @@ Se `thread_id` for `null`, pule a resolução sem erro.
 
 Este passo só é executado quando o usuário escolheu a opção **[2] Aplicar + CLAUDE.md** no Passo 4d. Não pergunte de novo — vá direto à proposta.
 
-Analise o padrão identificado e proponha uma regra concreta:
+Analise o padrão identificado, formule a regra e use AskUserQuestion:
 
 ```
-📚 Sugestão para o CLAUDE.md:
-
-  "Antes de definir um novo tipo TypeScript, verifique se ele já existe no projeto —
-   tipos costumam estar centralizados em types.ts dentro do feature folder."
-
-Adiciono? [S/n]
+question: "📚 Adicionar ao CLAUDE.md:\n\n\"{regra proposta}\""
+header: "CLAUDE.md"
+options:
+  - label: "Adicionar"
+    description: "Salva a regra no CLAUDE.md mais próximo do CWD"
+  - label: "Não adicionar"
+    description: "Segue para o próximo comentário sem salvar"
 ```
 
-Se confirmar, encontre o CLAUDE.md mais próximo do diretório atual e adicione à seção `## Regras derivadas de Code Review` (crie a seção se não existir):
+Se "Adicionar", encontre o CLAUDE.md mais próximo do diretório atual e adicione à seção `## Regras derivadas de Code Review` (crie a seção se não existir):
 
 ```bash
 # Encontra o CLAUDE.md mais próximo subindo a partir do CWD
@@ -233,7 +261,7 @@ Se nenhum arquivo for encontrado, crie `CLAUDE.md` no diretório atual.
 
 > Use `CLAUDE.local.md` apenas se o usuário solicitar explicitamente (ex: "adiciona no local", "não quero versionar").
 
-**Se "N":** siga para o próximo comentário sem nenhuma ação adicional.
+**Se "Não adicionar":** siga para o próximo comentário sem nenhuma ação adicional.
 
 ---
 
@@ -256,7 +284,7 @@ Ao terminar todos os comentários de um arquivo:
 ```
 ✅ src/services/PaymentService.ts concluído (2/2 comentários tratados).
 
-Próximo: 📄 src/Models/Contract.ts (1 comentário). [Enter para continuar]
+Próximo: 📄 src/Models/Contract.ts (1 comentário).
 ```
 
 Volte ao **Passo 4** com `pr-next-comment.sh` para o próximo comentário.
@@ -330,6 +358,7 @@ Execute `git stash pop` manualmente para resolver os conflitos.
 ## Princípios de condução
 
 - **Stash automático obrigatório** — logo após confirmar o PR (Passo 1b), sempre execute `git stash --include-untracked` para garantir working tree limpo. Restaure com `git stash pop` após o push (Passo 9b) se havia alterações guardadas.
+- **Sempre use AskUserQuestion** — toda decisão do usuário deve ser feita via AskUserQuestion, nunca via texto livre `[S/n]` ou listas numeradas no output.
 - **Sempre proponha antes de agir** — nunca altere sem confirmação.
 - **Use os scripts, não a API inline** — nunca chame `gh api` diretamente quando há script disponível.
 - **Contexto mínimo** — use `pr-excerpt.sh` em vez de Read para arquivos; use `pr-next-comment.sh` em vez de ler o JSON inteiro.
