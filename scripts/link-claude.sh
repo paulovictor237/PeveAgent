@@ -20,6 +20,7 @@ SUBDIR_LINKS=(
   "agents:agents"
   "commands:commands"
   "skills:skills"
+  "extensions:extensions"
 )
 
 # Arquivos dentro de $ASSETS_DIR a serem linkados em $TARGET_DIR
@@ -36,6 +37,9 @@ CUSTOM_LINKS=(
   "ccstatusline.json:$HOME/.config/ccstatusline/settings.json"
   "opencode.json:$HOME/.config/opencode/opencode.json"
   "AGENT.md:$HOME/.config/opencode/AGENTS.md"
+  "AGENT.md:$HOME/.pi/agent/AGENTS.md"
+  "extensions:$HOME/.pi/agent/extensions"
+  "themes:$HOME/.pi/agent/themes"
 )
 
 # ---------------------------------------------------------------------------
