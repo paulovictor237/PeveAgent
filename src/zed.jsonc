@@ -23,9 +23,10 @@
   },
   "agent": {
     "default_model": {
-      "provider": "google",
-      "model": "gemini-3-flash-preview",
-      "enable_thinking": false,
+      "effort": "high",
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "enable_thinking": true,
     },
     "favorite_models": [
       {
