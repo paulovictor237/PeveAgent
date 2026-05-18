@@ -2,13 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
   "name": "custom-pastel",
   "vars": {
-    "pink": "#B565A7",
-    "blue": "#4A90A4",
-    "green": "#5E8B61",
-    "yellow": "#8B8B5E",
-    "bg": "#FFF9FB",
-    "gray": "#7D6B7D",
-    "dim": "#F3E5F5"
+    "pink": "#D6A0CC",
+    "blue": "#78B9CD",
+    "green": "#85B588",
+    "yellow": "#C5C588",
+    "bg": "#2A2527",
+    "gray": "#A08EA0",
+    "dim": "#3D353D"
   },
   "colors": {
     "accent": "pink",
@@ -29,8 +29,8 @@
     "customMessageText": "",
     "customMessageLabel": "pink",
     "toolPendingBg": "bg",
-    "toolSuccessBg": "#DFF2E1",
-    "toolErrorBg": "#F2DFE1",
+    "toolSuccessBg": "#3d5e40",
+    "toolErrorBg": "#5e3d40",
     "toolTitle": "pink",
     "toolOutput": "",
     "mdHeading": "pink",
