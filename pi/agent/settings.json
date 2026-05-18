@@ -5,11 +5,12 @@
     "npm:pi-mcp-adapter",
     "npm:pi-rewind",
     "npm:@juicesharp/rpiv-todo",
-    "npm:pi-fff"
+    "npm:pi-fff",
+    "npm:pi-hermes-memory"
   ],
   "lastChangelogVersion": "0.75.3",
   "defaultProvider": "deepseek",
-  "defaultModel": "deepseek-v4-pro",
+  "defaultModel": "deepseek-v4-flash",
   "defaultThinkingLevel": "high",
   "theme": "dark"
 }

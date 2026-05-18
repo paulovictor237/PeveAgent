@@ -36,7 +36,6 @@ CUSTOM_LINKS=(
   "ccstatusline.json:$HOME/.config/ccstatusline/settings.json"
   "opencode.json:$HOME/.config/opencode/opencode.json"
   "AGENT.md:$HOME/.config/opencode/AGENTS.md"
-  "AGENT.md:$HOME/pi/agent/AGENTS.md"
 
 )
 
@@ -51,7 +50,6 @@ CLAUDE_DIR="$TARGET_DIR"
 RAW_LINKS=(
   "$PROJECT_DIR/src/zed.jsonc:$HOME/.config/zed/settings.json"
   "$PROJECT_DIR/src:$HOME/.agents"
-  "$PROJECT_DIR/pi/settings.json:$HOME/.pi/agent/settings.json"
 )
 
 GREEN='\033[0;32m'

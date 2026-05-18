@@ -1,0 +1,31 @@
+# Machine-specific — auth tokens
+auth.json
+
+# Machine-specific — caches
+mcp-cache.json
+mcp-npx-cache.json
+
+# Local bins (symlinks to globally installed bins)
+bin/
+
+# FFF search index (machine-specific)
+pi-fff/
+
+# Session DB — the "db memory" (machine-specific, per-machine state)
+pi-hermes-memory/sessions.db
+pi-hermes-memory/sessions.db-shm
+pi-hermes-memory/sessions.db-wal
+pi-hermes-memory/.skills-migrated-to-extension-storage
+
+# Project-specific local memories
+projects-memory/
+
+# Session logs
+sessions/
+
+# npm — installed deps + lockfile (regenerated per machine)
+npm/node_modules/
+npm/package-lock.json
+npm/.gitignore
+npm/
+AGENTS.md
