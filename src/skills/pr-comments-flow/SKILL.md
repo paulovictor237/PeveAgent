@@ -296,10 +296,10 @@ Go back to **Step 4** with `pr-next-comment.sh` for the next comment.
 Before the final summary, check if there are any uncommitted changes left (could happen if an incremental commit failed):
 
 ```bash
-git diff --name-only
+git status --porcelain
 ```
 
-If there are modified files, commit immediately:
+If there are any changes (modified, deleted, untracked), commit immediately:
 
 ```bash
 git add -A && git commit -m "{type}: {description consistent with the remaining changes}"

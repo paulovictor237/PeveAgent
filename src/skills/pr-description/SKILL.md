@@ -184,6 +184,7 @@ If the user confirms (Enter or "Y"), open the PR with:
 
 ```bash
 gh pr create \
+  --draft \
   --base BASE_BRANCH \
   --title "SUGGESTED_TITLE" \
   --body "$(cat <<'EOF'
