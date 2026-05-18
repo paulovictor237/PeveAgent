@@ -1,0 +1,14 @@
+{
+  "packages": [
+    "npm:context-mode",
+    "npm:pi-subagents",
+    "npm:pi-mcp-adapter",
+    "npm:pi-rewind",
+    "npm:@juicesharp/rpiv-todo"
+  ],
+  "lastChangelogVersion": "0.75.3",
+  "defaultProvider": "google",
+  "defaultModel": "gemini-3.1-flash-lite-preview",
+  "defaultThinkingLevel": "low",
+  "theme": "dark"
+}

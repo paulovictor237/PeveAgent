@@ -1,4 +1,5 @@
 {
+  "git_panel": { "tree_view": false },
   "outline_panel": { "button": false },
   "collaboration_panel": { "button": false },
   "search": { "button": false },
