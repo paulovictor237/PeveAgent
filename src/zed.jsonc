@@ -6,6 +6,12 @@
   "debugger": { "button": false },
   "cli_default_open_behavior": "new_window",
   "edit_predictions": {
+    "provider": "zed",
+    "open_ai_compatible_api": {
+      "prompt_format": "deepseek_coder",
+      "model": "deepseek-v4-flash",
+      "api_url": "https://api.deepseek.com"
+    },
     "ollama": {
       "api_url": "http://localhost:11434",
       "model": "qwen2.5-coder:7b-base",

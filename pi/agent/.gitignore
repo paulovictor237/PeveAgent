@@ -16,6 +16,7 @@ pi-hermes-memory/sessions.db
 pi-hermes-memory/sessions.db-shm
 pi-hermes-memory/sessions.db-wal
 pi-hermes-memory/.skills-migrated-to-extension-storage
+pi-hermes-memory/failures.md
 
 # Project-specific local memories
 projects-memory/

@@ -6,11 +6,19 @@
     "npm:pi-rewind",
     "npm:@juicesharp/rpiv-todo",
     "npm:pi-fff",
-    "npm:pi-hermes-memory"
+    "npm:pi-hermes-memory",
+    "npm:@spences10/pi-lsp"
   ],
   "lastChangelogVersion": "0.75.3",
-  "defaultProvider": "google",
-  "defaultModel": "gemini-3.1-flash-lite",
-  "defaultThinkingLevel": "high",
-  "theme": "dark"
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-pro",
+  "defaultThinkingLevel": "xhigh",
+  "theme": "dark",
+  "hideThinkingBlock": true,
+  "enabledModels": [
+    "deepseek/deepseek-v4-flash",
+    "deepseek/deepseek-v4-pro",
+    "google/gemini-3-flash-preview",
+    "google/gemini-3-pro-preview"
+  ]
 }
