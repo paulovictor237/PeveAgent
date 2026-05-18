@@ -9,8 +9,8 @@
     "npm:pi-hermes-memory"
   ],
   "lastChangelogVersion": "0.75.3",
-  "defaultProvider": "deepseek",
-  "defaultModel": "deepseek-v4-flash",
+  "defaultProvider": "google",
+  "defaultModel": "gemini-3.1-flash-lite",
   "defaultThinkingLevel": "high",
   "theme": "dark"
 }
