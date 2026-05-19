@@ -1,6 +1,6 @@
 {
   "tool": "pi",
-  "target_root": "pi/agent",
+  "target_root": "~/.pi/agent",
   "links": [
     { "from": "assets/docs/AGENT.md",            "to": "AGENTS.md" },
     { "from": "assets/configs/pi-settings.json", "to": "settings.json" },

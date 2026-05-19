@@ -1,7 +1,0 @@
-[failure] Broken symlinks found in ~/.pi/agent/: extensions → src/extensions and themes → src/themes — the target directories didn't exist under src/. The symlinks were removed during migration and content from ./pi/extensions/ and ./pi/themes/ was copied directly into ./pi/agent/extensions/ and ./pi/agent/themes/. <!-- created=2026-05-18, last=2026-05-18 -->
-§
-[failure] `rsync --info=progress2` fails on macOS — the macOS rsync is an older BSD variant that doesn't support `--info=progress2`. Use `cp -a` instead for copying with symlink resolution. — Failed: Used linux-specific rsync flag on macOS <!-- created=2026-05-18, last=2026-05-18 -->
-§
-[convention] Pi config version-control convention: Tracked files in ./pi/agent/ — settings.json, AGENTS.md, extensions/*, themes/*, npm/package.json, pi-hermes-memory/USER.md, pi-hermes-memory/failures.md. Ignored — auth.json, mcp-cache.json, mcp-npx-cache.json, pi-fff/, pi-hermes-memory/sessions.db*, projects-memory/, sessions/, npm/node_modules/, npm/package-lock.json, bin/. <!-- created=2026-05-18, last=2026-05-18 -->
-§
-[insight] Use `git add --dry-run` to verify .gitignore patterns are working correctly before committing. It shows exactly which files are tracked vs ignored. <!-- created=2026-05-18, last=2026-05-18 -->
