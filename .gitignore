@@ -1,7 +1,20 @@
 .draft
-.agent/skills/sql-operator/settings.json
-.agent/.env
 **/.DS_Store
-.skill-lock.json
-.agents/.skill-lock.json
-.agents/skills/subscrible-job/scripts/lib
+.pytest_cache/
+
+# pi runtime data (not config)
+pi/agent/sessions/
+pi/agent/npm/
+pi/agent/bin/
+pi/agent/pi-fff/
+pi/agent/pi-hermes-memory/
+pi/agent/projects-memory/
+pi/agent/extensions/
+pi/agent/themes/
+pi/agent/mcp-cache.json
+pi/agent/mcp-npx-cache.json
+pi/agent/auth.json
+
+# local-only overrides
+.claude/settings.local.json
+.agents/settings.local.json
