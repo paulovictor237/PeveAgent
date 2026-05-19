@@ -1,0 +1,9 @@
+{
+  "tool": "opencode",
+  "target_root": "~/.config/opencode",
+  "links": [
+    { "from": "assets/docs/AGENT.md",         "to": "AGENTS.md" },
+    { "from": "assets/configs/opencode.json", "to": "opencode.json" }
+  ],
+  "external_links": []
+}
