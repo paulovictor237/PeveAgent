@@ -13,7 +13,7 @@
   "defaultProvider": "deepseek",
   "defaultModel": "deepseek-v4-pro",
   "defaultThinkingLevel": "high",
-  "theme": "dark",
+  "theme": "custom-pastel",
   "hideThinkingBlock": true,
   "enabledModels": [
     "deepseek/deepseek-v4-flash",
