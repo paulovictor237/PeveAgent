@@ -1,36 +1,66 @@
-# PeveWave
+# PeveAgent
 
-Configuração pessoal do ambiente Claude Code.
+Multi-tool AI config hub. One canonical source for skills, agents, commands, and settings — symlinked into each AI tool's home directory.
 
-🌐 **[Agent Overview](https://paulovictor237.github.io/PeveAgent/)** — catálogo dinâmico de skills, agents e commands.
+## Structure
+
+```
+assets/
+├── skills/       # custom skills (tool-agnostic)
+├── agents/       # custom agents
+├── commands/     # slash commands
+├── marketplace/  # marketplace-installed skills
+├── configs/      # per-tool config files
+└── docs/         # AGENT.md, RTK.md (shared by all tools)
+
+tools/
+├── claude.json   # links assets → ~/.claude
+├── pi.json       # links assets → pi/agent
+├── opencode.json # links assets → ~/.config/opencode
+└── zed.json      # links assets → ~/.config/zed
+```
+
+`assets/docs/AGENT.md` is the single instruction file shared by all agent tools. Each tool's manifest maps it to whatever filename that tool expects (`CLAUDE.md`, `AGENTS.md`, etc.).
 
 ## Setup
 
 ```bash
-bash scripts/link-claude.sh
+bash scripts/link.sh
 ```
 
-Cria symlinks de `wave/`, `AGENT.md`, `RTK.md` e `settings.json` para `~/.claude/`.
+Links are idempotent — safe to re-run. Backs up any real file that would be overwritten.
 
----
+## Adding a new tool
 
-### ccstatusline
+Drop a new manifest in `tools/<toolname>.json`:
 
-Status line para o Claude Code.
+```json
+{
+  "tool": "cursor",
+  "target_root": "~/.cursor",
+  "links": [
+    { "from": "assets/docs/AGENT.md", "to": "AGENT.md" }
+  ],
+  "external_links": []
+}
+```
 
-- Repo: https://github.com/sirmalloc/ccstatusline
+Then run `bash scripts/link.sh cursor`.
+
+## Commands
 
 ```bash
-npx -y ccstatusline@latest
+bash scripts/link.sh              # link all tools
+bash scripts/link.sh claude pi    # link specific tools
+bash scripts/link.sh --dry-run    # preview without changes
+bash scripts/link.sh --reverse    # pull live files back into assets/, then re-link
 ```
 
----
-
-## Ferramentas
+## Tools
 
 ### RTK
 
-Token-optimized CLI proxy para Claude Code (60–90% de economia).
+Token-optimized CLI proxy (60–90% savings).
 
 - Docs: https://www.rtk-ai.app/#install
 
@@ -38,38 +68,26 @@ Token-optimized CLI proxy para Claude Code (60–90% de economia).
 curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
 ```
 
-> Não execute `rtk init --global` se o `link-claude.sh` já tiver instalado o `RTK.md`.
+### ccstatusline
 
----
+Status line for Claude Code.
+
+```bash
+npx -y ccstatusline@latest
+```
 
 ### Peon Ping
 
-Notificações sonoras com vozes de personagens para o Claude Code.
-
-- Site: https://www.peonping.com/
+Audio notifications for Claude Code.
 
 ```bash
-brew install peonping/tap/peon-ping
-peon-ping-setup
-curl -fsSL https://raw.githubusercontent.com/PeonPing/peon-ping/main/adapters/opencode.sh | bash
+brew install peonping/tap/peon-ping && peon-ping-setup
 ```
-
----
 
 ### CodeGraph
 
-Grafo semântico de código para navegação inteligente.
-
-- Repo: https://github.com/colbymchenry/codegraph
+Semantic code graph for intelligent navigation.
 
 ```bash
 npx @colbymchenry/codegraph
 ```
-
----
-
-### Superpowers
-
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md to install superpowers in opencode.
-
----
