@@ -9,8 +9,6 @@ pi/agent/bin/
 pi/agent/pi-fff/
 pi/agent/pi-hermes-memory/
 pi/agent/projects-memory/
-pi/agent/extensions/
-pi/agent/themes/
 pi/agent/mcp-cache.json
 pi/agent/mcp-npx-cache.json
 pi/agent/auth.json

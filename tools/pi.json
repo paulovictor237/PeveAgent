@@ -2,8 +2,10 @@
   "tool": "pi",
   "target_root": "pi/agent",
   "links": [
-    { "from": "assets/docs/AGENT.md",             "to": "AGENTS.md" },
-    { "from": "assets/configs/pi-settings.json",  "to": "settings.json" }
+    { "from": "assets/docs/AGENT.md",            "to": "AGENTS.md" },
+    { "from": "assets/configs/pi-settings.json", "to": "settings.json" },
+    { "from": "assets/themes",                   "to": "themes" },
+    { "from": "assets/extensions",               "to": "extensions" }
   ],
   "external_links": []
 }
