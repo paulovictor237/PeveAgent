@@ -29,7 +29,6 @@ assets/
 ├── configs/         # Per-tool config files (claude-settings.json, pi-settings.json, etc.)
 ├── themes/          # Claude Code themes
 ├── extensions/      # Pi/OpenCode extensions (TypeScript)
-├── marketplace/     # Pre-installed marketplace skills
 └── docs/            # AGENT.md (master instructions), RTK.md
 
 tools/               # Symlink manifests: define target_root and files per tool

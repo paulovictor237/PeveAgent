@@ -11,7 +11,6 @@
     { "from": "assets/commands",                     "to": "commands" }
   ],
   "external_links": [
-    { "from": "assets/configs/ccstatusline.json", "to": "~/.config/ccstatusline/settings.json" },
-    { "from": "assets/marketplace",               "to": "~/.agents/skills" }
+    { "from": "assets/configs/ccstatusline.json", "to": "~/.config/ccstatusline/settings.json" }
   ]
 }

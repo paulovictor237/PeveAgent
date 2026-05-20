@@ -9,7 +9,6 @@ assets/
 ├── skills/       # custom skills (tool-agnostic)
 ├── agents/       # custom agents
 ├── commands/     # slash commands
-├── marketplace/  # marketplace-installed skills
 ├── configs/      # per-tool config files
 └── docs/         # AGENT.md, RTK.md (shared by all tools)
 
