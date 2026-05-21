@@ -9,11 +9,11 @@
     "npm:pi-hermes-memory",
     "npm:@spences10/pi-lsp"
   ],
-  "lastChangelogVersion": "0.75.3",
-  "defaultProvider": "deepseek",
-  "defaultModel": "deepseek-v4-pro",
+  "lastChangelogVersion": "0.75.4",
+  "defaultProvider": "google",
+  "defaultModel": "gemini-3.1-flash-lite-preview",
   "defaultThinkingLevel": "high",
-  "theme": "custom-pastel",
+  "theme": "dark",
   "hideThinkingBlock": true,
   "enabledModels": [
     "deepseek/deepseek-v4-flash",
