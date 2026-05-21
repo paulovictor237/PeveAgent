@@ -4,6 +4,7 @@
   "links": [
     { "from": "assets/docs/AGENT.md",            "to": "AGENTS.md" },
     { "from": "assets/configs/pi-settings.json", "to": "settings.json" },
+    { "from": "assets/configs/pi-keybindings.json", "to": "keybindings.json" },
     { "from": "assets/themes",                   "to": "themes" },
     { "from": "assets/extensions",               "to": "extensions" }
   ],
