@@ -8,6 +8,7 @@ description: >
   "I want to check before changing", "give me the SQL to change", "simulate the change", or any variation
   of requesting SQL that reads or modifies data in the database. When in doubt, use this skill — the cost of using it
   when unnecessary is minimal, and the cost of not using it is the user receiving an incorrect format.
+allowed-tools: Bash, Read, Glob, Grep
 ---
 
 ## Golden Rule

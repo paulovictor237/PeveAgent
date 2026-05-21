@@ -7,6 +7,7 @@ description: >
   database data. This skill enforces a mandatory dry-run + confirmation flow for all write operations
   (UPDATE/DELETE), preventing accidental data loss. Always use this skill for DB interactions, even
   for seemingly simple queries — the safety workflow is non-negotiable.
+allowed-tools: Bash, Read, Glob, Grep
 ---
 
 # SQL Operator

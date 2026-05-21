@@ -1,6 +1,7 @@
 ---
 name: pr-comments-flow
 description: "Interactive PR comment review — goes through each review suggestion one by one, decides with the user how to proceed, marks as resolved on GitHub, and learns patterns for CLAUDE.md. Use this skill whenever the user wants to review PR comments, respond to code review suggestions, resolve PR threads, or says: 'let's review the PR comments', 'let's see the PR comments', 'there are comments on the PR to resolve', 'show me what the reviewer asked for', 'let's go through the comments', '/pr-comments-flow', or any variation of wanting to work on code review feedback."
+allowed-tools: Bash, Read, Glob, Grep
 ---
 
 # Skill: Interactive PR Comment Review
