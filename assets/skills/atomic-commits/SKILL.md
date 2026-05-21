@@ -1,7 +1,7 @@
 ---
 name: atomic-commits
 description: Creates semantic atomic commits using Conventional Commits. Use always when committing changes, staging files, or when asked to commit code. Analyzes diffs, suggests scope, and can split changes into granular commits.
-allowed-tools: Bash, Read, Glob, Grep, AskUserQuestion
+allowed-tools: Bash, Read, Glob, Grep
 ---
 
 # Atomic Commits
@@ -60,7 +60,7 @@ Analyze changed files to suggest scope:
 If changes span multiple concerns, split them:
 
 ```bash
-git add -p  # Stage hunks interactively (but explain to user)
+git add -p  # Stage hunks interactively
 ```
 
 Or stage specific files:
@@ -133,14 +133,10 @@ test(auth): add OAuth2 integration tests
 docs(auth): update authentication guide
 ```
 
-## Interactive Mode
+When asked to commit:
 
-When asked to commit, always:
-
-1. Show the user what will be committed (files and diff summary)
-2. Suggest the commit type and scope
-3. Propose a commit message
-4. Ask for confirmation before executing
+1. Analyze changes and determine commit type, scope, and message
+2. Stage and commit directly without asking for confirmation
 
 ## Push
 
