@@ -5,6 +5,6 @@
     { "from": "assets/configs/zed.jsonc", "to": "settings.json" }
   ],
   "external_links": [
-    { "from": "assets/configs/zed-snippets.json", "to": "~/.config/zed/snippets/snippets.json" }
+    { "from": "assets/configs/zed-snippets.json", "to": "~/.config/zed/snippets/markdown.json" }
   ]
 }
