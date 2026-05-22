@@ -106,6 +106,48 @@ except Exception:
 page.wait_for_timeout(1000)
 ```
 
+### All screenshots must be exactly 1920×1080 — never use `clip`
+
+Always set `viewport={"width": 1920, "height": 1080}` and call `page.screenshot()` with no `clip`. A clipped screenshot has wrong dimensions and looks cut. If a UI element is below the fold, scroll the page or its container so it lands inside the viewport first.
+
+### Capturing a loading spinner inside a scroll container
+
+`page.mouse.wheel()` and `el.scrollTop = el.scrollHeight` won't reliably trigger React scroll listeners in headless mode. The reliable pattern is to **intercept the API and never resolve the next-page request**, so `isFetching` stays `true` permanently. Then scroll the container with mouse wheel until the spinner appears, wait for `[role='loading-component']`, and screenshot at full 1920×1080:
+
+```python
+import threading
+
+fetched_once = {"v": False}
+block = threading.Event()
+
+def handle(route, request):
+    if "your-list-endpoint" in request.url:
+        if fetched_once["v"]:
+            block.wait(timeout=30)   # hangs — isFetching stays true forever
+            return
+        fetched_once["v"] = True
+    route.continue_()
+
+ctx.route("**/your-list-endpoint**", handle)
+
+# ... open the section, then scroll with mouse wheel ...
+box = page.locator("[class*='overflow-y-auto']").first.bounding_box()
+page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+for _ in range(10):
+    page.mouse.wheel(0, 3000)
+    page.wait_for_timeout(200)
+
+page.wait_for_selector("[role='loading-component']", timeout=8000)
+# scroll the container to bring spinner into viewport bottom
+page.evaluate("""() => {
+    const sc = document.querySelector('[class*="overflow-y-auto"]');
+    if (sc) sc.scrollTop = sc.scrollHeight;
+}""")
+page.wait_for_timeout(300)
+shot(page, "06-next-page-loading")   # full 1920×1080, no clip
+block.set()
+```
+
 ---
 
 ## Auth Patterns
