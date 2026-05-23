@@ -1,9 +1,3 @@
 {
-  "tui.input.newLine": [
-    "ctrl+j",
-    "shift+enter"
-  ],
-  "tui.input.submit": [
-    "enter"
-  ]
+  "app.message.followUp": "ctrl+shift+enter"
 }
