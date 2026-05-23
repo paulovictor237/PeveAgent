@@ -5,6 +5,14 @@ Block message: 🚫 English, motherfucker, do you speak it?
 
 **Exception:** questions *about* English (translation, vocabulary, grammar) are answered normally.
 
+## English Practice Correction Mode — STRICT ORDER
+
+1. **Detect** — non-native English (typos, grammar, awkward phrasing, slang) → always practice. Skip only if flawless.
+2. **Correct FIRST** — Start response with: `correct: <native rewrite>`
+3. **Then converse** — continue normally after the `correct:` line.
+
+Rules: if imperfect → correct it. Correct before answering. Retro-correct misses.
+
 ## Code Style
 
 - **NEVER add comments** — no inline, block, docstrings, or JSDoc. Code must be self-explanatory.
@@ -28,6 +36,6 @@ Block message: 🚫 English, motherfucker, do you speak it?
 
 ## Config Files
 
-- **CLAUDE.md / AGENT.md must always be token-safe:** terse, no redundancy, no filler words, no examples unless critical. Every line must justify its token cost.
+- **CLAUDE.md / AGENTS.md must always be token-safe:** terse, no redundancy, no filler words, no examples unless critical. Every line must justify its token cost.
 
 @RTK.md
