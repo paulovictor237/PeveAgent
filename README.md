@@ -10,7 +10,7 @@ assets/
 ├── agents/       # custom agents
 ├── commands/     # slash commands
 ├── configs/      # per-tool config files
-└── docs/         # AGENT.md, RTK.md (shared by all tools)
+└── docs/         # AGENTS.md, RTK.md (shared by all tools)
 
 tools/
 ├── claude.json   # links assets → ~/.claude
@@ -19,7 +19,7 @@ tools/
 └── zed.json      # links assets → ~/.config/zed
 ```
 
-`assets/docs/AGENT.md` is the single instruction file shared by all agent tools. Each tool's manifest maps it to whatever filename that tool expects (`CLAUDE.md`, `AGENTS.md`, etc.).
+`assets/docs/AGENTS.md` is the single instruction file shared by all agent tools. Each tool's manifest maps it to whatever filename that tool expects (`CLAUDE.md`, `AGENTS.md`, etc.).
 
 ## Setup
 
@@ -38,7 +38,7 @@ Drop a new manifest in `tools/<toolname>.json`:
   "tool": "cursor",
   "target_root": "~/.cursor",
   "links": [
-    { "from": "assets/docs/AGENT.md", "to": "AGENT.md" }
+    { "from": "assets/docs/AGENTS.md", "to": "AGENTS.md" }
   ],
   "external_links": []
 }

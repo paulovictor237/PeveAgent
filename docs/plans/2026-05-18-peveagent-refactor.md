@@ -8,7 +8,7 @@ Goal: clean dual-agent (Claude Code + Pi/OpenCode) config hub with one canonical
 PeveAgent/
 ├── README.md                          # New: project overview, agent split, setup
 ├── claude/                            # Claude Code assets → symlinked to ~/.claude/
-│   ├── CLAUDE.md                      # was AGENT.md (canonical Claude instructions)
+│   ├── CLAUDE.md                      # was AGENTS.md (canonical Claude instructions)
 │   ├── settings.json                  # Claude Code harness config (hooks, permissions, plugins)
 │   ├── .mcp.json                      # MCP server definitions
 │   ├── RTK.md                         # RTK token optimizer docs
@@ -48,7 +48,7 @@ PeveAgent/
 │   │   └── lm-studio.md              # was docs/lm-studio.mdx
 │   ├── plans/                         # Feature/spec plans (was docs/superpowers/plans)
 │   └── specs/                         # Design specs (was docs/superpowers/specs)
-├── AGENT.md                           # Pi agent instruction file (symlinked to by Pi)
+├── AGENTS.md                           # Pi agent instruction file (symlinked to by Pi)
 └── .gitignore
 ```
 
@@ -68,7 +68,7 @@ PeveAgent/
 ## Phase 2 — Reorganize Claude Code assets (src/ → claude/)
 
 ### 2.1 Create claude/ directory
-- [ ] Move `src/AGENT.md` → `claude/CLAUDE.md`
+- [ ] Move `src/AGENTS.md` → `claude/CLAUDE.md`
 - [ ] Move `src/settings.json` → `claude/settings.json`
 - [ ] Move `src/.mcp.json` → `claude/.mcp.json`
 - [ ] Move `src/RTK.md` → `claude/RTK.md`
@@ -146,15 +146,15 @@ MARKETPLACE_LINK_SRC="$PROJECT_DIR/marketplace"
 MARKETPLACE_LINK_DST="$HOME/.agents/skills"
 ```
 
-## Phase 6 — Fix AGENT.md duplication
+## Phase 6 — Fix AGENTS.md duplication
 
 ### 6.1 Canonical Pi agent config
-The root `AGENT.md` is read by Pi. Keep it as the canonical source for Pi agent rules at project level. But clarify the relationship:
-- [ ] Root `AGENT.md` = Pi agent instruction (stays, gets cleaned)
-- [ ] `claude/CLAUDE.md` = Claude Code instruction (was `src/AGENT.md`)
-- [ ] Remove duplicate content from one to the other — AGENT.md is for Pi, CLAUDE.md is for Claude
+The root `AGENTS.md` is read by Pi. Keep it as the canonical source for Pi agent rules at project level. But clarify the relationship:
+- [ ] Root `AGENTS.md` = Pi agent instruction (stays, gets cleaned)
+- [ ] `claude/CLAUDE.md` = Claude Code instruction (was `src/AGENTS.md`)
+- [ ] Remove duplicate content from one to the other — AGENTS.md is for Pi, CLAUDE.md is for Claude
 
-### 6.2 Root AGENT.md content
+### 6.2 Root AGENTS.md content
 Should be Pi-specific as it's read by Pi:
 ```
 # PeveAgent — Pi Agent Context
@@ -200,7 +200,7 @@ Document:
 
 | From | To | Action |
 |------|----|--------|
-| `src/AGENT.md` | `claude/CLAUDE.md` | move |
+| `src/AGENTS.md` | `claude/CLAUDE.md` | move |
 | `src/settings.json` | `claude/settings.json` | move + merge |
 | `src/.mcp.json` | `claude/.mcp.json` | move |
 | `src/RTK.md` | `claude/RTK.md` | move |

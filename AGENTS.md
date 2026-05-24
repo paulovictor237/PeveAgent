@@ -29,7 +29,7 @@ assets/
 ├── configs/         # Per-tool config files (claude-settings.json, pi-settings.json, etc.)
 ├── themes/          # Claude Code themes
 ├── extensions/      # Pi/OpenCode extensions (TypeScript)
-└── docs/            # AGENT.md (master instructions), RTK.md
+└── docs/            # AGENTS.md (master instructions), RTK.md
 
 tools/               # Symlink manifests: define target_root and files per tool
 scripts/
@@ -51,5 +51,5 @@ scripts/
 
 - `assets/configs/claude-settings.json` — Claude Code permissions, hooks, plugins
 - `assets/configs/claude-mcp.json` — MCP server definitions
-- `assets/docs/AGENT.md` — Master instruction file (synced to `~/.claude/CLAUDE.md`)
+- `assets/docs/AGENTS.md` — Master instruction file (synced to `~/.claude/CLAUDE.md`)
 - `tools/claude.json` — Defines what gets linked into `~/.claude/`

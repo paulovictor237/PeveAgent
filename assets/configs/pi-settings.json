@@ -20,6 +20,8 @@
     "deepseek/deepseek-v4-flash",
     "deepseek/deepseek-v4-pro",
     "google/gemini-3-flash-preview",
-    "google/gemini-3-pro-preview"
+    "google/gemini-3-pro-preview",
+    "google/gemini-3.5-flash",
+    "opencode-go/qwen3.6-plus"
   ]
 }
