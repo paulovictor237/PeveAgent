@@ -1,6 +1,7 @@
 ---
 name: capture-evidences
 description: Use when the user asks to capture screenshots, take evidences, document visual scenarios, or record the state of a feature for a branch. Triggers on phrases like "take screenshots", "create evidences", "capture scenarios", "evidence this feature", or any request to visually document UI behavior for a PR or ticket.
+disable-model-invocation: true
 ---
 
 # Capture Evidences

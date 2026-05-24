@@ -1,6 +1,7 @@
 ---
 name: prompt-engineer
 description: Converts raw prompts, ideas, or descriptions into high-performance, structured, and token-efficient AI prompts. Use when the user asks to "optimize this prompt", "create a prompt for X", "improve my prompt", "write an AI system prompt", or needs help with prompt engineering.
+disable-model-invocation: true
 ---
 
 ## Core Objective

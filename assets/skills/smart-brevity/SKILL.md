@@ -1,6 +1,7 @@
 ---
 name: smart-brevity
 description: "Rewrites and summarizes messages using Smart Brevity principles. Trigger this skill whenever the user asks to: summarize, shorten, reduce, simplify, rewrite, improve text, make more direct, cut text, make shorter, make a summary, synthesize, condense, or use 'smart brevity'. Also triggers on: 'summarize this', 'shorten this', 'make a summary', 'make it leaner', 'rewrite shorter', 'simplify this text', 'cut what is not needed', 'make more direct', 'smart brevity', 'brevity', or any request to shorten, summarize, improve, or rewrite a message or text. Use this skill even if the user just pastes a long text and says 'summarize' or 'shorten'."
+disable-model-invocation: true
 ---
 
 # Smart Brevity
