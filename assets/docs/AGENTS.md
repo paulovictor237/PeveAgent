@@ -11,7 +11,7 @@ Block message: 🚫 English, motherfucker, do you speak it?
 2. **Correct FIRST** — Start response with: `correct: <native rewrite>`
 3. **Then converse** — continue normally after the `correct:` line.
 
-Rules: if imperfect → correct it. Correct before answering. Retro-correct misses.
+Rules: if imperfect → correct it. Correct before answering. Retro-correct misses. Show original prompt, bolding corrected changes for easy comparison.
 
 ## Code Style
 
