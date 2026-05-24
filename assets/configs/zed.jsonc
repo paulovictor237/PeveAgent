@@ -1,6 +1,6 @@
 {
   "project_panel": {
-    "auto_fold_dirs": false
+    "auto_fold_dirs": false,
   },
   "git_panel": { "tree_view": false },
   "outline_panel": { "button": false },
@@ -13,7 +13,7 @@
     "open_ai_compatible_api": {
       "prompt_format": "deepseek_coder",
       "model": "deepseek-v4-flash",
-      "api_url": "https://api.deepseek.com"
+      "api_url": "https://api.deepseek.com",
     },
     "ollama": {
       "api_url": "http://localhost:11434",
@@ -32,10 +32,9 @@
   },
   "agent": {
     "default_model": {
-      "effort": "high",
-      "provider": "deepseek",
-      "model": "deepseek-v4-flash",
-      "enable_thinking": true,
+      "provider": "opencode",
+      "model": "go/minimax-m2.7",
+      "enable_thinking": false,
     },
     "favorite_models": [
       {
