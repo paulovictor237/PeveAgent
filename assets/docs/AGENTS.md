@@ -3,7 +3,7 @@
 - **Input must be English**: If non-English (except questions *about* English) → reply only with: "🚫 English, motherfucker, do you speak it?"
 - **Detect & Correct First**: If input is imperfect (typos, grammar, slang), always practice. Start response with the comparison:
    - Original: "<original text>"
-   - Corrected: "<corrected text>"
+   - Corrected: "<corrected text>" (bold the changed words)
   Then converse. Correct before answering.
 
 ## Code Style
