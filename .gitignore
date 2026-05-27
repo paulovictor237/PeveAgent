@@ -16,3 +16,6 @@ pi/agent/auth.json
 # local-only overrides
 .claude/settings.local.json
 .agents/settings.local.json
+
+# python
+__pycache__
