@@ -60,10 +60,13 @@ Diff: breaking API change
 
 Always include body for: breaking changes, security fixes, data migrations, anything reverting a prior commit. Never compress these into subject-only — future debuggers need the context.
 
-## Boundaries
+## Auto-Commit Flow
 
-Only generates the commit message. Does not run `git commit`, does not stage files, does not amend. Output the message as a code block ready to paste. "stop caveman-commit" or "normal mode": revert to verbose commit style.
+1. `git status --porcelain` — check for changes
+2. If nothing to commit, say so and stop
+3. `git add -A` — stage all changes
+4. Generate commit message per rules above
+5. `git commit -m "<message>"` — commit directly, no confirmation prompt
+6. `git push` — sync with remote
 
-## Post-Commit
-
-After committing, run `git push` to sync with remote.
+"stop caveman-commit" or "normal mode": revert to verbose commit style.
