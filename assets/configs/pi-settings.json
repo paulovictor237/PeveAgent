@@ -11,8 +11,8 @@
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
   "lastChangelogVersion": "0.75.5",
-  "defaultProvider": "google",
-  "defaultModel": "gemini-3.5-flash",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "qwen3.6-plus",
   "defaultThinkingLevel": "high",
   "theme": "dark",
   "hideThinkingBlock": true,
