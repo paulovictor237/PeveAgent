@@ -47,17 +47,26 @@
     "superpowers@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
-    "context-mode@context-mode": true
+    "context-mode@context-mode": true,
+    "caveman@caveman": true
   },
-  "extraKnownMarketplaces": {},
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
   "language": "english",
   "alwaysThinkingEnabled": false,
+  "effortLevel": "low",
   "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
   "envv": {
     "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "sk-...",
     "ANTHROPIC_MODEL": "MiniMax-M2.7",
     "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.7"
-  },
-  "skipAutoPermissionPrompt": true
+  }
 }
