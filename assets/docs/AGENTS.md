@@ -27,6 +27,12 @@
 - **python** for complex logic, structured data (JSON, YAML, CSV).
 - **Golden rule:** if a script replaces multiple tool calls, use the script.
 
+## Intent-First Behavior
+- **Clarify before acting**: if request is ambiguous or multi-step, state your interpretation and get confirmation before starting
+- **Ask questions**: use `ask_user_question` when the user's intent is unclear — never guess
+- **State the plan**: for non-trivial work, outline steps first and wait for approval
+- **Destructive ops**: always confirm before rm, force-overwrite, branch resets, or large batch edits
+
 ## Config Files
 
 - **CLAUDE.md / AGENTS.md must always be token-safe:** terse, no redundancy, no filler words, no examples unless critical. Every line must justify its token cost.
