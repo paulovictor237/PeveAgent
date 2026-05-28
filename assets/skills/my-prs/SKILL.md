@@ -17,14 +17,30 @@ Print the output directly to the user — it's already Slack-ready.
 
 ## Output Format
 
-```
-📋 N open PRs across M repos — X ready to merge, Y need review
+Two sections. Each PR shows three lines: project (`▸ <repo>`), PR title, and an explicit raw link (`→ <url>`).
 
-px-center/<repo>
-• [#<number>] <title>
-  🔗 <url>
-  🚧 Draft          (only if draft)
-  👀 Needs review (N approvals) | ✅ Ready to merge | 🔄 Changes requested
-  ✅ No conflicts | ⚠️ Has conflicts | ❓ Conflict state unknown
-  ✅ CI passing | ❌ CI failing | ⏳ CI pending | ➖ No CI
+**Ready to merge** = not draft + approved + mergeable + no pending reviewers + CI passing/none + not dirty. Three-line block per PR — no status lines (it's ready, just go).
+
+**Needs my attention** = everything else. Same three-line block, plus problem lines branched under the PR with `┣━`/`┗━` connectors. Only problems are shown — green/OK states are hidden.
+
 ```
+📋 MY OPEN PRs — N total
+✓ X ready · ⚠ Y needs attention
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━ ✓ READY TO MERGE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ▸ <repo>
+    <title>
+    → <url>
+
+━━━ ⚠ NEEDS MY ATTENTION ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ▸ <repo>
+    <title>
+    → <url>
+    ┗━ <symbol> <reason>
+```
+
+Problem-line symbols (each only if it applies):
+`🚧 draft` · `🔄 changes requested` · `👀 needs review (N approvals)` · `⛔ pending required review: <team/user>` · `⬇️ behind base branch` · `⚠ has conflicts` · `❓ merge state unknown` · `❌ CI failing` · `⏳ CI pending`
