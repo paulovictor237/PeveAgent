@@ -172,15 +172,9 @@ Identify parts of the system that may be affected. Prefer business language:
 ### Checkbox fields (if they exist in the template)
 Leave all checkboxes unchecked — it is the team's responsibility to fill them out.
 
-## Step 5 — Confirm and open the PR
+## Step 5 — Open the PR
 
-After generating the description, show the text to the user and ask:
-
-```
-Description generated. Do you want to open the PR now pointing to `BASE_BRANCH`? [Y/n]
-```
-
-If the user confirms (Enter or "Y"), open the PR with:
+After generating the description, open the PR directly:
 
 ```bash
 gh pr create \
@@ -192,8 +186,6 @@ gh pr create \
 EOF
 )"
 ```
-
-The title should be automatically generated from the branch name and/or Jira ticket, following the pattern `[APX-1234] Short description of what was done`. If there is no ticket, use a concise description of what was done.
 
 Return the created PR URL to the user.
 

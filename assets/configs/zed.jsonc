@@ -32,8 +32,9 @@
   },
   "agent": {
     "default_model": {
-      "provider": "opencode",
-      "model": "go/minimax-m2.7",
+      "effort": "high",
+      "provider": "google",
+      "model": "gemini-3-flash-preview",
       "enable_thinking": false,
     },
     "favorite_models": [

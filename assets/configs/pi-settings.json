@@ -2,17 +2,17 @@
   "packages": [
     "npm:context-mode",
     "npm:pi-subagents",
-    "npm:pi-mcp-adapter",
     "npm:pi-rewind",
     "npm:@juicesharp/rpiv-todo",
     "npm:pi-fff",
     "npm:pi-hermes-memory",
     "npm:@spences10/pi-lsp",
-    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.75.5",
+  "lastChangelogVersion": "0.76.0",
   "defaultProvider": "opencode-go",
-  "defaultModel": "qwen3.6-plus",
+  "defaultModel": "minimax-m2.7",
   "defaultThinkingLevel": "high",
   "theme": "dark",
   "hideThinkingBlock": true,
