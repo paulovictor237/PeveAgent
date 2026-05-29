@@ -8,13 +8,14 @@
     "npm:pi-hermes-memory",
     "npm:@spences10/pi-lsp",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:pi-mcp-adapter"
+    "npm:pi-mcp-adapter",
+    "npm:@spences10/pi-themes"
   ],
   "lastChangelogVersion": "0.77.0",
   "defaultProvider": "google",
   "defaultModel": "gemini-3.1-pro-preview-customtools",
   "defaultThinkingLevel": "low",
-  "theme": "dark",
+  "theme": "custom-pastel",
   "hideThinkingBlock": true,
   "enabledModels": [
     "deepseek/deepseek-v4-flash",
