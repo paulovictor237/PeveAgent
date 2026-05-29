@@ -81,9 +81,6 @@
       "favorite_models": ["google/gemini-3-flash-preview"],
       "type": "registry",
     },
-    "codex-acp": {
-      "type": "registry",
-    },
     "gemini": {
       "type": "registry",
     },
