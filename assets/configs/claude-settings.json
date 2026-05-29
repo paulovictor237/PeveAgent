@@ -20,21 +20,7 @@
     ],
     "defaultMode": "auto"
   },
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/peon-ping/scripts/hook-handle-rename.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
+"statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
     "padding": 0

@@ -10,19 +10,19 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.76.0",
-  "defaultProvider": "opencode-go",
-  "defaultModel": "minimax-m2.7",
-  "defaultThinkingLevel": "high",
+  "lastChangelogVersion": "0.77.0",
+  "defaultProvider": "google",
+  "defaultModel": "gemini-3.1-pro-preview-customtools",
+  "defaultThinkingLevel": "low",
   "theme": "dark",
   "hideThinkingBlock": true,
   "enabledModels": [
     "deepseek/deepseek-v4-flash",
     "deepseek/deepseek-v4-pro",
-    "google/gemini-3-flash-preview",
-    "google/gemini-3-pro-preview",
-    "google/gemini-3.5-flash",
     "opencode-go/qwen3.6-plus",
-    "opencode-go/minimax-m2.7"
+    "opencode-go/minimax-m2.7",
+    "google/gemini-3.1-flash-lite-preview",
+    "google/gemini-3.1-pro-preview-customtools",
+    "google/gemini-3.5-flash"
   ]
 }
