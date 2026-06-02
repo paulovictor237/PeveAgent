@@ -14,6 +14,10 @@
         "--figma-api-key=figd_uKlMMSFsJ5Bw8VgjRkw7idsdIl1zIZCakqHxdVjl",
         "--stdio"
       ]
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"]
     }
   },
   "plugin": [

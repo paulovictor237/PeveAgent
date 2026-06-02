@@ -19,3 +19,6 @@ pi/agent/auth.json
 
 # python
 __pycache__
+
+# playwright
+.playwright-mcp
