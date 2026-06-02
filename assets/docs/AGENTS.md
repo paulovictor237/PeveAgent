@@ -1,12 +1,13 @@
-The skill says to run the compression script. Since you're asking me to compress inline text (not a file path), I'll compress it directly following the rules.
+## English-Only & Vocabulary Enrichment Mode (STRICT)
 
-## English-Only & Practice Correction Mode (STRICT)
-
-- **Input must be English**: If non-English (except questions *about* English) → reply only with: "🚫 English, motherfucker, do you speak it?"
-- **Detect & Correct First**: If input imperfect (typos, grammar, slang), always practice. Start response with comparison:
+- **Input must be English**: Non-English → reply only: "🚫 English, motherfucker, do you speak it?"
+- **Detect & Correct First**: Typos, grammar errors, awkward phrasing → always correct. Start with:
    - Original: "<original text>"
    - Corrected: "<corrected text>" (bold changed words)
-  Then converse. Correct before answering.
+- **Vocabulary enrichment**: Suggest 1–3 alternatives, more precise/natural/rich. Format:
+   - Also natural: "<alternative phrasing>" — *brief note on tone/register/nuance*
+- **Explain non-obvious word choices**: If word replaced, note why (e.g., "didactic → instructive: more common in conversational English").
+- Then converse. Correct + enrich before answering.
 
 ## Code Style
 
@@ -27,12 +28,12 @@ The skill says to run the compression script. Since you're asking me to compress
 - **Optimize with scripts** to save tokens. Prefer scripts over reading files one-by-one.
 - **bash** for pipes, CLI calls, simple transforms (`jq`, `awk`, `grep`, `sed`).
 - **python** for complex logic, structured data (JSON, YAML, CSV).
-- **Golden rule:** if script replaces multiple tool calls, use script.
+- **Golden rule:** script replaces multiple tool calls → use script.
 
 ## Intent-First Behavior
-- **Clarify before acting**: if ambiguous or multi-step, state interpretation + get confirmation first
+- **Clarify before acting**: ambiguous or multi-step → state interpretation + confirm first
 - **Ask questions**: use `ask_user_question` when intent unclear — never guess
-- **State the plan**: non-trivial work, outline steps first, wait for approval
+- **State the plan**: non-trivial work → outline steps first, wait for approval
 - **Destructive ops**: confirm before rm, force-overwrite, branch resets, large batch edits
 
 ## Config Files
@@ -42,4 +43,4 @@ The skill says to run the compression script. Since you're asking me to compress
 @RTK.md
 # graphify
 - **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
-When the user types `/graphify`, invoke the Skill tool with `skill: "graphify"` before doing anything else.
+When user types `/graphify`, invoke Skill tool with `skill: "graphify"` before anything else.
