@@ -63,7 +63,7 @@ def is_ready(r):
     return (
         not r["draft"]
         and r["decision"] == "APPROVED"
-        and r["mergeable"] == "MERGEABLE"
+        and r["mergeable"] in ("MERGEABLE", "UNKNOWN")
         and not r["pending_reviewers"]
         and r["ci"] in ("PASS", "NONE")
         and r["merge_state"] != "DIRTY"
@@ -95,8 +95,6 @@ def attention_lines(r):
         lines.append("⬇️ behind base branch")
     if r["mergeable"] == "CONFLICTING" or r["merge_state"] == "DIRTY":
         lines.append("☢️ has conflicts")
-    elif r["mergeable"] == "UNKNOWN":
-        lines.append("❓ merge state unknown")
     if r["ci"] == "FAIL":
         lines.append("💥 CI failing")
     elif r["ci"] == "PENDING":
@@ -110,25 +108,38 @@ print("━" * 48)
 print()
 
 
-def print_pr(r, branch_lines=None):
-    print(f"▸ {short_repo(r['repo'])}")
-    print(f"  {r['title']}")
-    print(f"  → {r['url']}")
-    if branch_lines:
-        for i, line in enumerate(branch_lines):
-            connector = "┗━" if i == len(branch_lines) - 1 else "┣━"
-            print(f"  {connector} {line}")
+def group_by_repo(prs):
+    groups = {}
+    for r in prs:
+        groups.setdefault(r["repo"], []).append(r)
+    return groups
+
+
+def print_group(repo, prs, get_lines=None):
+    count = len(prs)
+    print(f"▸ {short_repo(repo)} ({count})")
+    for i, r in enumerate(prs):
+        is_last = i == len(prs) - 1
+        connector = "┗━" if is_last else "┣━"
+        indent = "    " if is_last else "┃   "
+        print(f"  {connector} {r['title']}")
+        print(f"  {indent}→ {r['url']}")
+        if get_lines:
+            lines = get_lines(r)
+            for j, line in enumerate(lines):
+                sub = "┗━" if j == len(lines) - 1 else "┣━"
+                print(f"  {indent}{sub} {line}")
     print()
 
 
 if ready_prs:
     print("━━━ ✅ READY TO MERGE " + "━" * 28)
     print()
-    for r in ready_prs:
-        print_pr(r)
+    for repo, prs in group_by_repo(ready_prs).items():
+        print_group(repo, prs)
 
 if attention_prs:
     print("━━━ 🔥 NEEDS MY ATTENTION " + "━" * 24)
     print()
-    for r in attention_prs:
-        print_pr(r, attention_lines(r))
+    for repo, prs in group_by_repo(attention_prs).items():
+        print_group(repo, prs, attention_lines)
