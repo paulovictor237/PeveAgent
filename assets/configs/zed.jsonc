@@ -2,8 +2,7 @@
   "project_panel": {
     "auto_fold_dirs": false,
   },
-  "git_panel": { "sort_by_path": false,
-                 "tree_view": true },
+  "git_panel": { "sort_by_path": false, "tree_view": false },
   "outline_panel": { "button": false },
   "collaboration_panel": { "button": false },
   "search": { "button": false },
@@ -32,10 +31,13 @@
     "dark": "Catppuccin Mocha",
   },
   "agent": {
+    "tool_permissions": {
+      "default": "allow",
+    },
     "default_model": {
-      "effort": "high",
+      "effort": "medium",
       "provider": "google",
-      "model": "gemini-3-flash-preview",
+      "model": "gemini-3.5-flash",
       "enable_thinking": false,
     },
     "favorite_models": [
