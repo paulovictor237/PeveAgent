@@ -2,7 +2,7 @@
   "project_panel": {
     "auto_fold_dirs": false,
   },
-  "git_panel": { "sort_by_path": false, "tree_view": false },
+  "git_panel": { "sort_by_path": false, "tree_view": true },
   "outline_panel": { "button": false },
   "collaboration_panel": { "button": false },
   "search": { "button": false },

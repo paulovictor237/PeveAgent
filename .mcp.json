@@ -28,6 +28,10 @@
     "playwright": {
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "c4ai-sse": {
+      "type": "sse",
+      "url": "http://localhost:11235/mcp/sse"
     }
   }
 }

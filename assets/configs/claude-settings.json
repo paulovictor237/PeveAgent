@@ -20,7 +20,7 @@
     ],
     "defaultMode": "auto"
   },
-"statusLine": {
+  "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
     "padding": 0
@@ -54,5 +54,6 @@
     "ANTHROPIC_AUTH_TOKEN": "sk-...",
     "ANTHROPIC_MODEL": "MiniMax-M2.7",
     "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.7"
-  }
+  },
+  "skipWorkflowUsageWarning": true
 }
