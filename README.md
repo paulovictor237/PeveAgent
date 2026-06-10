@@ -82,11 +82,3 @@ Audio notifications for Claude Code.
 ```bash
 brew install peonping/tap/peon-ping && peon-ping-setup
 ```
-
-### CodeGraph
-
-Semantic code graph for intelligent navigation.
-
-```bash
-npx @colbymchenry/codegraph
-```
