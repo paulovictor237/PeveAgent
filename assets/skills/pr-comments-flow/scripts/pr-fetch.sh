@@ -29,6 +29,8 @@ gh api "repos/${REPO}/pulls/${PR_NUMBER}/comments" \
     path: .path,
     line: (.line // .original_line),
     body: .body,
+    user: .user.login,
+    created_at: .created_at,
     node_id: .node_id,
     diff_hunk: (.diff_hunk | split("\n") | .[-6:] | join("\n"))
   }]' | jq -s 'add // []' > "$TMP_RAW"
@@ -82,6 +84,8 @@ jq -s --arg pr "$PR_NUMBER" --arg repo "$REPO" '
     path: .[0].path,
     line: .[0].line,
     body: .[0].body,
+    user: .[0].user,
+    created_at: .[0].created_at,
     node_id: .[0].node_id,
     thread_id: .[0].thread_id,
     diff_hunk: .[0].diff_hunk,
@@ -107,7 +111,7 @@ jq -s --arg pr "$PR_NUMBER" --arg repo "$REPO" '
 # 4. Inicializa arquivo de progresso (se não existir)
 if [ ! -f "$PROGRESS" ]; then
   TOTAL=$(jq '.total' "$OUTPUT")
-  echo "{\"pr\": $PR_NUMBER, \"applied\": 0, \"skipped\": 0, \"resolved\": 0, \"total\": $TOTAL, \"statuses\": {}}" > "$PROGRESS"
+  echo "{\"pr\": $PR_NUMBER, \"applied\": 0, \"skipped\": 0, \"ignored\": 0, \"resolved\": 0, \"total\": $TOTAL, \"statuses\": {}}" > "$PROGRESS"
   echo "   → Progresso inicializado"
 fi
 

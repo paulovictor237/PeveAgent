@@ -126,7 +126,7 @@ Proceed directly to Step 4 without waiting for a response.
 ~/.claude/skills/pr-comments-flow/scripts/pr-next-comment.sh {PR_NUMBER}
 ```
 
-This returns a JSON with: `id`, `path`, `line`, `body`, `thread_id`, `diff_hunk`, `duplicate_count`.
+This returns a JSON with: `id`, `path`, `line`, `body`, `user`, `created_at`, `thread_id`, `diff_hunk`, `duplicate_count`.
 
 If `duplicate_count > 0`, add a note: `⚠️ This comment appeared {N+1}x from different reviewers.`
 
@@ -148,8 +148,8 @@ Always show in this format:
 [X/TOTAL]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💬 Reviewer:
-"This method can throw an unhandled exception if $amount is negative."
+💬 Reviewer (@{user} on {created_at}):
+"{body}"
 
 📌 Diff:
   (last lines of diff_hunk)
@@ -167,8 +167,10 @@ options:
     description: "Implements the proposed change"
   - label: "Apply + CLAUDE.md"
     description: "Implements and adds a rule to CLAUDE.md to reinforce the pattern"
-  - label: "Skip"
-    description: "Does not apply; marks as handled and moves to the next"
+  - label: "Skip (Resolve on GitHub)"
+    description: "Does not apply, but marks thread as resolved on GitHub and moves to the next"
+  - label: "Ignore (Keep Open on GitHub)"
+    description: "Does not apply, does NOT resolve thread on GitHub (keeps it open), and moves to the next"
   - label: "Discuss / Reply on PR"
     description: "Suggests something different or posts a reply to the thread without changing code"
 ```
@@ -180,6 +182,7 @@ Wait for a response before any action.
 - **Apply** — implement. After implementing, briefly confirm.
 - **Apply + CLAUDE.md** — implement and then go directly to Step 6 to propose the instruction without asking again.
 - **Skip** — do not change anything. Move to the next.
+- **Ignore** — do not change anything and do not resolve on GitHub. Move to the next.
 - **Discuss / Reply on PR** — use AskUserQuestion to distinguish:
 
 ```
@@ -216,7 +219,9 @@ Only post after confirming "Post":
 
 ## Step 5 — Update progress and resolve thread
 
-After each comment (applied or consciously skipped), execute **in parallel**:
+After each comment:
+
+- For **Applied** or **Consciously Skipped** (`Apply`, `Apply + CLAUDE.md`, or `Skip`), execute **in parallel**:
 
 ```bash
 # Update local progress
@@ -224,6 +229,13 @@ After each comment (applied or consciously skipped), execute **in parallel**:
 
 # Mark thread as resolved on GitHub
 ~/.claude/skills/pr-comments-flow/scripts/pr-resolve.sh {THREAD_ID}
+```
+
+- For **Ignored** (`Ignore`), execute:
+
+```bash
+# Update local progress with "ignored" status (does NOT resolve the thread on GitHub)
+~/.claude/skills/pr-comments-flow/scripts/pr-update-progress.sh {PR_NUMBER} {COMMENT_ID} ignored
 ```
 
 If `thread_id` is `null`, skip resolution without error.
@@ -347,6 +359,7 @@ Run `git stash pop` manually to resolve conflicts.
 
   Applied:              3
   Skipped:              1
+  Ignored:              1
   Resolved on GitHub:   4
 
   Rules added to CLAUDE.md: 1
@@ -369,4 +382,5 @@ Run `git stash pop` manually to resolve conflicts.
 - **CLAUDE.md only on demand** — Step 6 is only executed when the user chooses `[2] Apply + CLAUDE.md`. Never ask automatically after applying. When triggered, propose the rule directly without asking again. Always use the `CLAUDE.md` nearest to the CWD. Only use `CLAUDE.local.md` if the user explicitly requests it.
 - **Mandatory incremental commit** — after each applied comment (Step 6b), commit immediately with a message consistent with the change. Do not ask, just commit. Step 8 only handles remaining pending changes.
 - **Mandatory push at the end** — after Step 8, push without asking.
+- **No translation** — never translate or modify the comment body — always show it exactly as retrieved from GitHub, including the original author's username and the comment creation timestamp.
 - **Language**: always respond in English.

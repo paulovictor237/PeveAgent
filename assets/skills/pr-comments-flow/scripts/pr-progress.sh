@@ -10,4 +10,4 @@ if [ ! -f "$PROGRESS" ]; then
   exit 1
 fi
 
-jq -r '"PR #\(.pr) — Progresso\n  Total:     \(.total)\n  Aplicados: \(.applied)\n  Pulados:   \(.skipped)\n  Resolvidos:\(.resolved)\n  Pendentes: \(.total - .applied - .skipped)"' "$PROGRESS"
+jq -r '"PR #\(.pr) — Progresso\n  Total:     \(.total)\n  Aplicados: \(.applied)\n  Pulados:   \(.skipped)\n  Ignorados: \(.ignored // 0)\n  Resolvidos:\(.resolved)\n  Pendentes: \(.total - .applied - .skipped - (.ignored // 0))"' "$PROGRESS"
