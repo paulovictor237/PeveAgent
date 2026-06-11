@@ -1,29 +1,40 @@
 ---
 name: pr-comments-flow
-description: "Interactive PR comment review — goes through each review suggestion one by one, decides with the user how to proceed, marks as resolved on GitHub, and learns patterns for CLAUDE.md. Use this skill whenever the user wants to review PR comments, respond to code review suggestions, resolve PR threads, or says: 'let's review the PR comments', 'let's see the PR comments', 'there are comments on the PR to resolve', 'show me what the reviewer asked for', 'let's go through the comments', '/pr-comments-flow', or any variation of wanting to work on code review feedback."
-allowed-tools: Bash, Read, Glob, Grep
+description: "Step-by-step interactive flow to review, apply, skip, or reply to open GitHub PR review comments. Triggers on: /pr-comments-flow, 'review PR comments', 'go through PR comments', 'address review feedback', 'respond to PR review', 'resolve review threads'."
+allowed-tools: Bash, Read, Edit, Write, Glob, Grep, AskUserQuestion, TodoWrite
 disable-model-invocation: true
 ---
 
 # Skill: Interactive PR Comment Review
 
+## Flow Overview
+
+```
+1 Identify PR → 1b Stash → 2 Fetch → 3 Summary →
+LOOP per comment: [4 Review → 5 Progress/Resolve → (6 CLAUDE.md) → 6b Commit] →
+7 Next file → repeat LOOP until pr-next-comment.sh returns no pending comment →
+8 Final commit → 9 Push → 9b Unstash → 10 Summary
+```
+
+The loop ends ONLY when `pr-next-comment.sh` returns empty/no pending comment. Never stop mid-loop because the conversation is long; state lives in `/tmp/pr-{N}-progress.json`, so after a context compaction resume by running `pr-progress.sh` then `pr-next-comment.sh`.
+
 ## Available Scripts
 
-All scripts are in `~/.claude/skills/pr-comments-flow/scripts/` and must be called via the Bash tool.
+Scripts in `~/.claude/skills/pr-comments-flow/scripts/` (set `SKILL_SCRIPTS=~/.claude/skills/pr-comments-flow/scripts` once and reuse). Call via Bash tool.
 
 | Script | Use | Description |
 |--------|-----|-------------|
-| `pr-fetch.sh <PR>` | Step 2 | Fetches, deduplicates, and saves comments to `/tmp/pr-{N}-comments.json` |
-| `pr-next-comment.sh [PR]` | Step 4 | Returns the next pending comment as JSON |
-| `pr-excerpt.sh <file> <line> [ctx=15]` | Step 4 | Extracts file snippet around a specific line |
-| `pr-reply.sh <comment_id> <body>` | Step 5 | Posts a reply to the comment thread |
-| `pr-resolve.sh <thread_id>` | Step 5 | Marks thread as resolved on GitHub |
-| `pr-update-progress.sh <PR> <id> <status>` | Step 5 | Updates progress file (`applied`/`skipped`) |
-| `pr-progress.sh [PR]` | Anytime | Displays current progress summary |
+| `pr-fetch.sh <PR>` | Step 2 | Fetch, deduplicate, save comments to `/tmp/pr-{N}-comments.json` |
+| `pr-next-comment.sh [PR]` | Step 4 | Return next pending comment JSON |
+| `pr-excerpt.sh <file> <line> [ctx=15]` | Step 4 | Extract file snippet around line |
+| `pr-reply.sh <comment_id> <body>` | Step 5 | Post reply to thread |
+| `pr-resolve.sh <thread_id>` | Step 5 | Mark thread resolved on GitHub |
+| `pr-update-progress.sh <PR> <id> <status>` | Step 5 | Update progress file (`applied`/`skipped`/`ignored`) |
+| `pr-progress.sh [PR]` | Anytime | Show current progress summary |
 
 **State files in `/tmp/`:**
-- `/tmp/pr-{N}-comments.json` — pre-processed and deduplicated comments
-- `/tmp/pr-{N}-progress.json` — session progress tracking
+- `/tmp/pr-{N}-comments.json` — pre-processed comments
+- `/tmp/pr-{N}-progress.json` — progress tracking
 
 ---
 
@@ -33,88 +44,76 @@ All scripts are in `~/.claude/skills/pr-comments-flow/scripts/` and must be call
 gh pr view --json number,title,url 2>/dev/null
 ```
 
-If found, proceed directly — just inform in the first message:
+If found, proceed. Inform:
 
 ```
-PR #123 — PR Title
+PR #{number} — {title}
 Fetching comments...
 ```
 
-If it fails or is not found, use AskUserQuestion:
+If fail/not found, use AskUserQuestion:
 
-```
-question: "I couldn't find an open PR on this branch. What is the number?"
+```yaml
+question: "No open PR found on branch. What is the number?"
 header: "PR"
 options:
   - label: "Provide number"
-    description: "Enter the PR number in the 'Other' field"
+    description: "Enter PR number in 'Other' field"
   - label: "Cancel"
-    description: "Ends the review"
+    description: "End review"
 ```
 
-If the user cancels, end. If provided via "Other", use the given number.
+If cancel, end. If provided, use given number.
 
 ---
 
 ## Step 1b — Save local changes
 
-Immediately after confirming the PR, silently save any uncommitted changes:
+Silently save uncommitted changes:
 
 ```bash
 git stash --include-untracked
 ```
 
-- If output contains `Saved working directory` → record `HAS_STASH=true`
-- If output is `No local changes to save` → record `HAS_STASH=false`
-- **Do not inform the user** — proceed silently.
+- If output has `Saved working directory` → remember `HAS_STASH=true` (you must restore in Step 9b)
+- If output is `No local changes to save` → `HAS_STASH=false`
+- If command fails for another reason → warn user and ask whether to continue
+- Do not inform user on success.
 
 ---
 
 ## Step 2 — Pre-process comments
 
-Always re-fetch from GitHub to ensure up-to-date data:
+Re-fetch comments:
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-fetch.sh {PR_NUMBER}
 ```
 
-If previous progress exists (`/tmp/pr-{N}-progress.json`), after fetching use AskUserQuestion:
-
-```
-question: "I found progress from a previous session (X applied, Y skipped). How should we proceed?"
-header: "Progress"
-options:
-  - label: "Continue from where I left off"
-    description: "Skips already handled comments"
-  - label: "Start from scratch"
-    description: "Revisits all comments, including those already handled"
-```
-
-If "Start from scratch", delete the progress file:
-```bash
-rm /tmp/pr-{PR_NUMBER}-progress.json
-```
-
-If no pending comments are found, inform: `No open review comments found for this PR.`
+If no comments, inform: `No open review comments found for this PR.`
 
 ---
 
 ## Step 3 — Present summary
 
-Read the comments file and show the summary organized by file. **Read only the necessary fields for the summary:**
+Summarize files. Read only necessary fields:
 
 ```bash
 jq -r '.files[] | "  📄 \(.path) (\(.comments | length) comment(s))"' /tmp/pr-{N}-comments.json
 ```
 
+Format:
 ```
-Found X comments in Y file(s):
+📁 ACTIVE REVIEW COMMENTS SUMMARY
 
   📄 src/services/PaymentService.ts (2 comments)
-  📄 src/Models/Contract.ts (1 comment)
+  📄 src/models/Contract.ts (1 comment)
+
+  Total: X active comments in Y file(s)
+--------------------------------------------------
 ```
 
-Proceed directly to Step 4 without waiting for a response.
+Create a TodoWrite item per file (`{path} (N comments)`). Proceed to Step 4 without waiting.
 
 ---
 
@@ -126,91 +125,109 @@ Proceed directly to Step 4 without waiting for a response.
 ~/.claude/skills/pr-comments-flow/scripts/pr-next-comment.sh {PR_NUMBER}
 ```
 
-This returns a JSON with: `id`, `path`, `line`, `body`, `user`, `created_at`, `thread_id`, `diff_hunk`, `duplicate_count`.
+Returns JSON: `id`, `path`, `line`, `body`, `user`, `created_at`, `thread_id`, `diff_hunk`, `duplicate_count`.
 
-If `duplicate_count > 0`, add a note: `⚠️ This comment appeared {N+1}x from different reviewers.`
+If output is empty or reports no pending comments, all comments are handled — go to Step 8.
 
-### 4b. Get file context (lazy — only relevant lines)
+If `duplicate_count > 0`, note: `⚠️ This comment appeared {N+1}x from different reviewers.`
+
+### 4b. Get file context
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-excerpt.sh "{path}" {line}
 ```
 
-**Do not use the Read tool to read the entire file.** Use `pr-excerpt.sh` which returns ±15 lines around the commented line. Only use Read if you need much broader context and it is clearly necessary.
+Only use `pr-excerpt.sh` (±15 lines around commented line). Do not use Read tool unless broader context is required.
 
 ### 4c. Display and propose
 
-Always show in this format:
+MANDATORY SEQUENCE — two distinct outputs, in order:
+1. Print the full display block below as a TEXT message in chat (comment body, diff, proposed change). This is the user's only way to see the comment — never skip or summarize it.
+2. Only AFTER the display block is printed, call AskUserQuestion.
 
+Calling AskUserQuestion without first printing the display block is a hard error: the user would be choosing blind.
+
+Always show exactly in this format. Header/diff inside a plain fence; PROPOSED CHANGE must be a separate top-level fenced block with the language tag (NOT nested inside another fence), so the terminal applies syntax highlighting:
+
+````
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📄 src/services/PaymentService.ts — line 42
-[X/TOTAL]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+==================================================
+💬 REVIEW COMMENT [X of TOTAL]
+==================================================
+📄 File: {path} — Line {line}
+👤 Reviewer: @{user} ({created_at})
 
-💬 Reviewer (@{user} on {created_at}):
 "{body}"
 
-📌 Diff:
+--------------------------------------------------
+📌 ORIGINAL DIFF:
   (last lines of diff_hunk)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Analyze the comment + file context, write the proposal in text, then use AskUserQuestion:
+💡 **PROPOSED CHANGE:**
 
+```{language}
+// Exact code showing the proposed new code or diff
 ```
-question: "💡 What I plan to do: {summarized proposal}. How should we proceed?"
+````
+
+Write detailed code block of proposed change above, then ask:
+
+Use EXACTLY these 4 options and descriptions — do not rename, drop, or merge them. AskUserQuestion accepts max 4 options — never add a 5th.
+
+Recommendation rule: decide which option best fits your assessment of the comment (e.g. `Apply` if the change is correct and worth making, `Skip` if already addressed or not applicable). Append " (Recommended)" to that option's label and move it to FIRST position; keep the others in the order below. ALL 4 options must appear in every question — recommending one never removes the others:
+
+Descriptions are schema-required — keep them exactly this short, never longer:
+
+```yaml
+question: "Proposed change generated. How should we proceed?"
 header: "Comment X/TOTAL"
 options:
   - label: "Apply"
-    description: "Implements the proposed change"
+    description: "Write change to file"
   - label: "Apply + CLAUDE.md"
-    description: "Implements and adds a rule to CLAUDE.md to reinforce the pattern"
+    description: "Write change + save rule"
   - label: "Skip (Resolve on GitHub)"
-    description: "Does not apply, but marks thread as resolved on GitHub and moves to the next"
-  - label: "Ignore (Keep Open on GitHub)"
-    description: "Does not apply, does NOT resolve thread on GitHub (keeps it open), and moves to the next"
-  - label: "Discuss / Reply on PR"
-    description: "Suggests something different or posts a reply to the thread without changing code"
+    description: "Reply in PT + resolve"
+  - label: "Ignore (Keep Open)"
+    description: "Keep thread open"
 ```
 
-Wait for a response before any action.
+Discuss/Reply has no dedicated option (4-option cap): the user types free text via the built-in "Type something" entry. Treat any typed text as Discuss/Reply input (see 4d).
+
+Option annotations (TAB): the user may select an option AND append a note (e.g. "Apply, but use useMemo instead"). ALWAYS honor the note — adjust the proposal per the note before executing the chosen action. If the note changes the code, show the revised code block before applying.
+
+Wait for response.
 
 ### 4d. Responses
 
-- **Apply** — implement. After implementing, briefly confirm.
-- **Apply + CLAUDE.md** — implement and then go directly to Step 6 to propose the instruction without asking again.
-- **Skip** — do not change anything. Move to the next.
-- **Ignore** — do not change anything and do not resolve on GitHub. Move to the next.
-- **Discuss / Reply on PR** — use AskUserQuestion to distinguish:
+- **Apply** — write proposed code to file via Edit tool (must match preview exactly). Briefly confirm.
+- **Apply + CLAUDE.md** — write proposed code to file via Edit tool, go to Step 6.
+- **Skip** — no code change. Before resolving, ALWAYS post a reply on the thread in Portuguese explaining why the comment is being skipped (e.g. "Já tratado em outro ponto do PR" / "Decidimos manter a abordagem atual porque…"):
 
-```
-question: "How do you want to proceed?"
-header: "Action"
-options:
-  - label: "Discuss"
-    description: "Suggest a different approach and I will update the proposal"
-  - label: "Reply on PR"
-    description: "I will draft a reply for the GitHub thread without changing code"
+```bash
+~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "{EXPLICAÇÃO_EM_PORTUGUÊS}"
 ```
 
-If **Discuss**: listen to the suggestion via "Other", update the proposal, and use AskUserQuestion again (Step 4c).
+Then mark resolved on GitHub (Step 5), move next.
+- **Ignore (Keep Open)** — no code change, keep thread open on GitHub, move next.
+- **Typed free text ("Other")** — interpret intent:
+  - Feedback/disagreement about the proposal → **Discuss**: update proposal with the feedback, re-display Step 4c.
+  - Request to answer the reviewer → **Reply on PR**: draft reply, confirm before posting.
 
-If **Reply on PR**: draft the reply in text and use AskUserQuestion to confirm:
+Reply confirmation flow:
 
-```
-question: "Confirm sending this reply to the thread?\n\n{reply text}"
+```yaml
+question: "Post this reply?\n\n{reply text}"
 header: "Reply on PR"
 options:
   - label: "Post"
-    description: "Sends the reply to the GitHub thread"
+    description: "Send reply to GitHub thread"
   - label: "Cancel"
-    description: "Does not post anything"
+    description: "Cancel reply"
 ```
 
-Only post after confirming "Post":
-
+If Post, run:
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "{REPLY_BODY}"
 ```
@@ -221,109 +238,96 @@ Only post after confirming "Post":
 
 After each comment:
 
-- For **Applied** or **Consciously Skipped** (`Apply`, `Apply + CLAUDE.md`, or `Skip`), execute **in parallel**:
+- For `Apply`, `Apply + CLAUDE.md`, or `Skip`, run both in parallel (two Bash calls in one message):
 
 ```bash
 # Update local progress
 ~/.claude/skills/pr-comments-flow/scripts/pr-update-progress.sh {PR_NUMBER} {COMMENT_ID} {applied|skipped}
 
-# Mark thread as resolved on GitHub
+# Resolve on GitHub
 ~/.claude/skills/pr-comments-flow/scripts/pr-resolve.sh {THREAD_ID}
 ```
 
-- For **Ignored** (`Ignore`), execute:
+- For `Ignore`, run:
 
 ```bash
-# Update local progress with "ignored" status (does NOT resolve the thread on GitHub)
+# Update local progress (does NOT resolve thread)
 ~/.claude/skills/pr-comments-flow/scripts/pr-update-progress.sh {PR_NUMBER} {COMMENT_ID} ignored
 ```
 
-If `thread_id` is `null`, skip resolution without error.
-
-> If the resolution script fails, notify and continue.
+If `thread_id` is `null`, skip resolution silently.
+If resolution script fails, notify and continue.
 
 ---
 
 ## Step 6 — Propose learning for CLAUDE.md
 
-This step is only executed when the user chose the **[2] Apply + CLAUDE.md** option in Step 4d. Do not ask again — go straight to the proposal.
+Triggered ONLY on `Apply + CLAUDE.md`. Direct proposal, do not ask again.
+Formulate rule, ask:
 
-Analyze the identified pattern, formulate the rule, and use AskUserQuestion:
-
-```
+```yaml
 question: "📚 Add to CLAUDE.md:\n\n\"{proposed rule}\""
 header: "CLAUDE.md"
 options:
   - label: "Add"
-    description: "Saves the rule to the nearest CLAUDE.md from the CWD"
+    description: "Save rule to nearest CLAUDE.md"
   - label: "Don't add"
-    description: "Moves to the next comment without saving"
+    description: "Move next without saving"
 ```
 
-If "Add", find the nearest CLAUDE.md from the current directory and add to the `## Rules derived from Code Review` section (create the section if it doesn't exist):
+If "Add", find nearest `CLAUDE.md` moving up from CWD. Append to `## Rules derived from Code Review` (create section if missing).
 
-```bash
-# Finds the nearest CLAUDE.md by moving up from CWD
-dir=$(pwd)
-while [[ "$dir" != "/" ]]; do
-  [[ -f "$dir/CLAUDE.md" ]] && { echo "$dir/CLAUDE.md"; break; }
-  dir=$(dirname "$dir")
-done
-```
+If no `CLAUDE.md` found, create in current directory.
 
-If no file is found, create `CLAUDE.md` in the current directory.
-
-> Use `CLAUDE.local.md` only if the user explicitly requests it (e.g., "add to local", "I don't want to version it").
-
-**If "Don't add":** proceed to the next comment without any additional action.
+Only use `CLAUDE.local.md` if user explicitly requests it.
 
 ---
 
 ## Step 6b — Incremental commit
 
-After each **applied** comment (and after deciding on CLAUDE.md), commit immediately. Generate a semantic message consistent with the applied change — based on what was changed in the file and what the reviewer requested:
+After each applied comment (and CLAUDE.md choice), commit immediately. Match message to change:
 
 ```bash
-git add -A && git commit -m "{type}: {description consistent with the applied change}"
+git add -A && git commit -m "{type}: {description}"
 ```
 
-Example: if the reviewer asked to extract a function and you extracted it in `PaymentService.ts`, the message would be `refactor: extract fee calculation to dedicated method`.
+*Example:* `refactor: extract fee calculation to dedicated method`
 
 ---
 
 ## Step 7 — Move to next file
 
-When finished with all comments in a file:
+When all comments in file finished:
 
 ```
-✅ src/services/PaymentService.ts completed (2/2 comments handled).
+✅ {path} completed ({handled}/{total} comments handled).
 
-Next: 📄 src/Models/Contract.ts (1 comment).
+Next: 📄 {next_path} ({next_total} comment(s)).
 ```
 
-Go back to **Step 4** with `pr-next-comment.sh` for the next comment.
+Go back to Step 4.
 
 ---
 
-## Step 8 — Final commit (if there are pending changes)
+## Step 8 — Final commit
 
-Before the final summary, check if there are any uncommitted changes left (could happen if an incremental commit failed):
+Before final summary, check for uncommitted changes:
 
 ```bash
 git status --porcelain
 ```
 
-If there are any changes (modified, deleted, untracked), commit immediately:
+If changes exist, commit:
 
 ```bash
-git add -A && git commit -m "{type}: {description consistent with the remaining changes}"
+git add -A && git commit -m "{type}: {description}"
 ```
 
 ---
 
 ## Step 9 — Push
 
-After Step 8, push immediately without asking:
+Push immediately without asking:
 
 ```bash
 git push
@@ -333,16 +337,15 @@ git push
 
 ## Step 9b — Restore local changes
 
-After pushing, if `HAS_STASH=true`, restore the saved changes:
+If `HAS_STASH=true`, restore changes:
 
 ```bash
 git stash pop
 ```
 
-If it fails (conflict), inform:
+If conflict:
 ```
-⚠️ Could not restore saved changes automatically.
-Run `git stash pop` manually to resolve conflicts.
+⚠️ Could not restore saved changes automatically. Run `git stash pop` manually to resolve conflicts.
 ```
 
 ---
@@ -353,34 +356,44 @@ Run `git stash pop` manually to resolve conflicts.
 ~/.claude/skills/pr-comments-flow/scripts/pr-progress.sh {PR_NUMBER}
 ```
 
+Format:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Review completed — PR #123
+==================================================
+✅ REVIEW COMPLETED — PR #{PR_NUMBER}
+==================================================
 
-  Applied:              3
-  Skipped:              1
-  Ignored:              1
-  Resolved on GitHub:   4
+📊 SESSION STATISTICS:
+  • Applied:             3
+  • Skipped:             1
+  • Ignored:             1
+  • GitHub Resolved:     4
 
-  Rules added to CLAUDE.md: 1
-  Commits made:         3
-  Push made:            yes
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 CHANGELOG & SYNC:
+  • Rules added to CLAUDE.md:  1
+  • Commits made:              3
+  • Push made:                 yes
+
+==================================================
 ```
 
 ---
 
 ## Guiding Principles
 
-- **Mandatory automatic stash** — immediately after confirming the PR (Step 1b), always run `git stash --include-untracked` to ensure a clean working tree. Restore with `git stash pop` after pushing (Step 9b) if there were saved changes.
-- **Always use AskUserQuestion** — every user decision must be made via AskUserQuestion, never via free text `[y/N]` or numbered lists in the output.
-- **Always propose before acting** — never change anything without confirmation.
-- **Use scripts, not inline API** — never call `gh api` directly when a script is available.
-- **Minimal context** — use `pr-excerpt.sh` instead of Read for files; use `pr-next-comment.sh` instead of reading the entire JSON.
-- **Always re-fetch** — never use a comments cache; always run `pr-fetch.sh` at the start to ensure synchronization with GitHub.
-- **Don't get stuck on API errors** — if resolving the thread fails, notify and continue.
-- **CLAUDE.md only on demand** — Step 6 is only executed when the user chooses `[2] Apply + CLAUDE.md`. Never ask automatically after applying. When triggered, propose the rule directly without asking again. Always use the `CLAUDE.md` nearest to the CWD. Only use `CLAUDE.local.md` if the user explicitly requests it.
-- **Mandatory incremental commit** — after each applied comment (Step 6b), commit immediately with a message consistent with the change. Do not ask, just commit. Step 8 only handles remaining pending changes.
-- **Mandatory push at the end** — after Step 8, push without asking.
-- **No translation** — never translate or modify the comment body — always show it exactly as retrieved from GitHub, including the original author's username and the comment creation timestamp.
-- **Language**: always respond in English.
+- **Auto Stash** — Silent stash (`git stash --include-untracked`) on start. Restore with `git stash pop` on end.
+- **AskUserQuestion** — All decisions via `AskUserQuestion` tool. No raw text options.
+- **Propose First** — Never modify files without confirmation.
+- **Proposed Change Preview** — Show exact proposed code block in chat before asking.
+- **Use Scripts** — Do not call raw `gh api` when script exists.
+- **Min Context** — Use `pr-excerpt.sh` and `pr-next-comment.sh`. Avoid whole-file reads.
+- **Fresh Fetch** — No comment cache. Always run `pr-fetch.sh` at start.
+- **No Translation** — Keep comment body, user, timestamp exactly as retrieved.
+- **Direct CLAUDE.md** — Only on `Apply + CLAUDE.md`. Propose rule directly.
+- **Incremental Commit** — Commit after each applied comment immediately.
+- **Auto Push** — Push at end without asking.
+- **Language** — Always respond in English.
+- **Resumable** — After interruption or context compaction, run `pr-progress.sh` + `pr-next-comment.sh` to resume; never re-apply already-handled comments.
+- **Loop Discipline** — One comment fully handled (Steps 4→6b) before fetching the next. Never batch.
+- **Recommend** — Tag best-fit option with "(Recommended)" and list it first in every Step 4c question.
+- **Skip Explains** — Skip always posts a Portuguese reply on the thread justifying the decision before resolving.
+- **Honor Annotations** — TAB-appended notes on a selected option modify the action; apply them before executing.
