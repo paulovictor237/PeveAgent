@@ -201,8 +201,19 @@ Wait for response.
 
 ### 4d. Responses
 
-- **Apply** — write proposed code to file via Edit tool (must match preview exactly). Briefly confirm.
-- **Apply + CLAUDE.md** — write proposed code to file via Edit tool, go to Step 6.
+- **Apply** — write proposed code to file via Edit tool (must match preview exactly). Briefly confirm. Before resolving, ALWAYS post a reply on the thread:
+
+```bash
+~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "Ajustado conforme sugerido."
+```
+
+- **Apply + CLAUDE.md** — write proposed code to file via Edit tool. Before resolving, ALWAYS post a reply on the thread:
+
+```bash
+~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "Ajustado conforme sugerido."
+```
+
+Then go to Step 6.
 - **Skip** — no code change. Before resolving, ALWAYS post a reply on the thread in Portuguese explaining why the comment is being skipped (e.g. "Já tratado em outro ponto do PR" / "Decidimos manter a abordagem atual porque…"):
 
 ```bash
@@ -238,9 +249,12 @@ If Post, run:
 
 After each comment:
 
-- For `Apply`, `Apply + CLAUDE.md`, or `Skip`, run both in parallel (two Bash calls in one message):
+- For `Apply`, `Apply + CLAUDE.md`, or `Skip`, run these in parallel (three Bash calls in one message; or two for `Skip` since its reply is handled in Step 4d):
 
 ```bash
+# Reply to comment (for Apply and Apply + CLAUDE.md)
+~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "Ajustado conforme sugerido."
+
 # Update local progress
 ~/.claude/skills/pr-comments-flow/scripts/pr-update-progress.sh {PR_NUMBER} {COMMENT_ID} {applied|skipped}
 
@@ -395,5 +409,6 @@ Format:
 - **Resumable** — After interruption or context compaction, run `pr-progress.sh` + `pr-next-comment.sh` to resume; never re-apply already-handled comments.
 - **Loop Discipline** — One comment fully handled (Steps 4→6b) before fetching the next. Never batch.
 - **Recommend** — Tag best-fit option with "(Recommended)" and list it first in every Step 4c question.
+- **Apply Explains** — Apply and Apply + CLAUDE.md always post the Portuguese reply `"Ajustado conforme sugerido."` on the thread before resolving.
 - **Skip Explains** — Skip always posts a Portuguese reply on the thread justifying the decision before resolving.
 - **Honor Annotations** — TAB-appended notes on a selected option modify the action; apply them before executing.
