@@ -88,6 +88,10 @@
       "type": "registry",
     },
     "claude-acp": {
+      "default_config_options": {
+        "mode": "bypassPermissions",
+        "model": "default"
+      },
       "type": "registry",
     },
   },
