@@ -1,19 +1,19 @@
 ---
 name: subscrible-job
-description: Especialista em preencher formulários de candidatura a vagas de emprego. Use quando o usuário fornecer uma URL de vaga e quiser se candidatar automaticamente.
+description: Use when the user wants to automatically fill out job application forms from a provided vacancy or job listing URL.
 ---
 
 # subscrible-job
 
-Fill job application forms using playwright MCP tools. Claude drives browser directly — no scripts.
+Fill job application forms using agent-browser CLI commands. Claude drives the browser directly via the CLI — no custom scripts.
 
 ## Hard Rules
 
 1. **NEVER click submit / enviar / finalizar / candidatar / apply**
-2. **NEVER invent data** — use only what's in `profile.json`
-3. **ALWAYS pause** on cover letter fields and ask user for text
-4. **ALWAYS upload PDF** when file input found
-5. **No retry** — mark `✗` and move on if fill fails
+2. **NEVER invent data** — use only what is in `profile.json`
+3. **ALWAYS pause** on cover letter fields and ask the user for text
+4. **ALWAYS upload PDF** when a file input is found
+5. **No retry** — mark `✗` and move on if any fill operation fails
 
 ## Assets
 
@@ -23,7 +23,7 @@ SKILL_DIR/assets/Profile-pt.pdf   ← CV Portuguese
 SKILL_DIR/assets/Profile-en.pdf   ← CV English
 ```
 
-`SKILL_DIR` = `/Users/peve/workspace/PeveAgent/.agents/skills/subscrible-job`
+`SKILL_DIR` = `/Users/paulo.duarte/workspace/outros/PeveAgent/.agents/skills/subscrible-job`
 
 ## How to invoke
 
@@ -37,37 +37,36 @@ Read `SKILL_DIR/assets/profile.json`. Extract all candidate data.
 
 ### 2. Navigate
 
-```
-playwright_navigate(url=URL)
+```bash
+agent-browser open "<URL>"
 ```
 
 ### 3. Baseline snapshot
 
-```
-baseline = playwright_snapshot()
+```bash
+agent-browser snapshot -i
 ```
 
-Parse all form fields from the accessibility tree: inputs, selects, textareas.
-For each field note: role, label, placeholder, aria-label, name/id, type, options (if select).
+Parse all form fields from the interactive accessibility tree.
+For each field, note its element reference (e.g., `@e1`, `@e2`), role, label, placeholder, aria-label, name/id, type, and any options (if it is a dropdown/select).
 
 ### 4. Fill fields
 
-For each field, apply mapping rules below (most-specific first, first match wins).
-
+For each field, apply the mapping rules below (most-specific first, first match wins).
 Normalize text for matching: lowercase + remove accents + collapse whitespace.
 
-If resolved value is found:
-- `input[type=text/email/tel/url/number]` or `textarea` → `playwright_fill`
-- `select` → `playwright_select_option` (match by normalized label)
-- `input[type=checkbox]` or `input[type=radio]` → `playwright_click` only if value is truthy (`sim/yes/true/1`)
-- `input[type=file]` → `playwright_upload_file` with PDF path (see File Upload rule)
-- custom dropdown (role=combobox, listbox) → `playwright_click` to open, then `playwright_click` on matching option
+If a resolved value is found:
+- `input[type=text/email/tel/url/number]` or `textarea` → `agent-browser fill @eN "value"`
+- `select` (or standard dropdown) → `agent-browser select @eN "option-value"`
+- `input[type=checkbox]` or `input[type=radio]` → `agent-browser check @eN` (only if the value is truthy: `sim/yes/true/1`)
+- `input[type=file]` → `agent-browser upload @eN "<pdf_path>"` (see File Upload rule)
+- Custom dropdown (role=combobox, listbox) → `agent-browser click @eN` to open, then run `agent-browser snapshot -i` to update references, and click the matching option.
 
-If field matches cover_letter rule → **STOP, ask user** (see Cover Letter rule).
-
+If a field matches the cover_letter rule → **STOP, ask user** (see Cover Letter rule).
 If no rule matches → mark `○ unmapped`.
+If fill fails or throws an error → mark `✗ failed` and continue to the next field.
 
-If fill throws → mark `✗ failed`, continue.
+> **CRITICAL REF RULE:** Refs `@eN` become stale whenever the DOM or viewport changes (after clicks, selections, or page updates). Always run `agent-browser snapshot -i` to get fresh references after any interacting step that changes page state.
 
 ### 5. Report
 
@@ -92,19 +91,20 @@ Preencha o restante. Quando terminar, diga "feito".
 
 ### 6. Wait for user
 
-After filling all auto-fillable fields, pause. Tell user which fields need attention. Wait for user to say "feito" / "done" / "pronto".
+After filling all auto-fillable fields, pause. Tell the user which fields need manual attention. Wait for the user to say "feito" / "done" / "pronto".
 
 ### 7. Learn new values
 
-```
-final = playwright_snapshot()
+```bash
+agent-browser snapshot -i
 ```
 
-Compare `final` vs `baseline`. Fields that:
-- Were empty in baseline AND have a value in final AND were NOT filled by Claude
-→ user manually filled them
+Compare the final form values with the baseline values.
+Fields that:
+- Were empty in the baseline snapshot AND have a value in the final snapshot AND were NOT filled by Claude
+→ user manually filled them.
 
-Add each to `profile.json → extra_fields` with the field label as key. Save file.
+Add each to `profile.json → extra_fields` with the field label as the key. Save the file.
 
 ---
 
@@ -213,7 +213,7 @@ Any `input[type=file]`:
 - If page language appears to be English → upload `SKILL_DIR/assets/Profile-en.pdf`
 - Otherwise → upload `SKILL_DIR/assets/Profile-pt.pdf`
 
-Use `playwright_upload_file`.
+Use `agent-browser upload @eN "<pdf_path>"`.
 
 ### Cover Letter
 Any textarea whose label/placeholder/aria matches:
@@ -222,13 +222,13 @@ Any textarea whose label/placeholder/aria matches:
 → **Do NOT fill. Report `⚠` and ask user:**
 > "Campo de cover letter encontrado: '{label}'. Cole o texto que devo usar."
 
-After user provides text → `playwright_fill`.
+After user provides text → `agent-browser fill @eN "<text>"`.
 
 ### Dropdown Option Matching
-When selecting from a dropdown, normalize both the target value and each option (lowercase + remove accents). Pick the option whose normalized text best matches. If no match found → mark `○ unmapped`.
+When selecting from a dropdown, normalize both the target value and each option (lowercase + remove accents). Use `agent-browser select @eN "<option-value>"`.
 
 ### Checkbox / Radio
-Only interact if resolved value is truthy (`sim` / `yes` / `true` / `1`). Skip entirely otherwise.
+Only interact if resolved value is truthy (`sim` / `yes` / `true` / `1`). Use `agent-browser check @eN`.
 
 ---
 
