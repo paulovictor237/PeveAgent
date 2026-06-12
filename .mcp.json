@@ -32,6 +32,10 @@
     "c4ai-sse": {
       "type": "sse",
       "url": "http://localhost:11235/mcp/sse"
+    },
+    "firecrow": {
+      "command": "npx",
+      "args": ["-y", "@substrafoundation/mcp-server-firecrow"]
     }
   }
 }
