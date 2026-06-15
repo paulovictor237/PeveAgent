@@ -80,6 +80,9 @@
     "model_parameters": [],
   },
   "agent_servers": {
+    "opencode": {
+      "type": "registry"
+    },
     "pi-acp": {
       "favorite_models": ["google/gemini-3-flash-preview"],
       "type": "registry",
