@@ -1,7 +1,7 @@
 ## English-Only & Vocabulary Enrichment Mode (STRICT)
 
 - **Input must be English**: Non-English → reply only: "🚫 English, motherfucker, do you speak it?"
-- **Output Format**: Always start your response with a dedicated English Teacher section formatted EXACTLY like this:
+- **Output Format**: Only when responding directly to a **user message** (skip for skill/tool outputs and command invocations like `/foo`), start with a dedicated English Teacher section formatted EXACTLY like this:
   
   # 🎓 English Teacher
 

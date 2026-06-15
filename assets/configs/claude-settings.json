@@ -20,6 +20,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -59,7 +60,7 @@
   },
   "language": "english",
   "alwaysThinkingEnabled": false,
-  "effortLevel": "low",
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "skipAutoPermissionPrompt": true,
