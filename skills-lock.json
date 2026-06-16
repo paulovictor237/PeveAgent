@@ -31,6 +31,12 @@
       "skillPath": "skills/brutalist-skill/SKILL.md",
       "computedHash": "8fc355c4aadb7d29c53ca28bc41be3cd6eea765d121e3737c4dc2d0f90a8effa"
     },
+    "markdown-to-pdf": {
+      "source": "duc01226/easyplatform",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/markdown-to-pdf/SKILL.md",
+      "computedHash": "087732d1f8d405eba96654b8eb5c57575ee3cb84e0c76eaf3f9ad16a426d0145"
+    },
     "minimalist-ui": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",

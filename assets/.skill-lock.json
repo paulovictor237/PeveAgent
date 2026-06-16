@@ -19,5 +19,23 @@
       "installedAt": "2026-06-07T01:16:24.860Z",
       "updatedAt": "2026-06-07T01:16:24.860Z"
     }
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "antigravity",
+    "antigravity-cli",
+    "cline",
+    "codex",
+    "cursor",
+    "deepagents",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-code-cli",
+    "opencode",
+    "warp",
+    "zed"
+  ],
+  "dismissed": {
+    "findSkillsPrompt": true
   }
 }

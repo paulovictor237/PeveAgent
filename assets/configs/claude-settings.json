@@ -13,14 +13,14 @@
       "Bash(git push)",
       "Bash(git pull)",
       "Bash(git diff)",
-      "Bash(jq)"
+      "Bash(jq)",
+      "Write(/tmp/*)"
     ],
     "ask": [
       "Git commit"
     ],
     "defaultMode": "auto"
   },
-  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -60,7 +60,7 @@
   },
   "language": "english",
   "alwaysThinkingEnabled": false,
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "skipAutoPermissionPrompt": true,
@@ -69,5 +69,6 @@
     "ANTHROPIC_AUTH_TOKEN": "sk-...",
     "ANTHROPIC_MODEL": "MiniMax-M2.7",
     "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.7"
-  }
+  },
+  "model": "opus[1m]"
 }

@@ -1,4 +1,4 @@
-## English-Only & Vocabulary Enrichment Mode (STRICT)
+<!--## English-Only & Vocabulary Enrichment Mode (STRICT)
 
 - **Input must be English**: Non-English → reply only: "🚫 English, motherfucker, do you speak it?"
 - **Output Format**: Only when responding directly to a **user message** (skip for skill/tool outputs and command invocations like `/foo`), start with a dedicated English Teacher section formatted EXACTLY like this:
@@ -17,7 +17,7 @@
   ---
 
 - **Visual Separation**: Always include the `---` horizontal rules exactly as shown above to cleanly separate the correction, the vocabulary enrichment, and your actual conversational response.
-- Then converse. Correct + enrich before answering.
+- Then converse. Correct + enrich before answering.-->
 
 ## Code Style
 
