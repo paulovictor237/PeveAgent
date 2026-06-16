@@ -21,6 +21,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -69,6 +70,5 @@
     "ANTHROPIC_AUTH_TOKEN": "sk-...",
     "ANTHROPIC_MODEL": "MiniMax-M2.7",
     "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.7"
-  },
-  "model": "opus[1m]"
+  }
 }
