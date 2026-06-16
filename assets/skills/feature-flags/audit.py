@@ -49,6 +49,7 @@ class FlagRow:
     first_created: str
     squad: str
     types: list[str]
+    created_by: str
 
     @property
     def has_kill_switch(self):
@@ -117,7 +118,16 @@ class DatabaseClient:
             COALESCE(MAX(expires_at)::text, '')       AS max_expires,
             MIN(created_at)::date::text               AS first_created,
             COALESCE(MAX(squad), '')                  AS squad,
-            STRING_AGG(DISTINCT type, '\x1f' ORDER BY type) AS types
+            STRING_AGG(DISTINCT type, '\x1f' ORDER BY type) AS types,
+            COALESCE((
+                SELECT u.name
+                FROM activity_log al
+                JOIN users u ON al.causer_type = 'App\\Models\\User' AND al.causer_id = u.id
+                WHERE al.subject_type = 'App\\Models\\FeatureFlag'
+                  AND al.subject_id IN (SELECT id FROM feature_flags ff2 WHERE ff2.name = feature_flags.name)
+                ORDER BY (al.event = 'created') DESC, al.created_at ASC, al.id ASC
+                LIMIT 1
+            ), '') AS created_by
         FROM feature_flags
         GROUP BY name
         ORDER BY first_created, name
@@ -151,7 +161,7 @@ class DatabaseClient:
         reader = csv.DictReader(io.StringIO(result.stdout), fieldnames=[
             "name", "entity_count", "max_pct", "min_pct",
             "any_enabled", "all_enabled", "max_expires",
-            "first_created", "squad", "types",
+            "first_created", "squad", "types", "created_by",
         ])
         rows = []
         for row in reader:
@@ -188,11 +198,12 @@ class DatabaseClient:
                 first_created=row.get("first_created", ""),
                 squad=row.get("squad", "") or "(no squad)",
                 types=parsed_types,
+                created_by=row.get("created_by", "") or "\u2014",
             ))
         return rows
 
 
-_AUTHOR_RE = re.compile(r"^.* <.*>$")
+_AUTHOR_RE = re.compile(r"^.* <.*>(?:\x00.*)?$")
 
 class CodebaseScanner:
     def __init__(self, root):
@@ -265,7 +276,7 @@ class CodebaseScanner:
         return root
 
     def _build_authors(self):
-        self._author_cache = defaultdict(lambda: defaultdict(int))
+        self._author_cache = defaultdict(lambda: defaultdict(lambda: {"count": 0, "last_date": ""}))
         files_by_root = defaultdict(list)
         for abs_f in self._tracked_files:
             repo_root = self._git_root(abs_f)
@@ -279,20 +290,26 @@ class CodebaseScanner:
 
         for repo_root, rel_files in files_by_root.items():
             result = subprocess.run(
-                ["git", "-C", repo_root, "log", "--format=%an <%ae>",
+                ["git", "-C", repo_root, "log", "--format=%an <%ae>%x00%aI",
                  "--name-only", "--diff-filter=AM", "--"] + rel_files,
                 capture_output=True, text=True,
             )
             current_author = None
+            current_date = None
             for line in result.stdout.splitlines():
                 line = line.strip()
                 if not line:
                     continue
                 if _AUTHOR_RE.match(line):
-                    current_author = line
+                    parts = line.split("\x00", 1)
+                    current_author = parts[0]
+                    current_date = parts[1] if len(parts) > 1 else ""
                 elif current_author:
                     abs_f = os.path.realpath(os.path.join(repo_root, line))
-                    self._author_cache[abs_f][current_author] += 1
+                    entry = self._author_cache[abs_f][current_author]
+                    entry["count"] += 1
+                    if current_date and (not entry["last_date"] or current_date > entry["last_date"]):
+                        entry["last_date"] = current_date
         self._authors_built = True
 
     def file_authors(self, abs_f):
@@ -301,14 +318,26 @@ class CodebaseScanner:
         abs_f = os.path.realpath(abs_f)
         return self._author_cache.get(abs_f, {})
 
-    def top_owner(self, files):
-        counts = defaultdict(int)
+    def top_owners(self, files, limit=3):
+        author_stats = defaultdict(lambda: {"count": 0, "last_date": ""})
         for f in files:
-            for author, n in self.file_authors(os.path.abspath(f)).items():
-                counts[author] += n
-        if not counts:
+            for author, entry in self.file_authors(os.path.abspath(f)).items():
+                author_stats[author]["count"] += entry["count"]
+                if entry["last_date"] and (not author_stats[author]["last_date"] or entry["last_date"] > author_stats[author]["last_date"]):
+                    author_stats[author]["last_date"] = entry["last_date"]
+        if not author_stats:
             return "\u2014"
-        return max(counts, key=counts.get)
+        ranked = sorted(
+            author_stats.items(),
+            key=lambda x: x[1]["last_date"] or "",
+            reverse=True,
+        )
+        short_names = []
+        for author, stats in ranked[:limit]:
+            name = author.split(" <")[0] if " <" in author else author
+            date_str = format_date_warn(stats["last_date"]) if stats["last_date"] else ""
+            short_names.append(f"{name} ({date_str})" if date_str else name)
+        return ", ".join(short_names)
 
     def file_list(self, files):
         if not files:
@@ -443,29 +472,29 @@ class ReportRenderer:
         if full:
             section(
                 "\u23f0 Expired", cats["expired"],
-                ["name", "squad", "enabled", "pct", "expires_at", "files_referencing", "owner", "first_created"],
+                ["name", "squad", "created_by", "enabled", "pct", "expires_at", "files_referencing", "owners (last commit)", "first_created"],
                 lambda r, f: [
-                    r.name, r.squad, enabled_cell(r), pct_cell(r),
+                    r.name, r.squad, r.created_by, enabled_cell(r), pct_cell(r),
                     format_date_warn(r.max_expires, self.now), self.scanner.file_list(f),
-                    self.scanner.top_owner(f) if f else "\u2014",
-                    format_date_warn(r.first_created, self.now),
-                ],
-            )
+                    self.scanner.top_owners(f) if f else "\u2014",
+                     format_date_warn(r.first_created, self.now),
+                 ],
+             )
         else:
             section(
                 "\u23f0 Expired", cats["expired"],
-                ["name", "squad", "enabled", "pct", "expires_at", "first_created"],
+                ["name", "squad", "created_by", "enabled", "pct", "expires_at", "first_created"],
                 lambda r, f: [
-                    r.name, r.squad, enabled_cell(r), pct_cell(r),
+                    r.name, r.squad, r.created_by, enabled_cell(r), pct_cell(r),
                     format_date_warn(r.max_expires, self.now), format_date_warn(r.first_created, self.now),
                 ],
             )
 
         section(
             "\U0001f6a8 Stealth (0%, enabled)", cats["stealth"],
-            ["name", "squad", "entity_count", "type", "first_created"],
+            ["name", "squad", "created_by", "entity_count", "type", "first_created"],
             lambda r, f: [
-                r.name, r.squad, r.entity_count,
+                r.name, r.squad, r.created_by, r.entity_count,
                 ", ".join(r.types) if r.types else "\u2014",
                 format_date_warn(r.first_created, self.now),
             ],
@@ -474,40 +503,40 @@ class ReportRenderer:
         if full:
             section(
                 "\U0001f7e2 Rolling Out", cats["rolling_out"],
-                ["name", "squad", "percentage", "entity_count", "expires_at",
-                 "first_created", "files_referencing", "owner"],
+                ["name", "squad", "created_by", "percentage", "entity_count", "expires_at",
+                 "first_created", "files_referencing", "owners (last commit)"],
                 lambda r, f: [
-                    r.name, r.squad, pct_cell(r), r.entity_count,
+                    r.name, r.squad, r.created_by, pct_cell(r), r.entity_count,
                     format_date_warn(r.max_expires, self.now), format_date_warn(r.first_created, self.now),
                     self.scanner.file_list(f),
-                    self.scanner.top_owner(f) if f else "\u2014",
+                    self.scanner.top_owners(f) if f else "\u2014",
                 ],
             )
             section(
                 "\U0001f7e1 Needs Code Cleanup", cats["needs_cleanup"],
-                ["name", "squad", "entity_count", "files_referencing", "owner", "first_created"],
+                ["name", "squad", "created_by", "entity_count", "files_referencing", "owners (last commit)", "first_created"],
                 lambda r, f: [
-                    r.name, r.squad, r.entity_count,
+                    r.name, r.squad, r.created_by, r.entity_count,
                     self.scanner.file_list(f),
-                    self.scanner.top_owner(f),
+                    self.scanner.top_owners(f),
                     format_date_warn(r.first_created, self.now),
                 ],
             )
         else:
             section(
                 "\U0001f7e2 Rolling Out", cats["rolling_out"],
-                ["name", "squad", "percentage", "entity_count", "expires_at", "first_created"],
+                ["name", "squad", "created_by", "percentage", "entity_count", "expires_at", "first_created"],
                 lambda r, f: [
-                    r.name, r.squad, pct_cell(r), r.entity_count,
+                    r.name, r.squad, r.created_by, pct_cell(r), r.entity_count,
                     format_date_warn(r.max_expires, self.now), format_date_warn(r.first_created, self.now),
                 ],
             )
 
         section(
             delete_title, cats["safe_to_delete"],
-            ["name", "squad", "entity_count", "type", "note", "first_created"],
+            ["name", "squad", "created_by", "entity_count", "type", "note", "first_created"],
             lambda r, f: [
-                r.name, r.squad, r.entity_count,
+                r.name, r.squad, r.created_by, r.entity_count,
                 ", ".join(r.types) if r.types else "\u2014",
                 mixed_note(r),
                 format_date_warn(r.first_created, self.now),
@@ -517,20 +546,20 @@ class ReportRenderer:
         if full:
             section(
                 "\u26ab Disabled \u2014 In Code", cats["disabled_in_code"],
-                ["name", "squad", "percentage", "files_referencing", "owner", "first_created"],
+                ["name", "squad", "created_by", "percentage", "files_referencing", "owners (last commit)", "first_created"],
                 lambda r, f: [
-                    r.name, r.squad, pct_cell(r),
+                    r.name, r.squad, r.created_by, pct_cell(r),
                     self.scanner.file_list(f),
-                    self.scanner.top_owner(f),
+                    self.scanner.top_owners(f),
                     format_date_warn(r.first_created, self.now),
                 ],
             )
 
         section(
             gone_title, cats["disabled_gone"],
-            ["name", "squad", "percentage", "note", "first_created"],
+            ["name", "squad", "created_by", "percentage", "note", "first_created"],
             lambda r, f: [
-                r.name, r.squad, pct_cell(r),
+                r.name, r.squad, r.created_by, pct_cell(r),
                 mixed_note(r),
                 format_date_warn(r.first_created, self.now),
             ],
@@ -542,9 +571,9 @@ class ReportRenderer:
             if ghosts:
                 out.append(
                     self._table(
-                        ["name", "files_referencing", "owner"],
+                        ["name", "files_referencing", "owners (last commit)"],
                         [
-                            [name, self.scanner.file_list(files), self.scanner.top_owner(files)]
+                            [name, self.scanner.file_list(files), self.scanner.top_owners(files)]
                             for name, files in sorted(ghosts.items())
                         ],
                     )
@@ -576,10 +605,10 @@ class ReportRenderer:
 
     def _category_descriptions(self):
         return {
-            "\u23f0 Expired": "- expires at: past\n- files referencing: shown\n- owner: top git author across referencing files\n- sorted by: expiry date \u2191",
+            "\u23f0 Expired": "- expires at: past\n- files referencing: shown\n- owners: top 3 git authors by last commit across referencing files\n- sorted by: expiry date \u2191",
             "\U0001f6a8 Stealth (0%, enabled)": "- enabled: yes\n- rollout: 0%\n- type: not kill switch\n- sorted by: created date \u2191",
-            "\U0001f7e2 Rolling Out": "- enabled: yes\n- rollout: 1\u201399% (or kill switch at 0%)\n- files referencing: shown\n- owner: top git author across referencing files\n- sorted by: rollout % \u2193",
-            "\U0001f7e1 Needs Code Cleanup": "- enabled: yes\n- rollout: 100%\n- in code: yes\n- sorted by: created date \u2191",
+            "\U0001f7e2 Rolling Out": "- enabled: yes\n- rollout: 1\u201399% (or kill switch at 0%)\n- files referencing: shown\n- owners: top 3 git authors by last commit across referencing files\n- sorted by: rollout % \u2193",
+            "\U0001f7e1 Needs Code Cleanup": "- enabled: yes\n- rollout: 100%\n- in code: yes\n- owners: top 3 git authors by last commit across referencing files\n- sorted by: created date \u2191",
             "\U0001f534 Not in This Project": "- enabled: yes\n- rollout: 100%\n- in code: no\n- sorted by: created date \u2191",
             "\U0001f534 Fully Rolled Out (100%)": "- enabled: yes\n- rollout: 100%\n- in code: unverified (db-only run)\n- sorted by: created date \u2191",
             "\u26ab Disabled \u2014 In Code": "- enabled: no\n- in code: yes\n- sorted by: created date \u2191",
