@@ -336,7 +336,7 @@ class CodebaseScanner:
         for author, stats in ranked[:limit]:
             name = author.split(" <")[0] if " <" in author else author
             date_str = format_date_warn(stats["last_date"]) if stats["last_date"] else ""
-            short_names.append(f"{name} ({date_str})" if date_str else name)
+            short_names.append(name)
         return ", ".join(short_names)
 
     def file_list(self, files):
