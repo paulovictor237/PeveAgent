@@ -1,6 +1,8 @@
 .draft
 **/.DS_Store
 .pytest_cache/
+.env
+**/.env
 
 # pi runtime data (not config)
 pi/agent/sessions/
