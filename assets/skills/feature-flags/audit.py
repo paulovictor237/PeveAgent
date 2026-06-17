@@ -203,14 +203,9 @@ class DatabaseClient:
         return rows
 
 
-_AUTHOR_RE = re.compile(r"^.* <.*>(?:\x00.*)?$")
-
 class CodebaseScanner:
     def __init__(self, root):
         self.root = os.path.abspath(root)
-        self._git_root_cache = {}
-        self._author_cache = {}
-        self._authors_built = False
         self._tracked_files = set()
 
     @property
@@ -262,82 +257,6 @@ class CodebaseScanner:
                 if pattern.search(content):
                     index[name].append(filepath)
         return dict(index)
-
-    def _git_root(self, file_path):
-        d = os.path.dirname(os.path.abspath(file_path))
-        if d in self._git_root_cache:
-            return self._git_root_cache[d]
-        result = subprocess.run(
-            ["git", "-C", d, "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True,
-        )
-        root = result.stdout.strip() if result.returncode == 0 else None
-        self._git_root_cache[d] = root
-        return root
-
-    def _build_authors(self):
-        self._author_cache = defaultdict(lambda: defaultdict(lambda: {"count": 0, "last_date": ""}))
-        files_by_root = defaultdict(list)
-        for abs_f in self._tracked_files:
-            repo_root = self._git_root(abs_f)
-            if not repo_root:
-                continue
-            try:
-                rel_f = os.path.relpath(abs_f, repo_root)
-            except ValueError:
-                continue
-            files_by_root[repo_root].append(rel_f)
-
-        for repo_root, rel_files in files_by_root.items():
-            result = subprocess.run(
-                ["git", "-C", repo_root, "log", "--format=%an <%ae>%x00%aI",
-                 "--name-only", "--diff-filter=AM", "--"] + rel_files,
-                capture_output=True, text=True,
-            )
-            current_author = None
-            current_date = None
-            for line in result.stdout.splitlines():
-                line = line.strip()
-                if not line:
-                    continue
-                if _AUTHOR_RE.match(line):
-                    parts = line.split("\x00", 1)
-                    current_author = parts[0]
-                    current_date = parts[1] if len(parts) > 1 else ""
-                elif current_author:
-                    abs_f = os.path.realpath(os.path.join(repo_root, line))
-                    entry = self._author_cache[abs_f][current_author]
-                    entry["count"] += 1
-                    if current_date and (not entry["last_date"] or current_date > entry["last_date"]):
-                        entry["last_date"] = current_date
-        self._authors_built = True
-
-    def file_authors(self, abs_f):
-        if not self._authors_built:
-            self._build_authors()
-        abs_f = os.path.realpath(abs_f)
-        return self._author_cache.get(abs_f, {})
-
-    def top_owners(self, files, limit=3):
-        author_stats = defaultdict(lambda: {"count": 0, "last_date": ""})
-        for f in files:
-            for author, entry in self.file_authors(os.path.abspath(f)).items():
-                author_stats[author]["count"] += entry["count"]
-                if entry["last_date"] and (not author_stats[author]["last_date"] or entry["last_date"] > author_stats[author]["last_date"]):
-                    author_stats[author]["last_date"] = entry["last_date"]
-        if not author_stats:
-            return "\u2014"
-        ranked = sorted(
-            author_stats.items(),
-            key=lambda x: x[1]["last_date"] or "",
-            reverse=True,
-        )
-        short_names = []
-        for author, stats in ranked[:limit]:
-            name = author.split(" <")[0] if " <" in author else author
-            date_str = format_date_warn(stats["last_date"]) if stats["last_date"] else ""
-            short_names.append(name)
-        return ", ".join(short_names)
 
     def file_list(self, files):
         if not files:
@@ -472,11 +391,10 @@ class ReportRenderer:
         if full:
             section(
                 "\u23f0 Expired", cats["expired"],
-                ["name", "squad", "created_by", "enabled", "pct", "expires_at", "files_referencing", "owners (last commit)", "first_created"],
+                ["name", "squad", "created_by", "enabled", "pct", "expires_at", "files_referencing", "first_created"],
                 lambda r, f: [
                     r.name, r.squad, r.created_by, enabled_cell(r), pct_cell(r),
                     format_date_warn(r.max_expires, self.now), self.scanner.file_list(f),
-                    self.scanner.top_owners(f) if f else "\u2014",
                      format_date_warn(r.first_created, self.now),
                  ],
              )
@@ -504,21 +422,19 @@ class ReportRenderer:
             section(
                 "\U0001f7e2 Rolling Out", cats["rolling_out"],
                 ["name", "squad", "created_by", "percentage", "entity_count", "expires_at",
-                 "first_created", "files_referencing", "owners (last commit)"],
+                 "first_created", "files_referencing"],
                 lambda r, f: [
                     r.name, r.squad, r.created_by, pct_cell(r), r.entity_count,
                     format_date_warn(r.max_expires, self.now), format_date_warn(r.first_created, self.now),
                     self.scanner.file_list(f),
-                    self.scanner.top_owners(f) if f else "\u2014",
                 ],
             )
             section(
                 "\U0001f7e1 Needs Code Cleanup", cats["needs_cleanup"],
-                ["name", "squad", "created_by", "entity_count", "files_referencing", "owners (last commit)", "first_created"],
+                ["name", "squad", "created_by", "entity_count", "files_referencing", "first_created"],
                 lambda r, f: [
                     r.name, r.squad, r.created_by, r.entity_count,
                     self.scanner.file_list(f),
-                    self.scanner.top_owners(f),
                     format_date_warn(r.first_created, self.now),
                 ],
             )
@@ -546,11 +462,10 @@ class ReportRenderer:
         if full:
             section(
                 "\u26ab Disabled \u2014 In Code", cats["disabled_in_code"],
-                ["name", "squad", "created_by", "percentage", "files_referencing", "owners (last commit)", "first_created"],
+                ["name", "squad", "created_by", "percentage", "files_referencing", "first_created"],
                 lambda r, f: [
                     r.name, r.squad, r.created_by, pct_cell(r),
                     self.scanner.file_list(f),
-                    self.scanner.top_owners(f),
                     format_date_warn(r.first_created, self.now),
                 ],
             )
@@ -571,9 +486,9 @@ class ReportRenderer:
             if ghosts:
                 out.append(
                     self._table(
-                        ["name", "files_referencing", "owners (last commit)"],
+                        ["name", "files_referencing"],
                         [
-                            [name, self.scanner.file_list(files), self.scanner.top_owners(files)]
+                            [name, self.scanner.file_list(files)]
                             for name, files in sorted(ghosts.items())
                         ],
                     )
@@ -605,10 +520,10 @@ class ReportRenderer:
 
     def _category_descriptions(self):
         return {
-            "\u23f0 Expired": "- expires at: past\n- files referencing: shown\n- owners: top 3 git authors by last commit across referencing files\n- sorted by: expiry date \u2191",
+            "\u23f0 Expired": "- expires at: past\n- files referencing: shown\n- sorted by: expiry date \u2191",
             "\U0001f6a8 Stealth (0%, enabled)": "- enabled: yes\n- rollout: 0%\n- type: not kill switch\n- sorted by: created date \u2191",
-            "\U0001f7e2 Rolling Out": "- enabled: yes\n- rollout: 1\u201399% (or kill switch at 0%)\n- files referencing: shown\n- owners: top 3 git authors by last commit across referencing files\n- sorted by: rollout % \u2193",
-            "\U0001f7e1 Needs Code Cleanup": "- enabled: yes\n- rollout: 100%\n- in code: yes\n- owners: top 3 git authors by last commit across referencing files\n- sorted by: created date \u2191",
+            "\U0001f7e2 Rolling Out": "- enabled: yes\n- rollout: 1\u201399% (or kill switch at 0%)\n- files referencing: shown\n- sorted by: rollout % \u2193",
+            "\U0001f7e1 Needs Code Cleanup": "- enabled: yes\n- rollout: 100%\n- in code: yes\n- sorted by: created date \u2191",
             "\U0001f534 Not in This Project": "- enabled: yes\n- rollout: 100%\n- in code: no\n- sorted by: created date \u2191",
             "\U0001f534 Fully Rolled Out (100%)": "- enabled: yes\n- rollout: 100%\n- in code: unverified (db-only run)\n- sorted by: created date \u2191",
             "\u26ab Disabled \u2014 In Code": "- enabled: no\n- in code: yes\n- sorted by: created date \u2191",
