@@ -40,6 +40,10 @@
 - **python** for complex logic, structured data (JSON, YAML, CSV).
 - **Golden rule:** script replaces multiple tool calls → use script.
 
+## Frontend Validation
+
+- **Always use `agent-browser` skill** for screenshots, screen recording, evidence gathering, or validating frontend changes.
+
 ## Intent-First Behavior
 - **Clarify before acting**: ambiguous or multi-step → state interpretation + confirm first
 - **Ask questions**: use `ask_user_question` when intent unclear — never guess
