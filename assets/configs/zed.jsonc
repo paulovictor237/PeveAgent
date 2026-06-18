@@ -96,6 +96,11 @@
         "provider": "opencode",
         "model": "zen/glm-5.1",
         "enable_thinking": false
+      },
+      {
+        "provider": "openrouter",
+        "model": "nex-agi/nex-n2-pro:free",
+        "enable_thinking": true
       }
     ],
     "model_parameters": [],
@@ -116,6 +121,7 @@
     },
     "claude-acp": {
       "default_config_options": {
+        "effort": "medium",
         "mode": "bypassPermissions",
         "model": "opus[1m]"
       },
