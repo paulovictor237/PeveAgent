@@ -81,3 +81,25 @@ Audio notifications for Claude Code.
 ```bash
 brew install peonping/tap/peon-ping && peon-ping-setup
 ```
+
+### Ponytail
+
+Lazy-senior-dev ruleset — forces the minimal solution that works.
+
+- Repo: https://github.com/DietrichGebert/ponytail
+
+Claude Code:
+
+```bash
+claude plugin marketplace add DietrichGebert/ponytail
+claude plugin install ponytail@ponytail
+```
+
+opencode:
+
+```bash
+git clone https://github.com/DietrichGebert/ponytail ~/ponytail
+mkdir -p ~/.config/opencode/plugins ~/.config/opencode/command
+ln -sf ~/ponytail/.opencode/plugins/ponytail.mjs ~/.config/opencode/plugins/
+ln -sf ~/ponytail/.opencode/command/* ~/.config/opencode/command/
+```
