@@ -22,7 +22,7 @@ description: >
 Run the script:
 
 ```
-~/.pi/agent/skills/git-branch-manager/scripts/branch-scan.sh
+~/.claude/skills/git-branch-manager/scripts/branch-scan.sh
 ```
 
 It outputs a JSON report with:

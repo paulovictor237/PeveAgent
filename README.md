@@ -14,7 +14,6 @@ assets/
 
 tools/
 ├── claude.json   # links assets → ~/.claude
-├── pi.json       # links assets → pi/agent
 ├── opencode.json # links assets → ~/.config/opencode
 └── zed.json      # links assets → ~/.config/zed
 ```
@@ -50,7 +49,7 @@ Then run `bash scripts/link.sh cursor`.
 
 ```bash
 bash scripts/link.sh              # link all tools
-bash scripts/link.sh claude pi    # link specific tools
+bash scripts/link.sh claude       # link specific tools
 bash scripts/link.sh --dry-run    # preview without changes
 bash scripts/link.sh --reverse    # pull live files back into assets/, then re-link
 ```

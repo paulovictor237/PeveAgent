@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Is
 
-PeveAgent is a **config hub** — a single canonical source for skills, agents, commands, and settings across multiple AI tools (Claude Code, Pi/OpenCode, Cursor, Zed). It uses symlinks to deploy configs from `assets/` into each tool's home directory.
+PeveAgent is a **config hub** — a single canonical source for skills, agents, commands, and settings across multiple AI tools (Claude Code, OpenCode, Cursor, Zed). It uses symlinks to deploy configs from `assets/` into each tool's home directory.
 
 ## Core Commands
 
 ```bash
 bash scripts/link.sh                  # Link all tools
-bash scripts/link.sh claude pi        # Link specific tools only
+bash scripts/link.sh claude             # Link specific tools only
 bash scripts/link.sh --dry-run        # Preview without changes
 bash scripts/link.sh --reverse        # Pull live files back from targets, then re-link
 ```
@@ -26,9 +26,9 @@ assets/
 ├── skills/          # Claude Code skills (each: SKILL.md + scripts/)
 ├── agents/          # Agent definition .md files
 ├── commands/        # Slash command .md files
-├── configs/         # Per-tool config files (claude-settings.json, pi-settings.json, etc.)
+├── configs/         # Per-tool config files (claude-settings.json, etc.)
 ├── themes/          # Claude Code themes
-├── extensions/      # Pi/OpenCode extensions (TypeScript)
+├── extensions/      # OpenCode extensions (TypeScript)
 └── docs/            # AGENTS.md (master instructions), RTK.md
 
 tools/               # Symlink manifests: define target_root and files per tool
