@@ -1,0 +1,121 @@
+{
+  "Basic Structure Model": {
+    "prefix": "prompt-basic",
+    "body": [
+      "# CONTEXT",
+      "${1:Insert the relevant information about the current situation and the goal.}",
+      "",
+      "# TASK",
+      "${2:Describe the exact action that the tool must execute.}",
+      "",
+      "# FORMAT",
+      "${3:Indicate the exact structure of the desired response.}",
+      "",
+      "# RESTRICTIONS",
+      "${4:State the elements that the tool must exclude from the response.}"
+    ],
+    "description": "Basic prompt structure divided into Context, Task, Format, and Restrictions"
+  },
+  "Universal Model": {
+    "prefix": "prompt-universal",
+    "body": [
+      "# Persona",
+      "",
+      "You are a ${1:PROFESSION/SPECIALTY} with ${2:X} years of experience in ${3:AREA}.",
+      "Your communication style is ${4:CHARACTERISTICS: direct, empathetic, technical}.",
+      "",
+      "# Context",
+      "",
+      "The situation is ${5:DESCRIPTION OF THE SCENARIO}. My goal is ${6:FINAL GOAL}. The target audience is ${7:DESCRIPTION OF THE AUDIENCE}.",
+      "",
+      "# Task",
+      "",
+      "Your task is ${8:ACTION VERB + CLEAR DESCRIPTION}.",
+      "",
+      "# Examples (Optional)",
+      "",
+      "Input Example: ${9:INPUT 1}",
+      "Ideal Output Example: ${10:OUTPUT 1}",
+      "",
+      "# Rules and Restrictions",
+      "",
+      "Always: ${11:Rule 1}, ${12:Rule 2}.",
+      "Never: ${13:Restriction 1}, ${14:Restriction 2}.",
+      "",
+      "- Focus on: ${15:Maximum priority}.",
+      "",
+      "# Output Format",
+      "",
+      "Respond using the following format ${16:JSON|Markdown|Table|Numbered List}.",
+      "The size must be ${17:MAXIMUM X WORDS/ITEMS}."
+    ],
+    "description": "Universal prompt model with Persona, Context, Task, Examples, Rules, and Output Format"
+  },
+  "Iterative Prompt Model": {
+    "prefix": "prompt-iterative",
+    "body": [
+      "We will use Iterative Prompt.",
+      "",
+      "My initial need:",
+      "${1:describe the need}",
+      "",
+      "Your role now:",
+      "",
+      "- Ask me 3 to 5 questions to deeply understand what I need.",
+      "- Only offer the solution after the answers.",
+      "",
+      "Start by asking the questions."
+    ],
+    "description": "Iterative prompt model — AI asks clarifying questions before offering a solution"
+  },
+  "Tree of Thoughts Model": {
+    "prefix": "prompt-tree",
+    "body": [
+      "Generate 3 distinct strategic approaches (A, B, C) for this problem.",
+      "Evaluate the positive points and the negative points of each option.",
+      "Synthesize the best approach at the end and combine the strongest elements of each option to generate the final response.",
+      "",
+      "Problem:",
+      "${1:describe the problem}"
+    ],
+    "description": "Tree of Thoughts — generate, evaluate, and synthesize multiple approaches"
+  },
+  "Chain of Thought Model": {
+    "prefix": "prompt-chain",
+    "body": [
+      "Solve the problem by applying step-by-step reasoning (Chain of Thought).",
+      "",
+      "Task:",
+      "${1:clearly describe the problem}",
+      "",
+      "Instructions:",
+      "",
+      "- Show the structured reasoning in logical steps.",
+      "- Only then present the conclusion.",
+      "- If there are ambiguities, ask questions first.",
+      "",
+      "Now start the reasoning."
+    ],
+    "description": "Chain of Thought — step-by-step structured reasoning before conclusion"
+  },
+  "Prompt Chaining Model": {
+    "prefix": "prompt-chaining",
+    "body": [
+      "Let's divide this task into steps.",
+      "",
+      "Steps:",
+      "",
+      "1. Understand the goal",
+      "2. List necessary steps",
+      "3. Execute each step",
+      "4. Consolidate everything in the final response",
+      "",
+      "Task:",
+      "${1:task description}",
+      "",
+      "Start with step 1:",
+      "\"Explain the goal in your own words.\""
+    ],
+    "description": "Prompt Chaining — break complex tasks into sequential executable steps"
+  }
+}

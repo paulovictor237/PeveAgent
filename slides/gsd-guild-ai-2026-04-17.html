@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSD — Get Shit Done · Guild de AI · PX.Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050814;
+    --bg-2: #0a0e27;
+    --bg-3: #0f1535;
+    --cyan: #00f0ff;
+    --cyan-dim: rgba(0,240,255,0.15);
+    --cyan-line: rgba(0,240,255,0.25);
+    --magenta: #ff2ea8;
+    --magenta-dim: rgba(255,46,168,0.15);
+    --yellow: #ffe047;
+    --green: #a6ff4d;
+    --red: #ff4d6a;
+    --ink: #e6f6ff;
+    --ink-soft: #8fa3c9;
+    --muted: #4a5578;
+    --grid: rgba(0,240,255,0.06);
+    --f-display: 'Orbitron', 'JetBrains Mono', monospace;
+    --f-body: 'Rajdhani', sans-serif;
+    --f-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--f-body); -webkit-font-smoothing: antialiased; font-weight: 500;
+  }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+  /* Grid backdrop + vignette */
+  body::before {
+    content: ""; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, transparent 40%, rgba(5,8,20,0.9) 100%);
+    pointer-events: none; z-index: 0;
+  }
+
+  section.slide {
+    width: 100vw; height: 100vh; scroll-snap-align: start; scroll-snap-stop: always;
+    padding: 84px 96px 72px;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; overflow: hidden; z-index: 1;
+  }
+
+  /* Corner brackets */
+  section.slide::before, section.slide::after {
+    content: ""; position: absolute; width: 40px; height: 40px;
+    border: 2px solid var(--cyan); pointer-events: none;
+  }
+  section.slide::before { top: 24px; left: 24px; border-right: none; border-bottom: none; box-shadow: -2px -2px 12px rgba(0,240,255,0.3); }
+  section.slide::after  { bottom: 24px; right: 24px; border-left: none; border-top: none; box-shadow: 2px 2px 12px rgba(0,240,255,0.3); }
+
+  .meta {
+    position: absolute; left: 96px; right: 96px; bottom: 44px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--f-mono); font-size: 11px; color: var(--cyan);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .meta .brand { color: var(--magenta); text-shadow: 0 0 8px var(--magenta); }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--f-mono); font-size: 12px; color: var(--cyan);
+    letter-spacing: 0.24em; text-transform: uppercase;
+    margin-bottom: 24px;
+    text-shadow: 0 0 12px var(--cyan);
+  }
+  .eyebrow::before { content: "◆"; color: var(--magenta); }
+
+  h1 {
+    font-family: var(--f-display); font-weight: 900;
+    font-size: 120px; letter-spacing: -0.02em; line-height: 1; margin: 0;
+    color: var(--ink);
+    text-shadow: 0 0 24px rgba(0,240,255,0.5), 0 0 60px rgba(0,240,255,0.3);
+  }
+  h2 {
+    font-family: var(--f-display); font-weight: 700;
+    font-size: 46px; letter-spacing: 0; line-height: 1.1; margin: 0 0 24px;
+    color: var(--ink);
+    text-shadow: 0 0 16px rgba(0,240,255,0.3);
+  }
+  h3 { font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: 0.02em; margin: 0; color: var(--cyan); }
+
+  p { line-height: 1.55; margin: 0; }
+  .lead { font-family: var(--f-body); font-size: 26px; color: var(--ink); line-height: 1.35; max-width: 34ch; font-weight: 500; }
+  .body-l { font-size: 22px; color: var(--ink); line-height: 1.5; max-width: 60ch; font-weight: 500; }
+  .body-m { font-size: 18px; color: var(--ink-soft); line-height: 1.55; max-width: 64ch; font-weight: 500; }
+  .body-s { font-size: 15px; color: var(--ink-soft); line-height: 1.5; max-width: 64ch; }
+  strong { color: var(--cyan); font-weight: 700; }
+  em.hot { color: var(--magenta); font-style: normal; font-weight: 700; text-shadow: 0 0 12px var(--magenta); }
+
+  code, .mono { font-family: var(--f-mono); }
+  pre.code {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    color: var(--ink); padding: 22px 26px; border-radius: 4px;
+    font-family: var(--f-mono); font-size: 15px; line-height: 1.6;
+    border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan);
+    box-shadow: 0 0 30px rgba(0,240,255,0.08);
+    overflow: auto; margin: 0;
+  }
+  pre.code .cmd { color: var(--cyan); font-weight: 600; }
+  pre.code .cm  { color: var(--muted); }
+  pre.code .str { color: var(--magenta); }
+  pre.code .ok  { color: var(--green); }
+
+  /* ===== ASIDE "EM PORTUGUÊS" — the plain-language callout ===== */
+  .aside {
+    display: grid; grid-template-columns: auto 1fr; gap: 14px;
+    background: rgba(255,46,168,0.06);
+    border: 1px dashed var(--magenta);
+    border-left: 3px solid var(--magenta);
+    padding: 14px 18px 14px 16px;
+    font-family: var(--f-body); font-size: 15px; color: var(--ink-soft);
+    line-height: 1.5; font-weight: 500;
+    max-width: 68ch;
+  }
+  .aside .tag {
+    font-family: var(--f-mono); font-size: 10px; color: var(--magenta);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    align-self: flex-start; padding-top: 3px;
+    text-shadow: 0 0 6px var(--magenta); white-space: nowrap;
+  }
+  .aside strong { color: var(--magenta); }
+
+  /* ============ SLIDE 1: COVER ============ */
+  .slide.cover { justify-content: space-between; padding: 96px; }
+  .slide.cover h1 { font-size: 196px; letter-spacing: 0.04em; }
+  .slide.cover .sub {
+    font-family: var(--f-body); font-size: 30px; color: var(--cyan); max-width: 30ch;
+    line-height: 1.25; font-weight: 500; margin-top: 22px; letter-spacing: 0.02em;
+  }
+  .slide.cover .top {
+    display: flex; align-items: center; gap: 14px; font-family: var(--f-mono);
+    font-size: 12px; color: var(--magenta); letter-spacing: 0.3em; text-transform: uppercase;
+    text-shadow: 0 0 10px var(--magenta);
+  }
+  .slide.cover .top .dot {
+    width: 10px; height: 10px; background: var(--magenta); border-radius: 50%;
+    box-shadow: 0 0 16px var(--magenta); animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.5; transform: scale(1.2); } }
+  .slide.cover .footer {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    color: var(--ink-soft); font-size: 14px; font-family: var(--f-mono);
+    padding-top: 28px; position: relative;
+  }
+  .slide.cover .footer::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .slide.cover .footer strong { color: var(--ink); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ============ AGENDA ============ */
+  .agenda { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 12px; }
+  .agenda .card {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim);
+    padding: 26px 22px; min-height: 220px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  }
+  .agenda .card::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  }
+  .agenda .card .n { font-family: var(--f-mono); font-size: 13px; color: var(--magenta); letter-spacing: 0.16em; font-weight: 700; }
+  .agenda .card h3 { margin-top: 10px; font-size: 20px; }
+  .agenda .card .t { font-family: var(--f-mono); font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+
+  /* ============ TWO-COL ============ */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .two-col.narrow { gap: 40px; }
+
+  /* ============ CHART / HUD BOX ============ */
+  .hud-box {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim); padding: 26px;
+    box-shadow: 0 0 40px rgba(0,240,255,0.08);
+    position: relative;
+  }
+  .hud-box .hud-label {
+    position: absolute; top: -1px; left: 16px; background: var(--bg);
+    padding: 2px 10px;
+    font-family: var(--f-mono); font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.2em; border: 1px solid var(--cyan-dim);
+  }
+
+  /* ============ GLOSSARY TABLE ============ */
+  .glossary {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--cyan-dim); border: 1px solid var(--cyan-dim);
+    margin-top: 12px;
+  }
+  .glossary .row {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    padding: 14px 18px;
+    display: grid; grid-template-columns: 140px 1fr; gap: 14px;
+    align-items: center; min-height: 54px;
+  }
+  .glossary .row .term {
+    font-family: var(--f-mono); font-size: 13px; color: var(--cyan);
+    font-weight: 600; letter-spacing: 0.04em;
+  }
+  .glossary .row .def {
+    font-family: var(--f-body); font-size: 14px; color: var(--ink-soft);
+    line-height: 1.4; font-weight: 500;
+  }
+
+  /* ============ FAIL LIST ============ */
+  .fail-list { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .fail-list li {
+    display: grid; grid-template-columns: 80px 1fr; gap: 14px;
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim); border-left: 2px solid var(--magenta);
+    padding: 12px 16px;
+    font-size: 16px; color: var(--ink); font-weight: 500;
+    align-items: center;
+  }
+  .fail-list li .tag {
+    font-family: var(--f-mono); font-size: 11px; color: var(--magenta);
+    font-weight: 700; letter-spacing: 0.1em;
+    text-shadow: 0 0 6px var(--magenta);
+  }
+
+  /* ============ 3 SINS ============ */
+  .sins-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+  .sin-card {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim);
+    padding: 28px 24px 24px; position: relative;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  }
+  .sin-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--magenta); box-shadow: 0 0 8px var(--magenta); }
+  .sin-card .sin-num {
+    font-family: var(--f-mono); font-size: 40px; font-weight: 700; color: var(--magenta);
+    text-shadow: 0 0 20px var(--magenta); line-height: 1; letter-spacing: -0.02em;
+  }
+  .sin-card h3 { font-size: 20px; margin: 10px 0 8px; color: var(--ink); }
+  .sin-card p { font-size: 14px; color: var(--ink-soft); margin: 0; line-height: 1.5; font-weight: 500; }
+
+  /* ============ PITCH ============ */
+  .pitch { padding: 0 0 0 28px; margin-bottom: 28px; position: relative; }
+  .pitch::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--cyan), var(--magenta));
+    box-shadow: 0 0 12px var(--cyan);
+  }
+  .pitch .label { font-family: var(--f-mono); font-size: 12px; color: var(--magenta); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 14px; }
+  .pitch .text { font-family: var(--f-display); font-size: 32px; font-weight: 700; color: var(--ink); line-height: 1.2; max-width: 30ch; letter-spacing: -0.01em; }
+  .pitch .text em { color: var(--cyan); font-style: normal; text-shadow: 0 0 16px var(--cyan); }
+
+  .quote-cyber {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim); border-left: 3px solid var(--magenta);
+    padding: 22px 26px; font-family: var(--f-body); font-size: 18px;
+    color: var(--ink); line-height: 1.45; max-width: 56ch; font-weight: 500;
+  }
+  .quote-cyber .src {
+    display: block; margin-top: 12px;
+    font-family: var(--f-mono); font-size: 11px; color: var(--magenta);
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+
+  /* ============ TRUST CHIPS ============ */
+  .trust-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .trust-chip {
+    background: rgba(0,240,255,0.08); border: 1px solid var(--cyan-dim);
+    padding: 7px 14px;
+    font-family: var(--f-mono); font-size: 13px; color: var(--cyan); font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  .agent-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+  .agent-chip {
+    padding: 8px 14px; font-family: var(--f-mono); font-size: 13px;
+    letter-spacing: 0.06em; font-weight: 600;
+  }
+  .agent-chip.primary {
+    background: rgba(0,240,255,0.12); border: 1px solid var(--cyan);
+    color: var(--cyan); text-shadow: 0 0 8px var(--cyan);
+  }
+  .agent-chip.secondary {
+    background: rgba(255,46,168,0.06); border: 1px dashed var(--magenta);
+    color: var(--ink-soft);
+  }
+
+  .install-box {
+    background: var(--bg-2); color: var(--ink);
+    padding: 16px 22px;
+    font-family: var(--f-mono); font-size: 17px;
+    border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan);
+    display: inline-block; margin-top: 12px;
+  }
+  .install-box .d { color: var(--magenta); margin-right: 10px; font-weight: 700; }
+
+  /* ============ FLOW ============ */
+  .flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 24px; }
+  .flow-step {
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim); padding: 22px 12px; text-align: center;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    position: relative;
+  }
+  .flow-step::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .flow-step .step-num { font-family: var(--f-mono); font-size: 11px; color: var(--magenta); letter-spacing: 0.14em; font-weight: 700; }
+  .flow-step h3 { font-size: 15px; margin: 8px 0 4px; }
+  .flow-step p { font-size: 12px; color: var(--ink-soft); margin: 0; line-height: 1.4; font-family: var(--f-mono); }
+
+  .flow-cmds { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 10px; }
+  .flow-cmds .cmd {
+    padding: 8px 4px; text-align: center; font-family: var(--f-mono); font-size: 11px;
+    color: var(--cyan); background: rgba(0,240,255,0.06); border: 1px solid var(--cyan-dim);
+  }
+
+  /* ============ DECISION TABLE ============ */
+  .decision-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    background: var(--bg-2); border: 1px solid var(--cyan-dim);
+    font-size: 15px; margin-top: 12px;
+  }
+  .decision-table th {
+    background: linear-gradient(90deg, var(--bg-3), var(--bg-2));
+    color: var(--cyan); font-family: var(--f-mono); font-weight: 700; font-size: 12px;
+    text-align: left; padding: 12px 16px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    border-bottom: 1px solid var(--cyan-dim);
+  }
+  .decision-table td {
+    padding: 14px 16px; border-top: 1px solid var(--cyan-dim);
+    vertical-align: top; color: var(--ink);
+  }
+  .decision-table .cmd-cell { font-family: var(--f-mono); color: var(--cyan); font-weight: 700; white-space: nowrap; }
+  .decision-table .dont td { background: rgba(255,77,106,0.06); color: var(--ink-soft); }
+  .decision-table .dont td:first-child { color: var(--red); font-weight: 700; font-family: var(--f-mono); letter-spacing: 0.1em; }
+
+  /* ============ DEMO INTRO ============ */
+  .slide.demo-intro { justify-content: center; align-items: center; text-align: center; }
+  .slide.demo-intro h1 { font-size: 180px; letter-spacing: 0.04em; }
+  .slide.demo-intro h1 .cur { color: var(--magenta); text-shadow: 0 0 30px var(--magenta); animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  .slide.demo-intro .demo-sub {
+    font-family: var(--f-body); font-size: 20px; color: var(--cyan); margin-top: 20px;
+    max-width: 50ch; font-weight: 500; letter-spacing: 0.04em;
+  }
+  .slide.demo-intro .demo-card {
+    margin-top: 44px;
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim); border-left: 3px solid var(--magenta);
+    padding: 22px 28px; font-family: var(--f-mono); font-size: 15px; color: var(--ink);
+    text-align: left; min-width: 520px;
+  }
+  .slide.demo-intro .demo-card .k { color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+
+  /* ============ TAKEAWAYS ============ */
+  .takeaway-list { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+  .takeaway-item {
+    display: grid; grid-template-columns: 72px 1fr; gap: 20px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim); border-left: 3px solid var(--cyan);
+    align-items: center;
+  }
+  .takeaway-item .big-num {
+    font-family: var(--f-display); font-size: 44px; font-weight: 900;
+    color: var(--cyan); line-height: 1; text-shadow: 0 0 20px var(--cyan);
+  }
+  .takeaway-item h3 { font-size: 20px; margin-bottom: 4px; font-family: var(--f-body); font-weight: 700; color: var(--ink); }
+  .takeaway-item p { font-size: 14px; color: var(--ink-soft); margin: 0; line-height: 1.5; font-weight: 500; }
+
+  /* ============ INSTALL HERO ============ */
+  .install-hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 44px; align-items: start; margin-top: 8px; }
+  .install-hero .install-cmd {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    color: var(--ink);
+    padding: 28px; font-family: var(--f-mono); font-size: 24px; font-weight: 600;
+    border: 1px solid var(--cyan-dim); border-left: 4px solid var(--cyan);
+    box-shadow: 0 0 30px rgba(0,240,255,0.1);
+  }
+  .install-hero .install-cmd .d { color: var(--magenta); margin-right: 12px; }
+  .link-list { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-direction: column; gap: 6px; }
+  .link-list li { font-family: var(--f-mono); font-size: 14px; color: var(--ink); }
+  .link-list li::before { content: "▸"; color: var(--magenta); margin-right: 10px; font-weight: 700; }
+
+  /* ============ QUESTIONS ============ */
+  .slide.questions { justify-content: center; align-items: center; text-align: center; }
+  .slide.questions h1 { font-size: 260px; color: var(--magenta); text-shadow: 0 0 60px var(--magenta), 0 0 120px rgba(255,46,168,0.4); letter-spacing: -0.04em; }
+  .slide.questions .q-sub { font-family: var(--f-body); font-size: 22px; color: var(--cyan); margin-top: 12px; letter-spacing: 0.04em; }
+  .slide.questions .q-contact {
+    margin-top: 56px; font-family: var(--f-mono); font-size: 14px; color: var(--ink-soft);
+    letter-spacing: 0.18em;
+  }
+  .slide.questions .q-contact strong { color: var(--cyan); }
+
+  /* ============ COMMAND CHEAT SHEET ============ */
+  .cmd-cheat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 8px; }
+  .cmd-group {
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--cyan-dim);
+    padding: 20px 22px;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+    position: relative;
+  }
+  .cmd-group::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .cmd-group .cg-title {
+    font-family: var(--f-mono); font-size: 11px; color: var(--magenta);
+    letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700;
+    margin-bottom: 14px;
+    text-shadow: 0 0 8px var(--magenta);
+  }
+  .cmd-group .cmd-row {
+    padding: 8px 0; border-top: 1px dashed var(--cyan-dim);
+  }
+  .cmd-group .cmd-row:first-of-type { border-top: none; padding-top: 0; }
+  .cmd-group .cmd-row code {
+    display: block;
+    color: var(--cyan); font-family: var(--f-mono); font-size: 13px;
+    font-weight: 700; letter-spacing: 0.01em;
+    margin-bottom: 2px;
+  }
+  .cmd-group .cmd-row .desc {
+    color: var(--ink-soft); font-size: 12px; line-height: 1.4; font-weight: 500;
+    display: block;
+  }
+
+  /* ============ NAV HINT ============ */
+  .nav-hint {
+    position: fixed; bottom: 16px; right: 16px;
+    background: rgba(5,8,20,0.85); color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    padding: 8px 14px;
+    font-size: 11px; font-family: var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
+  }
+  body.show-hint .nav-hint { opacity: 1; }
+
+  @media (max-width: 1280px) {
+    section.slide { padding: 56px 72px 60px; }
+    .meta { left: 72px; right: 72px; }
+    h1 { font-size: 96px; } h2 { font-size: 38px; }
+    .slide.cover h1 { font-size: 140px; }
+    .slide.demo-intro h1 { font-size: 130px; }
+    .slide.questions h1 { font-size: 180px; }
+  }
+
+  @media print {
+    html, body { scroll-snap-type: none; background: var(--bg); }
+    section.slide { page-break-after: always; height: auto; min-height: 100vh; }
+    .nav-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-hint">← → navegar · F: fullscreen · ESC: sair</div>
+
+<!-- ============ 01: COVER ============ -->
+<section class="slide cover" id="s1">
+  <div class="top"><span class="dot"></span> GUILD.AI // PX.CENTER // 17.04.2026</div>
+  <div>
+    <h1>GSD</h1>
+    <div class="sub">Get Shit Done — fazer AI coding parar de quebrar em tarefas de verdade</div>
+  </div>
+  <div class="footer">
+    <div><strong>André Schneider</strong><br>CTO/CDO · Motorista PX</div>
+    <div style="text-align:right">30 MIN · INTRO + DEMO_LIVE</div>
+  </div>
+  <div class="meta"><span class="brand">CYBERPUNK · HUD</span><span>01 / 23</span></div>
+</section>
+
+<!-- ============ 02: AGENDA ============ -->
+<section class="slide" id="s2">
+  <span class="eyebrow">Agenda</span>
+  <h2>30 minutos, 4 atos</h2>
+  <div class="agenda">
+    <div class="card">
+      <div><div class="n">[01]</div><h3>O problema</h3></div>
+      <div class="t">~7min // vibecoding, context rot</div>
+    </div>
+    <div class="card">
+      <div><div class="n">[02]</div><h3>O que é GSD</h3></div>
+      <div class="t">~3min // pitch e quem usa</div>
+    </div>
+    <div class="card">
+      <div><div class="n">[03]</div><h3>Como funciona</h3></div>
+      <div class="t">~8min // fluxo, waves, commits</div>
+    </div>
+    <div class="card">
+      <div><div class="n">[04]</div><h3>Demo ao vivo</h3></div>
+      <div class="t">~9min // fluxo GSD real</div>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>02 / 23</span></div>
+</section>
+
+<!-- ============ 03: AI CODING EM 60s ============ -->
+<section class="slide" id="s3">
+  <span class="eyebrow">Contexto // fundamentos</span>
+  <h2>AI coding em 60 segundos</h2>
+  <div class="two-col">
+    <div>
+      <p class="body-l">Um <strong>assistente que escreve código junto com você</strong> — lê o repo, entende o pedido, edita arquivos, roda testes e abre PRs.</p>
+      <p class="body-m" style="margin-top: 18px;"><strong>Claude Code</strong> e <strong>Codex</strong> (OpenAI) são os dois pesos-pesados que rodam no terminal. Também existem Cursor, Windsurf, Gemini CLI.</p>
+      <div class="aside" style="margin-top: 20px;">
+        <span class="tag">Em PT</span>
+        <div><strong>Repo</strong> é a pasta com todo o código de um projeto, versionada (cada alteração fica registrada). <strong>Terminal</strong> é a tela preta de comandos onde devs vivem — é onde esses agentes rodam.</div>
+      </div>
+    </div>
+    <div>
+      <pre class="code"><span class="cm"># você pede em linguagem natural</span>
+<span class="cmd">&gt;</span> "adiciona um endpoint /health
+    no server.py e um teste"
+
+<span class="cm"># o agente lê o código, edita,
+# roda o teste, commita</span>
+<span class="ok">✓</span> server.py            <span class="str">+12</span>
+<span class="ok">✓</span> tests/test_health.py <span class="str">+18</span>
+<span class="ok">✓</span> pytest passou
+<span class="ok">✓</span> git commit -m "..."</pre>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>03 / 23</span></div>
+</section>
+
+<!-- ============ 04: GLOSSÁRIO ============ -->
+<section class="slide" id="s4">
+  <span class="eyebrow">Dicionário rápido</span>
+  <h2>9 termos que vão aparecer — guarde essa página</h2>
+  <div class="glossary">
+    <div class="row"><div class="term">repo</div><div class="def">Pasta com todo o código de um projeto, versionada. Toda alteração fica registrada.</div></div>
+    <div class="row"><div class="term">commit</div><div class="def">Um "save" do código com mensagem explicando o que mudou. O bloco atômico da história.</div></div>
+    <div class="row"><div class="term">PR (pull request)</div><div class="def">Proposta: "quero juntar esses commits no código principal". Passa por revisão antes de entrar.</div></div>
+    <div class="row"><div class="term">endpoint</div><div class="def">Um "botão" da API — URL que o sistema responde. Ex: GET /health → "estou no ar".</div></div>
+    <div class="row"><div class="term">teste / pytest</div><div class="def">Código que testa outro código automaticamente. Roda em segundos e acusa se algo quebrou.</div></div>
+    <div class="row"><div class="term">token</div><div class="def">Unidade de texto que o modelo "lê" (~1 palavra = 1-2 tokens). O contexto é medido em tokens.</div></div>
+    <div class="row"><div class="term">XML</div><div class="def">Formato de texto com etiquetas (&lt;task&gt;...&lt;/task&gt;). Modelos de AI parseiam com quase zero erro.</div></div>
+    <div class="row"><div class="term">CLI / terminal</div><div class="def">Tela preta de comandos. Claude Code e Codex vivem ali — não é um chat web.</div></div>
+    <div class="row"><div class="term">agente de AI coding</div><div class="def">Claude Code, Codex, Gemini CLI — ferramentas diferentes, mesmo papel: ler o repo, editar, rodar, commitar.</div></div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>04 / 23</span></div>
+</section>
+
+<!-- ============ 05: VIBECODING ============ -->
+<section class="slide" id="s5">
+  <span class="eyebrow">O modo padrão</span>
+  <h2>Vibecoding: descreve, gera, reza</h2>
+  <div class="two-col">
+    <div>
+      <div class="quote-cyber" style="font-size:20px;">
+        "faz um sistema de login com JWT, OAuth Google e reset de senha"
+        <span class="src">PROMPT TÍPICO</span>
+      </div>
+      <p class="body-m" style="margin-top: 20px;">Funciona bem em protótipo, landing page, script descartável. <strong>Quebra feio em código sério</strong> — e ninguém sabe onde quebrou.</p>
+      <div class="aside" style="margin-top: 18px;">
+        <span class="tag">Em PT</span>
+        <div><strong>Alucinar import</strong> = o modelo inventa uma função que não existe na biblioteca real. <strong>Refactor</strong> = reorganizar o código sem mudar o que ele faz.</div>
+      </div>
+    </div>
+    <div>
+      <ul class="fail-list">
+        <li><span class="tag">FAIL 01</span><span>Alucina imports que não existem na versão da biblioteca</span></li>
+        <li><span class="tag">FAIL 02</span><span>Esquece contexto no meio de um refactor grande</span></li>
+        <li><span class="tag">FAIL 03</span><span>Edita o arquivo errado, ou escreve sobre trabalho em andamento</span></li>
+        <li><span class="tag">FAIL 04</span><span>PR monstro de 40 arquivos, nenhum commit atômico</span></li>
+        <li><span class="tag">FAIL 05</span><span>Declara "pronto" sem rodar o código</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>05 / 23</span></div>
+</section>
+
+<!-- ============ 06: CONTEXT ROT ============ -->
+<section class="slide" id="s6">
+  <span class="eyebrow">O gargalo invisível</span>
+  <h2>Context rot — sessão longa vira código ruim</h2>
+  <div class="two-col">
+    <div>
+      <p class="lead">O modelo tem janela de contexto <em class="hot">finita</em> (ex: 200k tokens).</p>
+      <p class="body-m" style="margin-top: 16px;">Cada arquivo lido, cada ferramenta, cada erro de teste ocupa espaço. Quando enche, a qualidade despenca: o modelo "esquece" arquivos que acabou de ler, reinventa código existente, entra em loops sutis.</p>
+      <div class="aside" style="margin-top: 18px;">
+        <span class="tag">Em PT</span>
+        <div>Pensa na memória de trabalho do modelo como uma <strong>mesa</strong>. 200k tokens = mesa de tamanho X. Quanto mais papel você empilha, mais coisa cai da mesa — sem você perceber.</div>
+      </div>
+    </div>
+    <div class="hud-box">
+      <span class="hud-label">SYS.ANALYSIS</span>
+      <svg viewBox="0 0 500 280" width="100%" height="280" role="img" aria-label="Qualidade do código cai conforme contexto enche">
+        <defs>
+          <linearGradient id="g1" x1="0" x2="1">
+            <stop offset="0" stop-color="#00f0ff" stop-opacity="0.9"/>
+            <stop offset="1" stop-color="#ff2ea8" stop-opacity="0.3"/>
+          </linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <line x1="60" y1="240" x2="480" y2="240" stroke="#00f0ff" stroke-opacity="0.3" stroke-width="1"/>
+        <line x1="60" y1="40" x2="60" y2="240" stroke="#00f0ff" stroke-opacity="0.3" stroke-width="1"/>
+        <text x="270" y="270" fill="#8fa3c9" font-size="11" font-family="JetBrains Mono" text-anchor="middle">TOKENS NO CONTEXTO →</text>
+        <rect x="60" y="30" width="420" height="6" fill="#0a0e27"/>
+        <rect x="60" y="30" width="340" height="6" fill="url(#g1)"/>
+        <text x="60" y="22" fill="#8fa3c9" font-size="10" font-family="JetBrains Mono">0</text>
+        <text x="470" y="22" fill="#8fa3c9" font-size="10" font-family="JetBrains Mono" text-anchor="end">200k</text>
+        <path d="M 60 60 Q 200 65 280 100 T 470 220" stroke="#00f0ff" stroke-width="3" fill="none" filter="url(#glow)"/>
+        <path d="M 60 60 Q 200 65 280 100 T 470 220" stroke="#00f0ff" stroke-width="2" fill="none"/>
+        <rect x="320" y="40" width="160" height="200" fill="#ff2ea8" opacity="0.08"/>
+        <rect x="320" y="40" width="160" height="200" fill="none" stroke="#ff2ea8" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="400" y="62" fill="#ff2ea8" font-size="11" font-family="JetBrains Mono" font-weight="700" text-anchor="middle">DECAY.ZONE</text>
+        <text x="400" y="78" fill="#8fa3c9" font-size="9" font-family="Inter" text-anchor="middle">alucinação · loops · esquecimento</text>
+        <circle cx="100" cy="62" r="5" fill="#00f0ff"/>
+        <circle cx="250" cy="90" r="5" fill="#ffe047"/>
+        <circle cx="420" cy="200" r="5" fill="#ff2ea8"/>
+      </svg>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>06 / 23</span></div>
+</section>
+
+<!-- ============ 07: 3 PECADOS ============ -->
+<section class="slide" id="s7">
+  <span class="eyebrow">Os 3 pecados</span>
+  <h2>Por que AI coding falha em produção</h2>
+  <p class="body-m">Não é "o modelo é ruim". É que o <strong>workflow está quebrado</strong>.</p>
+  <div class="sins-grid">
+    <div class="sin-card">
+      <div class="sin-num">01</div>
+      <h3>Sem plano</h3>
+      <p>Pula direto pra "gera o código". Sem critério de sucesso, sem quebra em etapas, sem rastro.</p>
+    </div>
+    <div class="sin-card">
+      <div class="sin-num">02</div>
+      <h3>Contexto saturado</h3>
+      <p>Tudo numa sessão só. Quando chega na task 5, o modelo já esqueceu a task 1.</p>
+    </div>
+    <div class="sin-card">
+      <div class="sin-num">03</div>
+      <h3>Sem verificação</h3>
+      <p>"Pronto!" sem rodar código, sem teste, sem UAT. PR de 2000 linhas, nada atômico.</p>
+    </div>
+  </div>
+  <div class="aside" style="margin-top: 22px;">
+    <span class="tag">Em PT</span>
+    <div><strong>UAT</strong> (User Acceptance Testing) = teste de aceite — verificar se o que foi entregue atende ao que foi pedido, na prática.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>07 / 23</span></div>
+</section>
+
+<!-- ============ 08: SPEC-DRIVEN ============ -->
+<section class="slide" id="s8spec">
+  <span class="eyebrow">A ponte // conceito</span>
+  <h2>Spec-Driven Development — por que isso importa</h2>
+  <p class="body-m" style="margin-bottom: 16px;">Ideia central: escreva o <strong>contrato</strong> antes do código. Depois cada passo se deriva dele — plano, execução, verificação.</p>
+  <div class="two-col">
+    <div>
+      <p class="body-m" style="font-weight: 700; color: var(--magenta); margin-bottom: 10px;">Prompt-em-sequência (o padrão)</p>
+      <pre class="code" style="font-size: 13px;"><span class="cm">prompt 1</span>  "faz login JWT"
+    <span class="str">↓</span>
+<span class="cm">prompt 2</span>  "ah, adiciona OAuth"
+    <span class="str">↓</span>
+<span class="cm">prompt 3</span>  "muda pra sessions"
+    <span class="str">↓</span>
+<span class="cm">prompt 4</span>  "rerroda os testes"
+
+<span class="str">→</span>  código inconsistente
+<span class="str">→</span>  sem rastro
+<span class="str">→</span>  contexto saturado
+<span class="str">→</span>  reverter = pesadelo</pre>
+    </div>
+    <div>
+      <p class="body-m" style="font-weight: 700; color: var(--cyan); margin-bottom: 10px;">Spec-driven (GSD)</p>
+      <pre class="code" style="font-size: 13px;"><span class="cmd">spec</span>    contrato em .md no repo
+    <span class="ok">↓</span>
+<span class="cmd">plan</span>    tasks atômicas em XML
+    <span class="ok">↓</span>
+<span class="cmd">code</span>    1 task = 1 commit
+    <span class="ok">↓</span>
+<span class="cmd">verify</span>  testes contra a spec
+
+<span class="ok">→</span>  contrato claro
+<span class="ok">→</span>  commits rastreáveis
+<span class="ok">→</span>  agente consulta spec
+       qualquer hora
+<span class="ok">→</span>  reverter = cirúrgico</pre>
+    </div>
+  </div>
+  <div class="aside" style="margin-top: 14px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Spec</strong> = especificação. Um contrato em texto (markdown + XML) que descreve <em style="color:var(--cyan);font-style:normal;font-weight:700;">o que</em> o sistema deve fazer, não <em style="color:var(--cyan);font-style:normal;font-weight:700;">como</em>. Como está no disco, o agente <strong>não precisa lembrar</strong> — ele consulta. Por isso combate context rot.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>08 / 23</span></div>
+</section>
+
+<!-- ============ 09: PITCH ============ -->
+<section class="slide" id="s8">
+  <span class="eyebrow">O que é GSD</span>
+  <h2>Meta-prompting + context engineering pra agentes de AI coding</h2>
+  <div class="pitch">
+    <div class="label">// em uma frase</div>
+    <div class="text"><em>Planeja</em> antes, <em>executa</em> com contexto fresco, <em>commita</em> atomicamente, <em>verifica</em> no final.</div>
+  </div>
+  <div class="quote-cyber">
+    "A complexidade está no sistema, não no seu workflow — você descreve a ideia, o GSD orquestra o resto."
+    <span class="src">&gt;&gt; README do projeto</span>
+  </div>
+  <div class="aside" style="margin-top: 18px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Meta-prompting:</strong> em vez de você pedir "faça X", você instrui o sistema de <em style="font-style:italic;color:var(--cyan)">como</em> pedir. <strong>Context engineering:</strong> cuidar do que está na "mesa" do modelo em cada momento — o que ele vê e o que some.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>09 / 23</span></div>
+</section>
+
+<!-- ============ 09: QUEM USA ============ -->
+<section class="slide" id="s9">
+  <span class="eyebrow">Por que eu me importo</span>
+  <h2>Open source, maduro, agnóstico de modelo</h2>
+  <div class="two-col">
+    <div>
+      <p class="body-m" style="margin-bottom: 14px;">Engenheiros que colocam GSD em produção:</p>
+      <div class="trust-bar">
+        <span class="trust-chip">Amazon</span>
+        <span class="trust-chip">Google</span>
+        <span class="trust-chip">Shopify</span>
+        <span class="trust-chip">Webflow</span>
+      </div>
+      <p class="body-m" style="margin-top: 26px; margin-bottom: 10px;">Funciona com qualquer agente de AI coding:</p>
+      <div class="agent-bar">
+        <span class="agent-chip primary">Claude Code</span>
+        <span class="agent-chip primary">Codex</span>
+        <span class="agent-chip primary">Gemini CLI</span>
+        <span class="agent-chip secondary">OpenCode</span>
+        <span class="agent-chip secondary">Cursor</span>
+        <span class="agent-chip secondary">Windsurf</span>
+        <span class="agent-chip secondary">Kilo</span>
+      </div>
+      <p class="body-m" style="margin-top: 18px; font-size: 15px;">Troca de modelo/agente sem refazer seus plans — <strong>PROJECT.md</strong>, <strong>REQUIREMENTS.md</strong> e <strong>PLAN.md</strong> são portáveis.</p>
+    </div>
+    <div>
+      <p class="body-m" style="margin-bottom: 10px;">Instalação:</p>
+      <div class="install-box"><span class="d">$</span>npx get-shit-done-cc@latest</div>
+      <p class="body-s" style="margin-top: 16px;">Escolhe global ou por projeto · instala as skills <code style="color:var(--cyan)">/gsd-*</code> no seu agente.</p>
+      <div class="aside" style="margin-top: 18px;">
+        <span class="tag">Em PT</span>
+        <div><strong>npx</strong> é um comando do Node que baixa e roda um pacote na hora, sem instalar global. Só precisa ter Node no computador.</div>
+      </div>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>10 / 23</span></div>
+</section>
+
+<!-- ============ 10: FLUXO 6 PASSOS ============ -->
+<section class="slide" id="s10">
+  <span class="eyebrow">Como funciona</span>
+  <h2>O fluxo em 6 passos</h2>
+  <p class="body-m">Cada passo tem um comando próprio. Você entra e sai onde quiser — dá pra usar só um, ou o fluxo inteiro.</p>
+  <div class="flow">
+    <div class="flow-step"><div class="step-num">[01]</div><h3>Initialize</h3><p>questões + roadmap</p></div>
+    <div class="flow-step"><div class="step-num">[02]</div><h3>Discuss</h3><p>preferências</p></div>
+    <div class="flow-step"><div class="step-num">[03]</div><h3>Plan</h3><p>XML atômico</p></div>
+    <div class="flow-step"><div class="step-num">[04]</div><h3>Execute</h3><p>waves paralelas</p></div>
+    <div class="flow-step"><div class="step-num">[05]</div><h3>Verify</h3><p>UAT automático</p></div>
+    <div class="flow-step"><div class="step-num">[06]</div><h3>Ship</h3><p>PR verificado</p></div>
+  </div>
+  <div class="flow-cmds">
+    <div class="cmd">/gsd-new-project</div>
+    <div class="cmd">/gsd-discuss-phase</div>
+    <div class="cmd">/gsd-plan-phase</div>
+    <div class="cmd">/gsd-execute-phase</div>
+    <div class="cmd">/gsd-verify-work</div>
+    <div class="cmd">/gsd-ship</div>
+  </div>
+  <div class="aside" style="margin-top: 22px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Roadmap:</strong> mapa das fases do projeto em ordem. <strong>Fase:</strong> um pedaço do trabalho com começo, meio e critério de "pronto". O GSD materializa tudo em arquivos <code style="color:var(--cyan)">.md</code> no repo.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>11 / 23</span></div>
+</section>
+
+<!-- ============ 11: INITIALIZE + PLAN ============ -->
+<section class="slide" id="s11">
+  <span class="eyebrow">Passos 01 a 03</span>
+  <h2>O sistema escreve a spec antes de escrever o código</h2>
+  <div class="two-col">
+    <div>
+      <p class="body-m" style="margin-bottom: 14px;">O GSD materializa o contexto em arquivos versionados:</p>
+      <ul class="fail-list">
+        <li><span class="tag">DOC</span><span><strong>PROJECT.md</strong> · a visão, o porquê, stakeholders</span></li>
+        <li><span class="tag">DOC</span><span><strong>REQUIREMENTS.md</strong> · o que precisa existir pra "estar pronto"</span></li>
+        <li><span class="tag">DOC</span><span><strong>ROADMAP.md</strong> · fases ordenadas por dependência</span></li>
+        <li><span class="tag">DOC</span><span><strong>PLAN.md</strong> · tasks atômicas em XML estruturado</span></li>
+      </ul>
+      <div class="aside" style="margin-top: 18px;">
+        <span class="tag">Em PT</span>
+        <div><strong>Por que XML?</strong> É um formato com etiquetas (<code>&lt;task&gt;</code>, <code>&lt;goal&gt;</code>) que o agente parseia com quase zero erro. Pense em formulário estruturado vs. texto livre.</div>
+      </div>
+    </div>
+    <div>
+      <p class="body-m" style="margin-bottom: 10px;">Exemplo de task no PLAN.md:</p>
+      <pre class="code" style="font-size: 14px;"><span class="cm">&lt;!-- lido pelo agente (Claude, Codex, etc) --&gt;</span>
+<span class="str">&lt;task id="1.2"&gt;</span>
+  <span class="str">&lt;goal&gt;</span>health endpoint<span class="str">&lt;/goal&gt;</span>
+  <span class="str">&lt;files&gt;</span>
+    src/server.py
+    tests/test_health.py
+  <span class="str">&lt;/files&gt;</span>
+  <span class="str">&lt;acceptance&gt;</span>
+    GET /health → 200 {ok:true}
+  <span class="str">&lt;/acceptance&gt;</span>
+<span class="str">&lt;/task&gt;</span></pre>
+      <p class="body-s" style="margin-top: 14px;">Cada tag vira uma <strong>promessa verificável</strong> — não dá pra fechar a task sem cumprir o <code style="color:var(--cyan)">&lt;acceptance&gt;</code>.</p>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>12 / 23</span></div>
+</section>
+
+<!-- ============ 12: WAVES ============ -->
+<section class="slide" id="s12">
+  <span class="eyebrow">Passo 04 // Execute</span>
+  <h2>Waves — paralelismo com contexto fresco</h2>
+  <p class="body-m">Tasks independentes rodam <strong>ao mesmo tempo</strong>, cada uma num sub-agente próprio com <strong>200k tokens limpos</strong>. Tasks dependentes esperam a wave anterior terminar.</p>
+  <div style="margin-top: 18px;">
+    <svg viewBox="0 0 960 240" width="100%" height="240" role="img" aria-label="Diagrama de waves">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#00f0ff"/>
+        </marker>
+      </defs>
+      <rect x="20" y="90" width="170" height="60" rx="4" fill="#0a0e27" stroke="#00f0ff" stroke-width="2"/>
+      <text x="105" y="118" fill="#e6f6ff" font-family="Orbitron" font-weight="700" font-size="13" text-anchor="middle">ORQUESTRADOR</text>
+      <text x="105" y="136" fill="#ff2ea8" font-family="JetBrains Mono" font-size="10" text-anchor="middle">/gsd-execute-phase</text>
+
+      <line x1="190" y1="120" x2="340" y2="40"  stroke="#00f0ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="190" y1="120" x2="340" y2="120" stroke="#00f0ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="190" y1="120" x2="340" y2="200" stroke="#00f0ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <g><rect x="350" y="10" width="220" height="60" rx="4" fill="#0f1535" stroke="#ff2ea8" stroke-width="2"/><text x="460" y="34" fill="#e6f6ff" font-family="Orbitron" font-weight="700" font-size="12" text-anchor="middle">TASK 1.1 // /health endpoint</text><text x="460" y="52" fill="#8fa3c9" font-family="JetBrains Mono" font-size="10" text-anchor="middle">contexto fresco · 200k</text></g>
+      <g><rect x="350" y="90" width="220" height="60" rx="4" fill="#0f1535" stroke="#ff2ea8" stroke-width="2"/><text x="460" y="114" fill="#e6f6ff" font-family="Orbitron" font-weight="700" font-size="12" text-anchor="middle">TASK 1.2 // logger</text><text x="460" y="132" fill="#8fa3c9" font-family="JetBrains Mono" font-size="10" text-anchor="middle">contexto fresco · 200k</text></g>
+      <g><rect x="350" y="170" width="220" height="60" rx="4" fill="#0f1535" stroke="#ff2ea8" stroke-width="2"/><text x="460" y="194" fill="#e6f6ff" font-family="Orbitron" font-weight="700" font-size="12" text-anchor="middle">TASK 1.3 // config env</text><text x="460" y="212" fill="#8fa3c9" font-family="JetBrains Mono" font-size="10" text-anchor="middle">contexto fresco · 200k</text></g>
+
+      <line x1="570" y1="40"  x2="720" y2="120" stroke="#00f0ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="570" y1="120" x2="720" y2="120" stroke="#00f0ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="570" y1="200" x2="720" y2="120" stroke="#00f0ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <rect x="730" y="90" width="210" height="60" rx="4" fill="#0a0e27" stroke="#00f0ff" stroke-width="2" stroke-dasharray="4 4"/>
+      <text x="835" y="114" fill="#e6f6ff" font-family="Orbitron" font-weight="700" font-size="12" text-anchor="middle">WAVE 2 // TASK 2.1</text>
+      <text x="835" y="132" fill="#8fa3c9" font-family="JetBrains Mono" font-size="10" text-anchor="middle">espera wave 1 fechar</text>
+
+      <text x="460" y="236" fill="#00f0ff" font-family="JetBrains Mono" font-size="10" text-anchor="middle" letter-spacing="1">WAVE 1 · PARALELA</text>
+    </svg>
+  </div>
+  <div class="aside" style="margin-top: 16px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Sub-agente:</strong> outro agente rodando em paralelo com a memória zerada, dedicado a uma task só. O <strong>orquestrador</strong> é o agente principal que distribui as tasks e junta os resultados.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>13 / 23</span></div>
+</section>
+
+<!-- ============ 13: ATOMIC COMMITS ============ -->
+<section class="slide" id="s13">
+  <span class="eyebrow">Passos 04 e 05</span>
+  <h2>1 task = 1 commit · rastro limpo, reversão barata</h2>
+  <div class="two-col">
+    <div>
+      <p class="body-m">Em vez de um PR gigante, o GSD emite <strong>um commit por task</strong> — cada um com mensagem padronizada e referenciando a task do PLAN.md.</p>
+      <p class="body-m" style="margin-top: 12px;">Se algo quebra? <code style="color:var(--cyan)">git revert &lt;sha&gt;</code>. Se alguém pergunta "por que isso existe?" — o commit aponta pra spec.</p>
+      <p class="body-m" style="margin-top: 12px;"><strong>/gsd-verify-work</strong> roda os critérios de aceite — não deixa fechar uma fase sem UAT.</p>
+      <div class="aside" style="margin-top: 16px;">
+        <span class="tag">Em PT</span>
+        <div><strong>git revert &lt;sha&gt;:</strong> desfaz UM commit específico sem perder os outros. Por isso o rastro atômico importa — você reverte cirurgicamente, não a noite inteira de trabalho.</div>
+      </div>
+    </div>
+    <div>
+      <pre class="code" style="font-size: 13px;"><span class="cm">$ git log --oneline</span>
+<span class="cmd">a3f2c1d</span> task 1.3: config env vars
+<span class="cmd">7b9e04a</span> task 1.2: logger estruturado
+<span class="cmd">e4d8f19</span> task 1.1: GET /health endpoint
+<span class="cmd">c27ab03</span> plan: adiciona fase observabilidade
+<span class="cmd">9f1d6e2</span> init: PROJECT.md + REQUIREMENTS.md
+
+<span class="cm">$ /gsd-verify-work</span>
+<span class="ok">✓</span> task 1.1 · acceptance passou
+<span class="ok">✓</span> task 1.2 · acceptance passou
+<span class="ok">✓</span> task 1.3 · acceptance passou
+<span class="cmd">→</span> fase pronta pra /gsd-ship</pre>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>14 / 23</span></div>
+</section>
+
+<!-- ============ 14: QUANDO USAR ============ -->
+<section class="slide" id="s14">
+  <span class="eyebrow">Escolhendo a ferramenta</span>
+  <h2>Qual comando usar — e quando não usar</h2>
+  <table class="decision-table">
+    <thead>
+      <tr>
+        <th style="width:26%">Comando</th>
+        <th style="width:34%">Serve pra</th>
+        <th style="width:18%">Tempo</th>
+        <th>Exemplo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cmd-cell">/gsd-fast</td>
+        <td>Task pontual <strong style="color:var(--cyan)">sem projeto GSD</strong> — standalone</td>
+        <td>~5 min</td>
+        <td>Script util, endpoint <code style="color:var(--cyan)">/health</code></td>
+      </tr>
+      <tr>
+        <td class="cmd-cell">/gsd-quick</td>
+        <td>Task pontual <strong style="color:var(--cyan)">dentro de projeto GSD ativo</strong></td>
+        <td>~5 min</td>
+        <td>Micro-feature, fix com rastro</td>
+      </tr>
+      <tr>
+        <td class="cmd-cell">/gsd-plan-phase<br>+ execute</td>
+        <td>Feature média, 3-8 arquivos</td>
+        <td>30-90 min</td>
+        <td>Login JWT com reset de senha</td>
+      </tr>
+      <tr>
+        <td class="cmd-cell">/gsd-new-project</td>
+        <td>Iniciar projeto GSD inteiro (PROJECT.md, ROADMAP…)</td>
+        <td>Meio dia+</td>
+        <td>Novo serviço de notificação</td>
+      </tr>
+      <tr class="dont">
+        <td>NÃO USAR</td>
+        <td>Script descartável, exploração, one-liner, fix de typo</td>
+        <td>—</td>
+        <td>Chatear com o agente puro é melhor</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="body-m" style="margin-top: 22px; font-size: 16px;">Regra prática: se a tarefa cabe na sua cabeça inteira, vai de agente puro. Se precisa de <strong>plano, rastro e verificação</strong>, vai de GSD.</p>
+  <div class="aside" style="margin-top: 14px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Typo</strong> = erro de digitação. <strong>One-liner</strong> = mudança de uma linha só. Usar GSD pra isso é bazuca pra matar mosca.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>15 / 23</span></div>
+</section>
+
+<!-- ============ 15: DEMO INTRO ============ -->
+<section class="slide demo-intro" id="s15">
+  <div>
+    <span class="eyebrow" style="justify-content:center;">&gt; Parte 04</span>
+    <h1>DEMO<span class="cur">_</span></h1>
+    <div class="demo-sub">/GSD-NEW-PROJECT · CORTEX MCP · FLUXO AO VIVO</div>
+    <div class="demo-card">
+      <div><span class="k">&gt; goal   ::</span> resumo executivo das agendas da semana (HTML)</div>
+      <div><span class="k">&gt; start  ::</span> /gsd-new-project</div>
+      <div><span class="k">&gt; source ::</span> Cortex ms-graph · eventos de calendário Outlook</div>
+      <div><span class="k">&gt; model  ::</span> Sonnet 4.6 · skill otimizada pra economia de tokens</div>
+      <div><span class="k">&gt; fb     ::</span> HTML pré-gerado + git log screenshot</div>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>16 / 23</span></div>
+</section>
+
+<!-- ============ 16: DEMO FALLBACK ============ -->
+<section class="slide" id="s16">
+  <span class="eyebrow">Se o demo travar</span>
+  <h2>O que você deveria estar vendo no terminal</h2>
+  <pre class="code" style="font-size: 13px;"><span class="cm">$ /gsd-new-project</span>
+
+<span class="cmd">[interview]</span>  ~5 perguntas rápidas sobre o projeto
+              → nome, escopo, stakeholders, restrições
+<span class="cmd">[research]</span>   inspeciona Cortex MCP · ms-graph (list-calendar-events,
+              get-meeting-transcript) · disponibilidade Sonnet 4.6
+<span class="cmd">[define]</span>     gera <span class="str">PROJECT.md</span> · <span class="str">REQUIREMENTS.md</span> · <span class="str">ROADMAP.md</span>
+<span class="cmd">[plan]</span>       fase 1: CLI → coleta eventos semana → HTML minimalista
+              fase 2: insights de otimização de rotina
+<span class="cmd">[commit]</span>     0001abc · "init: weekly-agenda-digest"
+
+<span class="cmd">→ daqui em diante o fluxo é reativo:</span>
+
+  <span class="ok">/gsd-plan-phase</span>      · planejar a próxima fase
+  <span class="ok">/gsd-execute-phase</span>   · rodar as tasks em waves
+  <span class="ok">/gsd-verify-work</span>     · validar UAT
+  <span class="ok">/gsd-ship</span>            · criar PR quando tudo passar</pre>
+  <p class="body-m" style="margin-top: 18px; font-size: 15px;"><strong>Observe:</strong> plano antes de código · execução paralela · verificação rodando de verdade · commit atômico com rastro.</p>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>17 / 23</span></div>
+</section>
+
+<!-- ============ 17: COMANDOS ÚTEIS ============ -->
+<section class="slide" id="s17">
+  <span class="eyebrow">Cheat sheet</span>
+  <h2>Comandos úteis do GSD — quando usar cada um</h2>
+  <div class="cmd-cheat">
+    <div class="cmd-group">
+      <div class="cg-title">[01] Iniciar</div>
+      <div class="cmd-row"><code>/gsd-new-project</code><span class="desc">projeto GSD novo — entrevista + research + roadmap</span></div>
+      <div class="cmd-row"><code>/gsd-fast</code><span class="desc">task pontual sem projeto GSD — standalone</span></div>
+      <div class="cmd-row"><code>/gsd-quick</code><span class="desc">task pontual dentro de projeto GSD ativo</span></div>
+      <div class="cmd-row"><code>/gsd-new-milestone</code><span class="desc">ciclo novo dentro de projeto existente</span></div>
+    </div>
+    <div class="cmd-group">
+      <div class="cg-title">[02] Fluxo de fase</div>
+      <div class="cmd-row"><code>/gsd-plan-phase</code><span class="desc">planejar próxima fase (PLAN.md em XML)</span></div>
+      <div class="cmd-row"><code>/gsd-execute-phase</code><span class="desc">rodar as tasks em waves paralelas</span></div>
+      <div class="cmd-row"><code>/gsd-verify-work</code><span class="desc">validar UAT antes de fechar</span></div>
+      <div class="cmd-row"><code>/gsd-ship</code><span class="desc">criar PR quando tudo passa</span></div>
+    </div>
+    <div class="cmd-group">
+      <div class="cg-title">[03] Navegar</div>
+      <div class="cmd-row"><code>/gsd-progress</code><span class="desc">onde estou no fluxo agora?</span></div>
+      <div class="cmd-row"><code>/gsd-next</code><span class="desc">próximo passo automático</span></div>
+      <div class="cmd-row"><code>/gsd-resume-work</code><span class="desc">retomar sessão anterior com contexto</span></div>
+      <div class="cmd-row"><code>/gsd-help</code><span class="desc">listar todos os comandos disponíveis</span></div>
+    </div>
+    <div class="cmd-group">
+      <div class="cg-title">[04] Capturar sem sair</div>
+      <div class="cmd-row"><code>/gsd-note</code><span class="desc">ideia rápida — 0 atrito, processa depois</span></div>
+      <div class="cmd-row"><code>/gsd-add-todo</code><span class="desc">task que quero resolver depois</span></div>
+      <div class="cmd-row"><code>/gsd-add-backlog</code><span class="desc">ideia pro backlog (parking lot)</span></div>
+      <div class="cmd-row"><code>/gsd-plant-seed</code><span class="desc">ideia que "desperta" no milestone certo</span></div>
+    </div>
+    <div class="cmd-group">
+      <div class="cg-title">[05] Troubleshoot</div>
+      <div class="cmd-row"><code>/gsd-debug</code><span class="desc">debug sistemático com estado persistente</span></div>
+      <div class="cmd-row"><code>/gsd-forensics</code><span class="desc">post-mortem de workflow que falhou</span></div>
+      <div class="cmd-row"><code>/gsd-health</code><span class="desc">diagnostica .planning/ e sugere reparos</span></div>
+      <div class="cmd-row"><code>/gsd-pause-work</code><span class="desc">salvar contexto quando precisa parar</span></div>
+    </div>
+    <div class="cmd-group">
+      <div class="cg-title">[06] Trabalho paralelo</div>
+      <div class="cmd-row"><code>/gsd-workstreams</code><span class="desc">múltiplos workstreams paralelos</span></div>
+      <div class="cmd-row"><code>/gsd-new-workspace</code><span class="desc">workspace isolado com git worktree</span></div>
+      <div class="cmd-row"><code>/gsd-review</code><span class="desc">peer review por outro AI (Gemini, Codex)</span></div>
+      <div class="cmd-row"><code>/gsd-session-report</code><span class="desc">relatório de tokens + trabalho da sessão</span></div>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>18 / 23</span></div>
+</section>
+
+<!-- ============ 18: MODO AUTÔNOMO ============ -->
+<section class="slide" id="s18">
+  <span class="eyebrow">Autopiloto</span>
+  <h2>Modo autônomo — <code style="color:var(--magenta);font-family:var(--f-mono);font-size:0.7em;">/gsd-autonomous</code></h2>
+  <p class="body-m" style="margin-bottom: 20px;">Se o ROADMAP.md já existe e você confia no plano, esse comando executa <strong>todas as fases restantes do projeto</strong> em sequência, sozinho. Você vai fazer outra coisa.</p>
+  <div class="two-col">
+    <div>
+      <p class="body-m" style="margin-bottom: 10px; font-weight: 700; color: var(--cyan);">Como funciona</p>
+      <ul class="fail-list">
+        <li><span class="tag">LOOP</span><span>Pra cada fase pendente do ROADMAP</span></li>
+        <li><span class="tag">01</span><span>discuss — recolhe preferências da fase</span></li>
+        <li><span class="tag">02</span><span>plan — gera PLAN.md em XML</span></li>
+        <li><span class="tag">03</span><span>execute — roda tasks em waves</span></li>
+        <li><span class="tag">04</span><span>verify — valida UAT; se falha, para.</span></li>
+      </ul>
+    </div>
+    <div>
+      <p class="body-m" style="margin-bottom: 10px; font-weight: 700; color: var(--cyan);">Quando usar · quando não</p>
+      <pre class="code" style="font-size: 13px;"><span class="cmd">usa quando:</span>
+  <span class="ok">✓</span> ROADMAP confiável, fases independentes
+  <span class="ok">✓</span> você já rodou GSD antes nesse projeto
+  <span class="ok">✓</span> tem outra coisa pra fazer (almoço,
+    reunião, dormir)
+
+<span class="cmd">não usa quando:</span>
+  <span class="str">✗</span> projeto novo, sem histórico
+  <span class="str">✗</span> fase com decisão gray-area (ele para
+    e pede input — melhor decidir antes)
+  <span class="str">✗</span> você quer aprender o fluxo passo a passo</pre>
+    </div>
+  </div>
+  <div class="aside" style="margin-top: 18px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Autônomo</strong> = roda sozinho, sem você precisar clicar a cada passo. Mas <strong>não é sem rede</strong>: ele para no primeiro teste que falhar e pede sua decisão — nunca fecha fase quebrada.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>19 / 23</span></div>
+</section>
+
+<!-- ============ 20: BOAS PRÁTICAS ============ -->
+<section class="slide" id="s20bp">
+  <span class="eyebrow">Pro caminho // boas práticas</span>
+  <h2>Antes do GSD — pense bem. Muito bem.</h2>
+  <p class="body-m" style="margin-bottom: 18px;">O GSD é <strong>tão bom quanto a spec que você dá pra ele</strong>. Autonomous em cima de requisito mal-definido = 40 commits de lixo muito bem organizado.</p>
+  <div class="two-col">
+    <div>
+      <p class="body-m" style="font-weight: 700; color: var(--magenta); margin-bottom: 10px;">Antipadrão</p>
+      <ul class="fail-list">
+        <li><span class="tag">DONT</span><span>Pular o brainstorm pra "ganhar tempo" — você paga 10x em refactor</span></li>
+        <li><span class="tag">DONT</span><span>Rodar /gsd-autonomous cru — ele commita o que você <em style="font-style:italic;color:var(--cyan)">pediu</em>, não o que você <em style="font-style:italic;color:var(--cyan)">quis</em></span></li>
+        <li><span class="tag">DONT</span><span>Tratar sintoma (código quebrando) quando a dor está na spec</span></li>
+      </ul>
+    </div>
+    <div>
+      <p class="body-m" style="font-weight: 700; color: var(--cyan); margin-bottom: 10px;">Boa prática</p>
+      <ul class="fail-list">
+        <li><span class="tag">DO</span><span>Brainstorm amplo <strong>antes</strong> de /gsd-new-project — divergir, depois convergir</span></li>
+        <li><span class="tag">DO</span><span>Use skills que forçam o pensar:<br><code style="color:var(--cyan);font-size:12px;">Super-Powers · /brainstorm</code> (Anthropic)<br><code style="color:var(--cyan);font-size:12px;">Claude Octopus · /brainstorm · /prd</code> (nyldn)</span></li>
+        <li><span class="tag">DO</span><span>Se o GSD patinar ou reverter muito — <strong>pare</strong>. A spec está ruim, não o código.</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="aside" style="margin-top: 14px;">
+    <span class="tag">Em PT</span>
+    <div><strong>Brainstorm</strong> = fase de exploração, sem filtrar ideias. <strong>Super-Powers</strong> e <strong>Claude Octopus</strong> são pacotes open-source de skills que orquestram várias AIs em paralelo pra te ajudar a pensar antes de construir.</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>20 / 23</span></div>
+</section>
+
+<!-- ============ 21: TAKEAWAYS ============ -->
+<section class="slide" id="s19">
+  <span class="eyebrow">Pra levar pra casa</span>
+  <h2>3 takeaways</h2>
+  <div class="takeaway-list">
+    <div class="takeaway-item">
+      <div class="big-num">01</div>
+      <div>
+        <h3>Vibecoding falha em escala</h3>
+        <p>Protótipo sim; código sério não. O gargalo é context rot + ausência de plano e verificação.</p>
+      </div>
+    </div>
+    <div class="takeaway-item">
+      <div class="big-num">02</div>
+      <div>
+        <h3>GSD troca cerimônia por sistema</h3>
+        <p>Você descreve; o GSD planeja, executa em waves, commita atomicamente e verifica. Sem reuniões, sem template de PRD enterprise. E funciona em Claude Code, Codex, Gemini — não te prende a um fornecedor.</p>
+      </div>
+    </div>
+    <div class="takeaway-item">
+      <div class="big-num">03</div>
+      <div>
+        <h3>Comece com /gsd-fast hoje</h3>
+        <p>Próxima task pequena sua (sem precisar de projeto GSD): instala, roda <code style="color:var(--cyan)">/gsd-fast</code>, compara com o agente puro. Custa 5 min, gera intuição pro resto do fluxo.</p>
+      </div>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>21 / 23</span></div>
+</section>
+
+<!-- ============ 20: INSTALL ============ -->
+<section class="slide" id="s20">
+  <span class="eyebrow">Como começar</span>
+  <h2>1 comando, 2 minutos</h2>
+  <div class="install-hero">
+    <div>
+      <div class="install-cmd"><span class="d">$</span>npx get-shit-done-cc@latest</div>
+      <p class="body-m" style="margin-top: 18px; font-size: 16px;">Escolhe <strong>global</strong> (vale pra todo projeto) ou <strong>local</strong> (só neste repo). Depois, as skills <code style="color:var(--cyan)">/gsd-*</code> aparecem no autocomplete do seu agente.</p>
+    </div>
+    <div>
+      <p class="body-m" style="margin-bottom: 8px; font-weight: 700; color: var(--cyan);">Links úteis</p>
+      <ul class="link-list">
+        <li>github.com/gsd-build/get-shit-done</li>
+        <li>/gsd-help · dentro do agente (Claude Code, Codex...)</li>
+        <li>/gsd-progress · onde estou no fluxo</li>
+        <li>/gsd-ship · quando a fase passa no verify</li>
+      </ul>
+    </div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>22 / 23</span></div>
+</section>
+
+<!-- ============ 21: QUESTIONS ============ -->
+<section class="slide questions" id="s21">
+  <div>
+    <h1>?</h1>
+    <div class="q-sub">Perguntas, discordâncias, use cases pra testar?</div>
+    <div class="q-contact"><strong>schneider@px.center</strong> // GUILD.AI // 17.04.2026</div>
+  </div>
+  <div class="meta"><span class="brand">GSD · GUILD AI</span><span>23 / 23</span></div>
+</section>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+  let current = 0;
+  function go(i){
+    current = Math.max(0, Math.min(slides.length-1, i));
+    slides[current].scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  document.addEventListener('keydown', function(e){
+    switch(e.key){
+      case 'ArrowRight': case 'PageDown': case ' ':
+        e.preventDefault(); go(current+1); break;
+      case 'ArrowLeft': case 'PageUp':
+        e.preventDefault(); go(current-1); break;
+      case 'Home': e.preventDefault(); go(0); break;
+      case 'End':  e.preventDefault(); go(slides.length-1); break;
+      case 'f': case 'F':
+        if(document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+        break;
+    }
+  });
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting && e.intersectionRatio > 0.6){
+        const idx = slides.indexOf(e.target);
+        if(idx !== -1) current = idx;
+      }
+    });
+  }, {threshold:[0.6]});
+  slides.forEach(function(s){ io.observe(s); });
+  document.body.classList.add('show-hint');
+  setTimeout(function(){ document.body.classList.remove('show-hint'); }, 3500);
+})();
+</script>
+</body>
+</html>

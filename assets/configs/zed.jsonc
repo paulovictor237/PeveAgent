@@ -1,0 +1,175 @@
+{
+  // "autosave": {
+  //   "after_delay": {
+  //     "milliseconds": 1000,
+  //   },
+  // },
+  "markdown_preview": {
+    "max_width": 1200.0
+  },
+  "format_on_save": "on",
+  "language_models": {
+    "opencode": {
+      "show_free_models": true,
+      "show_zen_models": true
+    }
+  },
+  "context_servers": {
+    
+  },
+  "diff_view_style": "split",
+  "project_panel": {
+    "auto_fold_dirs": false,
+  },
+  "git_panel": { "sort_by_path": false, "tree_view": false },
+  "outline_panel": { "button": false },
+  // "collaboration_panel": { "button": false },
+  "search": { "button": false },
+  "debugger": { "button": false },
+  "cli_default_open_behavior": "new_window",
+  "edit_predictions": {
+    "mode": "eager",
+    "provider": "zed",
+    "open_ai_compatible_api": {
+      "prompt_format": "deepseek_coder",
+      "model": "deepseek-v4-flash",
+      "api_url": "https://api.deepseek.com",
+    },
+    "ollama": {
+      "api_url": "http://localhost:11434",
+      "model": "qwen2.5-coder:7b-base",
+    },
+  },
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "One Dark",
+  },
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Catppuccin Mocha",
+    "dark": "Catppuccin Mocha",
+  },
+  "agent": {
+    "sandbox_permissions": {
+      "network_hosts": [
+        "skills.sh",
+        "api.github.com",
+        "raw.githubusercontent.com"
+      ]
+    },
+    "thinking_display": "always_collapsed",
+    "default_profile": "write",
+    "profiles": {
+      "YOLO": {
+        "name": "YOLO",
+        "tools": {
+          "copy_path": true,
+          "create_directory": true,
+          "delete_path": true,
+          "diagnostics": true,
+          "edit_file": true,
+          "fetch": true,
+          "find_path": true,
+          "grep": true,
+          "list_directory": true,
+          "move_path": true,
+          "read_file": true,
+          "spawn_agent": true,
+          "skill": true,
+          "terminal": true,
+          "write_file": true,
+        },
+        "enable_all_context_servers": false,
+        "context_servers": {},
+      },
+    },
+    "tool_permissions": {
+      "default": "allow",
+    },
+    "default_model": {
+      "provider": "opencode",
+      "model": "go/minimax-m3",
+      "enable_thinking": false,
+    },
+    "favorite_models": [
+      {
+        "provider": "openai",
+        "model": "gpt-5.5",
+        "enable_thinking": true,
+        "effort": "medium"
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "claude-haiku-4.5",
+        "enable_thinking": true
+      },
+      {
+        "provider": "google",
+        "model": "gemini-3.5-flash",
+        "enable_thinking": false,
+        "effort": "medium"
+      },
+      {
+        "provider": "openrouter",
+        "model": "nex-agi/nex-n2-pro:free",
+        "enable_thinking": true
+      },
+      {
+        "provider": "opencode",
+        "model": "go/minimax-m3",
+        "enable_thinking": false
+      },
+      {
+        "provider": "opencode",
+        "model": "go/deepseek-v4-pro",
+        "enable_thinking": true,
+        "effort": "high"
+      },
+      {
+        "provider": "opencode",
+        "model": "go/kimi-k2.7-code",
+        "enable_thinking": false
+      },
+      {
+        "provider": "deepseek",
+        "model": "deepseek-v4-pro",
+        "enable_thinking": true,
+        "effort": "high"
+      },
+      {
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash",
+        "enable_thinking": true,
+        "effort": "high"
+      },
+      {
+        "provider": "opencode",
+        "model": "go/glm-5.2",
+        "enable_thinking": false
+      }
+    ],
+    "model_parameters": [],
+  },
+  "agent_servers": {
+    "codex-acp": {
+      "default_config_options": {
+        "mode": "agent-full-access",
+        "reasoning_effort": "medium",
+      },
+      "type": "registry",
+    },
+    "gemini": {
+      "default_mode": "yolo",
+      "type": "registry",
+    },
+    "claude-acp": {
+      "default_config_options": {
+        "effort": "medium",
+        "mode": "bypassPermissions",
+        "model": "sonnet",
+      },
+      "type": "registry",
+    },
+  },
+}

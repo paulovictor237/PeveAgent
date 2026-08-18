@@ -1,0 +1,30 @@
+.draft
+**/.DS_Store
+.pytest_cache/
+.env
+**/.env
+
+# pi runtime data (not config)
+pi/agent/sessions/
+pi/agent/npm/
+pi/agent/bin/
+pi/agent/pi-fff/
+pi/agent/pi-hermes-memory/
+pi/agent/projects-memory/
+pi/agent/mcp-cache.json
+pi/agent/mcp-npx-cache.json
+pi/agent/auth.json
+
+# local-only overrides
+.claude/settings.local.json
+.agents/settings.local.json
+
+# python
+__pycache__
+
+# playwright
+.playwright-mcp
+docs/superpowers
+
+.temp/*
+!.temp/.gitkeep

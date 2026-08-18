@@ -1,0 +1,14 @@
+{
+  "tool": "zed",
+  "target_root": "~/.config/zed",
+  "links": [
+    { "from": "assets/docs/AGENTS.md", "to": "AGENTS.md" },
+    { "from": "assets/configs/zed.jsonc", "to": "settings.json" }
+  ],
+  "external_links": [
+    {
+      "from": "assets/configs/zed-snippets.json",
+      "to": "~/.config/zed/snippets/markdown.json"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "ticktick": {
+      "type": "http",
+      "url": "https://mcp.ticktick.com/"
+    },
+    "notion": {
+      "type": "http",
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "jira": {
+      "type": "sse",
+      "url": "https://mcp.atlassian.com/v1/sse",
+      "enabled": true
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "meta-devtools": {
+      "type": "http",
+      "url": "https://mcp.facebook.com/devtools"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "c4ai-sse": {
+      "type": "sse",
+      "url": "http://localhost:11235/mcp/sse"
+    },
+    "firecrow": {
+      "command": "npx",
+      "args": ["-y", "@substrafoundation/mcp-server-firecrow"]
+    }
+  }
+}

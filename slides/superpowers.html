@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superpowers — Claude Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ==========================================
+   RESET
+   ========================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ==========================================
+   THEME VARIABLES
+   ========================================== */
+:root {
+  --bg:            #0d1117;
+  --surface:       #161b22;
+  --surface2:      #21262d;
+  --green:         #00ff41;
+  --green-dim:     rgba(0,255,65,0.55);
+  --green-subtle:  rgba(0,255,65,0.07);
+  --green-border:  rgba(0,255,65,0.2);
+  --text-pri:      #e6edf3;
+  --text-sec:      #c9d1d9;
+  --text-muted:    #7d8590;
+
+  /* VIEWPORT-SAFE SIZES (from STYLE_PRESETS.md) */
+  --title-size:    clamp(1.5rem, 5vw, 4rem);
+  --h2-size:       clamp(1.25rem, 3.5vw, 2.5rem);
+  --h3-size:       clamp(1rem, 2.5vw, 1.75rem);
+  --body-size:     clamp(0.75rem, 1.5vw, 1.125rem);
+  --small-size:    clamp(0.65rem, 1vw, 0.875rem);
+  --code-size:     clamp(0.6rem, 1.1vw, 0.85rem);
+
+  --slide-padding: clamp(1.5rem, 5vw, 5rem);
+  --content-gap:   clamp(0.75rem, 2.5vh, 2.5rem);
+  --element-gap:   clamp(0.4rem, 1.2vh, 1rem);
+}
+
+/* ==========================================
+   MANDATORY BASE (STYLE_PRESETS.md)
+   ========================================== */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+  background: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}
+
+.slide {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.slide-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 100%;
+  overflow: hidden;
+  padding: var(--slide-padding);
+}
+
+/* ==========================================
+   SCAN-LINE OVERLAY (fixed for perf)
+   ========================================== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,65,0.012) 2px,
+    rgba(0,255,65,0.012) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ==========================================
+   CHROME: PROGRESS BAR, COUNTER, HINT
+   ========================================== */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0,255,65,0.1);
+  z-index: 500;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 10px rgba(0,255,65,0.6);
+}
+
+.slide-counter {
+  position: fixed;
+  bottom: clamp(0.75rem, 1.5vh, 1.25rem);
+  right: clamp(1rem, 3vw, 2.5rem);
+  font-size: var(--small-size);
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  z-index: 500;
+}
+
+.keyboard-hint {
+  position: fixed;
+  bottom: clamp(0.75rem, 1.5vh, 1.25rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--small-size);
+  color: rgba(125,133,144,0.4);
+  letter-spacing: 0.1em;
+  z-index: 500;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   DECORATIVE CORNER BRACKETS
+   ========================================== */
+.corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  opacity: 0.2;
+  z-index: 1;
+}
+.corner.tl { top: clamp(16px, 2.5vw, 28px); left: clamp(16px, 2.5vw, 28px); border-top: 1.5px solid var(--green); border-left: 1.5px solid var(--green); }
+.corner.br { bottom: clamp(16px, 2.5vw, 28px); right: clamp(16px, 2.5vw, 28px); border-bottom: 1.5px solid var(--green); border-right: 1.5px solid var(--green); }
+
+/* ==========================================
+   SHARED COMPONENTS
+   ========================================== */
+
+/* Section badge */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--small-size);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  margin-bottom: clamp(0.4rem, 1.2vh, 1rem);
+}
+.section-badge::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+}
+
+/* Prompt line */
+.prompt {
+  font-size: var(--small-size);
+  color: var(--text-muted);
+  margin-bottom: clamp(0.3rem, 0.8vh, 0.75rem);
+  letter-spacing: 0.04em;
+}
+.prompt .cmd { color: var(--green); }
+
+/* Divider */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--green-border), transparent);
+  margin: clamp(0.4rem, 1.2vh, 1rem) 0;
+  flex-shrink: 0;
+}
+
+/* Headings */
+h1 {
+  font-size: var(--title-size);
+  font-weight: 700;
+  color: var(--text-pri);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+h2 {
+  font-size: var(--h2-size);
+  font-weight: 700;
+  color: var(--text-pri);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+h3 {
+  font-size: var(--h3-size);
+  font-weight: 500;
+  color: var(--text-sec);
+}
+.accent { color: var(--green); }
+
+/* Bullets */
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--element-gap);
+}
+.bullets li {
+  font-size: var(--body-size);
+  color: var(--text-sec);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  line-height: 1.5;
+}
+.bullets li::before {
+  content: '▶';
+  color: var(--green);
+  font-size: 0.5em;
+  margin-top: 0.45em;
+  flex-shrink: 0;
+}
+.bullets li strong { color: var(--text-pri); font-weight: 500; }
+
+/* Code block */
+.code-block {
+  background: var(--surface);
+  border: 1px solid var(--green-border);
+  border-radius: 6px;
+  padding: clamp(0.6rem, 1.5vh, 1.25rem) clamp(0.75rem, 2vw, 1.5rem);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.code-block[data-label]::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 0.2em 0.6em;
+  border-bottom-left-radius: 4px;
+}
+.code-block code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--code-size);
+  color: var(--green);
+  line-height: 1.7;
+  white-space: pre;
+  display: block;
+}
+
+/* Quote */
+.quote-block {
+  border-left: 3px solid var(--green);
+  padding-left: clamp(0.75rem, 2vw, 1.5rem);
+  margin: clamp(0.4rem, 1.2vh, 1rem) 0 0;
+  flex-shrink: 0;
+}
+.quote-block p {
+  font-size: clamp(0.75rem, 1.8vw, 1.15rem);
+  color: var(--text-sec);
+  line-height: 1.5;
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* Card grid */
+.card-grid {
+  display: grid;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+.card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--green-border);
+  border-radius: 8px;
+  padding: clamp(0.6rem, 1.8vh, 1.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.3rem, 0.8vh, 0.6rem);
+}
+.card .card-icon { font-size: clamp(1rem, 2.5vw, 1.5rem); line-height: 1; }
+.card .card-title { font-size: clamp(0.75rem, 1.5vw, 1rem); font-weight: 700; color: var(--text-pri); }
+.card .card-desc { font-size: var(--small-size); color: var(--text-muted); line-height: 1.5; flex: 1; }
+.card .card-cmd {
+  font-size: clamp(0.55rem, 0.9vw, 0.7rem);
+  color: var(--green);
+  background: var(--green-subtle);
+  padding: 0.25em 0.6em;
+  border-radius: 3px;
+  border: 1px solid var(--green-border);
+  display: inline-block;
+  margin-top: auto;
+  width: max-content;
+  max-width: 100%;
+  word-break: break-all;
+}
+
+/* Two-column layout */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: start;
+}
+
+/* Column sub-label */
+.col-label {
+  font-size: var(--small-size);
+  color: var(--text-muted);
+  margin-bottom: var(--element-gap);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Decision table */
+.decision-table { display: flex; flex-direction: column; gap: 0; }
+.decision-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: clamp(0.5rem, 1.5vh, 1rem) 0;
+  border-bottom: 1px solid rgba(0,255,65,0.1);
+}
+.decision-row:last-child { border-bottom: none; }
+.decision-if {
+  font-size: var(--body-size);
+  color: var(--text-muted);
+  min-width: clamp(110px, 20vw, 190px);
+  flex-shrink: 0;
+}
+.decision-arrow { color: var(--green); flex-shrink: 0; font-size: var(--body-size); }
+.decision-then { font-size: var(--body-size); color: var(--text-pri); font-weight: 500; }
+
+/* Flow diagram */
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 1.25rem);
+}
+.flow-step {
+  background: var(--surface);
+  border: 1px solid var(--green-border);
+  border-radius: 8px;
+  padding: clamp(0.75rem, 2vh, 1.5rem) clamp(0.75rem, 2vw, 1.75rem);
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+.flow-step .step-num { font-size: var(--small-size); color: var(--green-dim); letter-spacing: 0.1em; }
+.flow-step .step-name { font-size: clamp(0.85rem, 2vw, 1.2rem); font-weight: 700; color: var(--text-pri); }
+.flow-step .step-cmd { font-size: clamp(0.55rem, 0.9vw, 0.72rem); color: var(--green); }
+.flow-step.active {
+  border-color: var(--green);
+  box-shadow: 0 0 24px rgba(0,255,65,0.12);
+}
+.flow-arrow {
+  color: var(--green);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* ==========================================
+   REVEAL ANIMATIONS
+   ========================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal[data-delay="1"] { transition-delay: 0.08s; }
+.reveal[data-delay="2"] { transition-delay: 0.18s; }
+.reveal[data-delay="3"] { transition-delay: 0.28s; }
+.reveal[data-delay="4"] { transition-delay: 0.38s; }
+.reveal[data-delay="5"] { transition-delay: 0.5s; }
+.reveal[data-delay="6"] { transition-delay: 0.62s; }
+
+/* ==========================================
+   RESPONSIVE SHORT SCREENS
+   ========================================== */
+@media (max-height: 700px) {
+  :root {
+    --slide-padding: clamp(1rem, 3vw, 2.5rem);
+    --content-gap: clamp(0.5rem, 1.5vh, 1rem);
+    --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+    --h2-size: clamp(1rem, 3vw, 1.75rem);
+  }
+}
+@media (max-height: 600px) {
+  :root {
+    --slide-padding: clamp(0.75rem, 2.5vw, 1.5rem);
+    --content-gap: clamp(0.3rem, 1vh, 0.75rem);
+    --title-size: clamp(1.1rem, 4vw, 2rem);
+    --body-size: clamp(0.6rem, 1.2vw, 0.875rem);
+  }
+  .keyboard-hint, .corner { display: none; }
+}
+@media (max-height: 500px) {
+  :root {
+    --slide-padding: clamp(0.5rem, 2vw, 1rem);
+    --title-size: clamp(1rem, 3.5vw, 1.5rem);
+    --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+    --body-size: clamp(0.6rem, 1vw, 0.8rem);
+  }
+}
+@media (max-width: 600px) {
+  :root { --title-size: clamp(1.5rem, 8vw, 2.5rem); }
+  .card-grid.cols-3 { grid-template-columns: 1fr; }
+  .card-grid.cols-2 { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; gap: clamp(0.75rem, 2vh, 1.5rem); }
+  .flow-diagram { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+}
+
+/* ==========================================
+   REDUCED MOTION
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.2s !important;
+    transition-delay: 0s !important;
+  }
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* ==========================================
+   TITLE SLIDE VARIANT
+   ========================================== */
+.slide--title .slide-content { justify-content: center; }
+.slide--title h1 {
+  font-size: clamp(3rem, 10vw, 8rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar" aria-hidden="true">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<!-- Slide counter -->
+<div class="slide-counter" id="slideCounter" aria-live="polite">1 / 14</div>
+
+<!-- Keyboard hint -->
+<div class="keyboard-hint" aria-hidden="true">← → navegar</div>
+
+<main id="mainContainer">
+
+  <!-- ════════════════════════════════
+       SLIDE 1 — TITLE
+       ════════════════════════════════ -->
+  <section class="slide slide--title" data-index="0" aria-label="Título">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">Claude Code · Skill System</div>
+      <h1 class="reveal" data-delay="2">
+        <span class="accent">SUPER</span><br>POWERS
+      </h1>
+      <p class="reveal" data-delay="3" style="font-size:var(--body-size); color:var(--text-muted); margin-top:clamp(0.75rem,2vh,1.5rem); line-height:1.7; letter-spacing:0.04em;">
+        Skills para o Claude Code.<br>
+        Processo estruturado. Menos retrabalho. Código consistente.
+      </p>
+      <div class="reveal" data-delay="4" style="margin-top:clamp(1.25rem,3vh,2.5rem);">
+        <div style="display:inline-flex; align-items:center; gap:0.75rem; background:var(--green-subtle); border:1px solid var(--green-border); border-radius:6px; padding:0.5em 1em;">
+          <span style="color:var(--green); font-size:var(--small-size);">$</span>
+          <code style="font-family:'JetBrains Mono',monospace; font-size:var(--small-size); color:var(--green); letter-spacing:0.03em;">/plugin install superpowers@claude-plugins-official</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 2 — O QUE É
+       ════════════════════════════════ -->
+  <section class="slide" data-index="1" aria-label="O que é o Superpowers">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">01 — Abertura</div>
+      <h2 class="reveal" data-delay="2">O que é o <span class="accent">Superpowers</span></h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <ul class="bullets reveal" data-delay="4">
+        <li>Um conjunto de <strong>skills para o Claude Code</strong></li>
+        <li>Dá <strong>super poderes</strong> ao agente</li>
+        <li>Deixa de ser só um gerador de código</li>
+        <li>Passa a seguir um <strong>processo estruturado</strong> de desenvolvimento</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 3 — ORIGEM & ADOÇÃO
+       ════════════════════════════════ -->
+  <section class="slide" data-index="2" aria-label="Origem e adoção">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">01 — Abertura</div>
+      <h2 class="reveal" data-delay="2">Origem e <span class="accent">Adoção</span></h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <div class="card-grid cols-3 reveal" data-delay="4">
+        <div class="card">
+          <div class="card-icon">🌱</div>
+          <div class="card-title">Open-source</div>
+          <div class="card-desc">Inicialmente um projeto open-source independente</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">✅</div>
+          <div class="card-title">Oficial</div>
+          <div class="card-desc">Adotado oficialmente pelo Claude Code</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚀</div>
+          <div class="card-title">Marketplace</div>
+          <div class="card-desc">Disponível no marketplace oficial</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 4 — QUANDO USAR
+       ════════════════════════════════ -->
+  <section class="slide" data-index="3" aria-label="Quando usar">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">02 — Quando usar</div>
+      <h2 class="reveal" data-delay="2">Quando usar <span class="accent">Superpowers</span>?</h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <div class="decision-table reveal" data-delay="4">
+        <div class="decision-row">
+          <span class="decision-if">Se for muito pequeno</span>
+          <span class="decision-arrow">→</span>
+          <span class="decision-then">faça direto</span>
+        </div>
+        <div class="decision-row">
+          <span class="decision-if">Para todo o resto</span>
+          <span class="decision-arrow">→</span>
+          <span class="decision-then" style="color:var(--green)">use Superpowers</span>
+        </div>
+      </div>
+      <div class="quote-block reveal" data-delay="5">
+        <p>Mesmo features pequenas se beneficiam.<br>Brainstorm evita problemas antes de acontecer.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 5 — FORMAS DE USO
+       ════════════════════════════════ -->
+  <section class="slide" data-index="4" aria-label="Formas de uso">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">03 — Formas de uso</div>
+      <h2 class="reveal" data-delay="2">Formas de <span class="accent">Uso</span></h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <div class="two-col reveal" data-delay="4">
+        <div>
+          <p class="col-label">Modo guiado</p>
+          <div class="code-block" data-label="bash">
+            <code>/using-superpowers</code>
+          </div>
+          <ul class="bullets" style="margin-top:var(--element-gap)">
+            <li>Guia automático pelo fluxo</li>
+            <li>Ideal para <strong>uso cotidiano</strong></li>
+          </ul>
+        </div>
+        <div>
+          <p class="col-label">Modo manual</p>
+          <div class="code-block" data-label="bash">
+            <code>/superpowers:brainstorm
+/superpowers:write-plan
+/superpowers:execute-plan</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 6 — BRAINSTORM
+       ════════════════════════════════ -->
+  <section class="slide" data-index="5" aria-label="Brainstorm">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">04 — Etapas</div>
+      <div class="prompt reveal" data-delay="2">$ <span class="cmd">/superpowers:brainstorm</span></div>
+      <h2 class="reveal" data-delay="3"><span class="accent">Brainstorm</span></h2>
+      <div class="divider reveal" data-delay="4"></div>
+      <div class="two-col reveal" data-delay="5">
+        <div>
+          <p class="col-label">O agente:</p>
+          <ul class="bullets">
+            <li>Faz perguntas</li>
+            <li>Define escopo</li>
+            <li>Escolhe stack</li>
+            <li>Cria uma <strong>spec clara</strong></li>
+          </ul>
+        </div>
+        <div>
+          <p class="col-label">Use quando:</p>
+          <ul class="bullets">
+            <li>Início de qualquer feature</li>
+            <li>Dúvida de abordagem</li>
+            <li>Refatorações</li>
+          </ul>
+        </div>
+      </div>
+      <div class="quote-block reveal" data-delay="6">
+        <p>Aqui você <strong>NÃO</strong> escreve código — você define o quê e como.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 9 — WRITE PLAN
+       ════════════════════════════════ -->
+  <section class="slide" data-index="6" aria-label="Write Plan">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">04 — Etapas</div>
+      <div class="prompt reveal" data-delay="2">$ <span class="cmd">/superpowers:write-plan</span></div>
+      <h2 class="reveal" data-delay="3"><span class="accent">Write Plan</span></h2>
+      <div class="divider reveal" data-delay="4"></div>
+      <div class="two-col reveal" data-delay="5">
+        <div>
+          <p class="col-label">O agente:</p>
+          <ul class="bullets">
+            <li>Quebra em <strong>tarefas pequenas</strong></li>
+            <li>Define ordem de execução</li>
+            <li>Sugere estrutura de arquivos</li>
+            <li>Define <strong>critérios de validação</strong></li>
+          </ul>
+        </div>
+        <div>
+          <p class="col-label">Muito útil para:</p>
+          <ul class="bullets">
+            <li>Não se perder durante a execução</li>
+            <li>Organizar execução incremental</li>
+            <li>Critérios de aceite claros</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 10 — EXECUTE PLAN
+       ════════════════════════════════ -->
+  <section class="slide" data-index="7" aria-label="Execute Plan">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">04 — Etapas</div>
+      <div class="prompt reveal" data-delay="2">$ <span class="cmd">/superpowers:execute-plan</span></div>
+      <h2 class="reveal" data-delay="3"><span class="accent">Execute Plan</span></h2>
+      <div class="divider reveal" data-delay="4"></div>
+      <div class="two-col reveal" data-delay="5">
+        <div>
+          <p class="col-label">O agente:</p>
+          <ul class="bullets">
+            <li>Implementa <strong>passo a passo</strong></li>
+            <li>Cria <strong>subagentes</strong> em paralelo</li>
+            <li>Aplica <strong>TDD</strong> quando possível</li>
+            <li>Faz validações e code review</li>
+          </ul>
+        </div>
+        <div>
+          <p class="col-label">Resultado:</p>
+          <ul class="bullets">
+            <li><strong>Velocidade</strong> de execução</li>
+            <li><strong>Consistência</strong> de código</li>
+            <li><strong>Menos erros</strong> e retrabalho</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 11 — FLUXO RECOMENDADO
+       ════════════════════════════════ -->
+  <section class="slide" data-index="8" aria-label="Fluxo recomendado">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content" style="align-items:center; text-align:center;">
+      <div class="section-badge reveal" data-delay="1" style="justify-content:center;">05 — Fluxo recomendado</div>
+      <h2 class="reveal" data-delay="2">Fluxo <span class="accent">Recomendado</span></h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <div class="flow-diagram reveal" data-delay="4">
+        <div class="flow-step active">
+          <div class="step-num">01</div>
+          <div class="step-name">Brainstorm</div>
+          <div class="step-cmd">/superpowers:brainstorm</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-step">
+          <div class="step-num">02</div>
+          <div class="step-name">Write Plan</div>
+          <div class="step-cmd">/superpowers:write-plan</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-step">
+          <div class="step-num">03</div>
+          <div class="step-name">Execute Plan</div>
+          <div class="step-cmd">/superpowers:execute-plan</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 12 — BOAS PRÁTICAS DO FLUXO
+       ════════════════════════════════ -->
+  <section class="slide" data-index="9" aria-label="Boas práticas do fluxo">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">05 — Fluxo recomendado</div>
+      <h2 class="reveal" data-delay="2"><span class="accent">Boas Práticas</span> do Fluxo</h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <ul class="bullets reveal" data-delay="4">
+        <li>Não pular etapas — revisar antes de avançar</li>
+        <li>Usar <strong>nova sessão</strong> entre etapas</li>
+        <li>Cada etapa gera um <strong>.md</strong> — reutilize como contexto</li>
+        <li>Passe o markdown anterior ao iniciar a próxima etapa</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 13 — SKILLS ESSENCIAIS
+       ════════════════════════════════ -->
+  <section class="slide" data-index="10" aria-label="Skills essenciais">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">06 — Uso no dia a dia</div>
+      <h2 class="reveal" data-delay="2">Skills <span class="accent">Essenciais</span></h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <div class="card-grid cols-3 reveal" data-delay="4">
+        <div class="card">
+          <div class="card-icon">🔍</div>
+          <div class="card-title">Debug</div>
+          <div class="card-desc">Investigar bugs sem tentativa e erro</div>
+          <div class="card-cmd">/superpowers:debug</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👁️</div>
+          <div class="card-title">Code Review</div>
+          <div class="card-desc">Antes de commit e antes de PR</div>
+          <div class="card-cmd">/superpowers:requesting-code-review</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🏁</div>
+          <div class="card-title">Branch Finishing</div>
+          <div class="card-desc">Preparação e finalização de entrega</div>
+          <div class="card-cmd">branch-finishing</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 14 — FLUXO AVANÇADO
+       ════════════════════════════════ -->
+  <section class="slide" data-index="11" aria-label="Fluxo avançado">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">07 — Fluxo avançado</div>
+      <h2 class="reveal" data-delay="2">Fluxo <span class="accent">Avançado</span></h2>
+      <div class="divider reveal" data-delay="3"></div>
+      <div class="two-col reveal" data-delay="4">
+        <div>
+          <p class="col-label">Use quando necessário:</p>
+          <ul class="bullets">
+            <li><strong>debug</strong> — bugs complexos</li>
+            <li><strong>code-review</strong> — antes de qualquer PR</li>
+            <li><strong>branch-finishing</strong> — entrega limpa</li>
+          </ul>
+        </div>
+        <div>
+          <p class="col-label">Worktrees:</p>
+          <ul class="bullets">
+            <li>Eram úteis antes</li>
+            <li>Hoje menos necessárias</li>
+          </ul>
+          <div class="code-block" data-label="bash" style="margin-top:var(--element-gap)">
+            <code>claude --worktree</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 15 — MENSAGEM FINAL
+       ════════════════════════════════ -->
+  <section class="slide slide--title" data-index="12" aria-label="Mensagem final">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content">
+      <div class="section-badge reveal" data-delay="1">08 — Mensagem final</div>
+      <p class="reveal" data-delay="2" style="font-size:var(--h3-size); color:var(--text-muted); font-weight:300; margin-bottom:clamp(0.75rem,2vh,1.5rem);">
+        Superpowers não é sobre comandos.
+      </p>
+      <div class="reveal" data-delay="3">
+        <p style="font-size:clamp(1.5rem,5vw,3.5rem); font-weight:700; color:var(--text-pri); line-height:1.15; letter-spacing:-0.02em;">
+          É sobre <span class="accent">seguir um processo</span><br>antes de codar.
+        </p>
+      </div>
+      <ul class="bullets reveal" data-delay="4" style="margin-top:clamp(1rem,2.5vh,2rem);">
+        <li><strong>Melhor decisão</strong> — escopo definido antes de codar</li>
+        <li><strong>Menos retrabalho</strong> — problemas detectados cedo</li>
+        <li><strong>Código mais consistente</strong> — processo replicável</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SLIDE 13 — REGRA SIMPLES
+       ════════════════════════════════ -->
+  <section class="slide" data-index="13" aria-label="A regra simples">
+    <div class="corner tl"></div>
+    <div class="corner br"></div>
+    <div class="slide-content" style="align-items:center; text-align:center;">
+      <div class="section-badge reveal" data-delay="1" style="justify-content:center;">A Regra Simples</div>
+      <div class="card-grid cols-2 reveal" data-delay="3" style="max-width:min(90vw,680px); width:100%; margin-top:clamp(1rem,3vh,2.5rem);">
+        <div class="card" style="text-align:center; border-color:rgba(0,255,65,0.45); box-shadow:0 0 28px rgba(0,255,65,0.1); align-items:center;">
+          <div class="card-icon" style="font-size:clamp(1.5rem,4vw,2.25rem);">🧠</div>
+          <div class="card-title" style="font-size:clamp(0.85rem,2vw,1.15rem);">Precisa pensar</div>
+          <div class="card-desc" style="font-size:var(--body-size); color:var(--green); font-weight:500;">→ use skill</div>
+        </div>
+        <div class="card" style="text-align:center; align-items:center;">
+          <div class="card-icon" style="font-size:clamp(1.5rem,4vw,2.25rem);">⚡</div>
+          <div class="card-title" style="font-size:clamp(0.85rem,2vw,1.15rem);">É trivial</div>
+          <div class="card-desc" style="font-size:var(--body-size); color:var(--text-muted); font-weight:500;">→ faça direto</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/**
+ * PresentationController
+ * Handles keyboard, wheel, and touch navigation + Intersection Observer reveals.
+ */
+class PresentationController {
+  constructor() {
+    this.slides = Array.from(document.querySelectorAll('.slide'));
+    this.total = this.slides.length;
+    this.current = 0;
+    this.cooldown = false;
+    this.cooldownMs = 750;
+
+    this.$progress = document.getElementById('progressFill');
+    this.$counter = document.getElementById('slideCounter');
+
+    this._setupObserver();
+    this._setupKeyboard();
+    this._setupWheel();
+    this._setupTouch();
+    this._updateChrome(0);
+  }
+
+  goTo(i) {
+    i = Math.max(0, Math.min(this.total - 1, i));
+    if (i === this.current) return;
+    this.current = i;
+    this.slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this._updateChrome(i);
+  }
+
+  next() { this.goTo(this.current + 1); }
+  prev() { this.goTo(this.current - 1); }
+
+  _updateChrome(i) {
+    const pct = this.total > 1 ? (i / (this.total - 1)) * 100 : 100;
+    this.$progress.style.width = pct + '%';
+    this.$counter.textContent = (i + 1) + ' / ' + this.total;
+  }
+
+  _setupObserver() {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        /* Trigger staggered reveal for all .reveal children */
+        entry.target.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+        /* Sync current index */
+        const idx = parseInt(entry.target.dataset.index, 10);
+        if (!isNaN(idx)) { this.current = idx; this._updateChrome(idx); }
+      });
+    }, { threshold: 0.5 });
+
+    this.slides.forEach(s => obs.observe(s));
+  }
+
+  _setupKeyboard() {
+    document.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowRight': case 'ArrowDown': case ' ':
+          e.preventDefault(); this.next(); break;
+        case 'ArrowLeft': case 'ArrowUp':
+          e.preventDefault(); this.prev(); break;
+        case 'Home': e.preventDefault(); this.goTo(0); break;
+        case 'End':  e.preventDefault(); this.goTo(this.total - 1); break;
+      }
+    });
+  }
+
+  _setupWheel() {
+    document.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (this.cooldown) return;
+      this.cooldown = true;
+      e.deltaY > 0 ? this.next() : this.prev();
+      setTimeout(() => { this.cooldown = false; }, this.cooldownMs);
+    }, { passive: false });
+  }
+
+  _setupTouch() {
+    let startY = 0, startX = 0;
+    document.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dy = startY - e.changedTouches[0].clientY;
+      const dx = startX - e.changedTouches[0].clientX;
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 40) {
+        dy > 0 ? this.next() : this.prev();
+      }
+    }, { passive: true });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => new PresentationController());
+</script>
+</body>
+</html>
