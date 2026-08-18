@@ -619,12 +619,6 @@
             <button class="tab-btn active" data-tab="skills">
                 Skills <span class="tab-count" id="count-skills">—</span>
             </button>
-            <button class="tab-btn" data-tab="agents">
-                Agents <span class="tab-count" id="count-agents">—</span>
-            </button>
-            <button class="tab-btn" data-tab="commands">
-                Commands <span class="tab-count" id="count-commands">—</span>
-            </button>
             <button class="tab-btn" data-tab="slides">
                 Slides <span class="tab-count" id="count-slides">—</span>
             </button>
@@ -643,32 +637,6 @@
                     <span class="search-hint" id="hint-skills"></span>
                 </div>
                 <div class="cards-grid" id="grid-skills"></div>
-            </section>
-            <section class="tab-panel" id="tab-agents">
-                <div class="search-bar">
-                    <input
-                        class="search-input"
-                        id="search-agents"
-                        type="search"
-                        placeholder="🔍 buscar agent..."
-                        autocomplete="off"
-                    />
-                    <span class="search-hint" id="hint-agents"></span>
-                </div>
-                <div class="cards-grid" id="grid-agents"></div>
-            </section>
-            <section class="tab-panel" id="tab-commands">
-                <div class="search-bar">
-                    <input
-                        class="search-input"
-                        id="search-commands"
-                        type="search"
-                        placeholder="🔍 buscar command..."
-                        autocomplete="off"
-                    />
-                    <span class="search-hint" id="hint-commands"></span>
-                </div>
-                <div class="cards-grid" id="grid-commands"></div>
             </section>
             <section class="tab-panel" id="tab-slides">
                 <div class="search-bar">
@@ -1298,26 +1266,6 @@
                         apiPath: "assets/skills",
                         type: "skill",
                         mdFileName: "SKILL.md",
-                    }),
-                    loadSection({
-                        gridId: "grid-agents",
-                        countId: "count-agents",
-                        apiPath: "assets/agents",
-                        type: "agent",
-                        mdFileName: null,
-                    }).catch(() =>
-                        loadSingleFileSection({
-                            gridId: "grid-agents",
-                            countId: "count-agents",
-                            apiPath: "assets/agents",
-                            type: "agent",
-                        }),
-                    ),
-                    loadSingleFileSection({
-                        gridId: "grid-commands",
-                        countId: "count-commands",
-                        apiPath: "assets/commands",
-                        type: "command",
                     }),
                     loadSlidesSection(),
                 ]);
