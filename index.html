@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PeveAgent</title>
+  <meta name="description" content="Multi-tool AI config hub — canonical source for skills, agents, commands, and settings, symlinked into each AI tool's home directory.">
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 16px/1.6 system-ui, -apple-system, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    pre { background: #f4f4f5; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    @media (prefers-color-scheme: dark) { pre { background: #27272a; } }
+    a { color: #2563eb; }
+    h1, h2, h3 { line-height: 1.25; }
+  </style>
+</head>
+<body>
+  <h1>PeveAgent</h1>
+  <p>Multi-tool AI config hub. One canonical source for skills, agents, commands, and settings — symlinked into each AI tool's home directory.</p>
+
+  <h2>Structure</h2>
+  <pre><code>assets/
+├── skills/       # custom skills (tool-agnostic)
+├── agents/       # custom agents
+├── commands/     # slash commands
+├── configs/      # per-tool config files
+└── docs/         # AGENTS.md, RTK.md (shared by all tools)
+
+tools/
+├── claude.json   # links assets → ~/.claude
+├── opencode.json # links assets → ~/.config/opencode
+└── zed.json      # links assets → ~/.config/zed</code></pre>
+
+  <p><code>assets/docs/AGENTS.md</code> is the single instruction file shared by all agent tools. Each tool's manifest maps it to whatever filename that tool expects (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, etc.).</p>
+
+  <h2>Setup</h2>
+  <pre><code>bash scripts/link.sh</code></pre>
+  <p>Links are idempotent — safe to re-run. Backs up any real file that would be overwritten.</p>
+
+  <h2>Links</h2>
+  <ul>
+    <li><a href="https://github.com/paulovictor237/PeveAgent">Source on GitHub</a></li>
+    <li><a href="./README.md">README.md</a></li>
+  </ul>
+</body>
+</html>
