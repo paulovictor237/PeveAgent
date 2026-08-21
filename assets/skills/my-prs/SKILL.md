@@ -17,12 +17,12 @@ Print the output directly to the user, verbatim, inside a code block so the tree
 
 ## Output Format
 
-Header line with totals, then two sections. **Only what matters is shown** — positive/green stages are hidden; each `╰─` line is an item that needs action (or context on it).
+Header line with totals, then two sections. **Only what matters is shown** — positive/green stages are hidden; each `┗━` line is an item that needs action (or context on it).
 
 - **`✅ PRONTOS PRA MERGE`** — clean PRs. Title + link + comment count only, no approve count/approvers, no other status noise.
 - **`⚠️ PRECISAM DE ATENÇÃO`** — title + link, then actionable lines + approve count/approvers (always) + comment count.
 
-Each repo is a `📦 repo · N PRs` group. Each PR is `[#num] title` followed by its `╰─` lines.
+Each repo is a `📦 repo · N PRs` group. Each PR is `[#num] title` followed by its `┗━` lines.
 
 ```
 📋 Meus PRs abertos — N no total em X repo(s)
@@ -33,9 +33,11 @@ Each repo is a `📦 repo · N PRs` group. Each PR is `[#num] title` followed by
 📦 repo-name · 2 PRs
 
 [#1583] [EER-397] - Ajusta layout e validações do formulário de avaliação
-╰─ 🔗 https://github.com/px-center/px-painel/pull/1583
-╰─ 👀 review pendente · ✅ 2 já aprovaram: felipesdl, tchiteu
-╰─ ⛔ squads pendentes: px-center/squad-contracts
+┗━ 🔗 https://github.com/px-center/px-painel/pull/1583
+┗━ ✅ 2 já aprovaram: felipesdl, tchiteu
+┗━ 💬 0 comentários não resolvidos
+┗━ ⛔ squads pendentes:
+   ┗━ px-center/squad-contracts
 ```
 
 ## Lines shown (only when they matter)
@@ -45,12 +47,15 @@ Each repo is a `📦 repo · N PRs` group. Each PR is `[#num] title` followed by
 | `🔗 <url>` | always |
 | `🚧 rascunho (draft)` | only if draft |
 | `🔄 mudanças solicitadas: …` | only if changes requested — names who requested them |
-| `👀 review pendente` | only if not yet approved |
+| `👀 review pendente` | only if not yet approved **and** there are no pending squads/reviewers (they already say who owes it) |
 | `✅ N já aprovaram: …` (or `✅ 0 aprovou`) | always, in attention section — count + names regardless of approval state |
 | `☢️ tem conflitos` · `⬇️ atrás da base` | only if not mergeable |
 | `💥 CI falhando` · `⏳ CI rodando` | only if CI failing/pending |
-| `⛔ squads pendentes: …` · `⛔ reviewers pendentes: …` | only if pending |
 | `💬 N comentário(s) não resolvido(s)` | always — the only count shown regardless of value, including 0 |
+| `⛔ reviewers pendentes:` then one indented `┗━ login` per person | only if pending — **always last, after the comment count** |
+| `⛔ squads pendentes:` then one indented `┗━ slug` per squad | only if pending — **the very last block** |
+
+Pending reviewers and squads are always the final blocks, one name per indented line, so the "who is blocking this" list is easy to scan and copy.
 
 Green stages (não-draft, aprovado, mergeable, CI passando, sem bloqueios) are **never printed** — their absence means they're fine. Comment count is the one exception: always printed, even at 0.
 

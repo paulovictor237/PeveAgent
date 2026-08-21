@@ -130,39 +130,44 @@ def approvers_line(r):
     n = len(r["approvers"])
     verb = "aprovaram" if n != 1 else "aprovou"
     who = f": {', '.join(r['approvers'])}" if n else ""
-    return f"╰─ ✅ {n} já {verb}{who}"
+    return f"┗━ ✅ {n} já {verb}{who}"
 
 
 def status_lines(r):
     """Only what matters — link always, then just actionable/negative lines."""
-    lines = [f"╰─ 🔗 {r['url']}"]
+    lines = [f"┗━ 🔗 {r['url']}"]
 
     if r["draft"]:
-        lines.append("╰─ 🚧 rascunho (draft)")
+        lines.append("┗━ 🚧 rascunho (draft)")
 
     lines.append(approvers_line(r))
 
+    has_pending = bool(r["pending_squads"] or r["pending_people"])
+
     if r["decision"] == "CHANGES_REQUESTED":
-        lines.append(f"╰─ 🔄 mudanças solicitadas: {', '.join(r['requesters'])}")
-    elif r["decision"] != "APPROVED":
-        lines.append("╰─ 👀 review pendente")
+        lines.append(f"┗━ 🔄 mudanças solicitadas: {', '.join(r['requesters'])}")
+    elif r["decision"] != "APPROVED" and not has_pending:
+        lines.append("┗━ 👀 review pendente")
 
     if r["mergeable"] == "CONFLICTING" or r["merge_state"] == "DIRTY":
-        lines.append("╰─ ☢️ tem conflitos")
+        lines.append("┗━ ☢️ tem conflitos")
     elif r["merge_state"] == "BEHIND":
-        lines.append("╰─ ⬇️ atrás da base")
+        lines.append("┗━ ⬇️ atrás da base")
 
     if r["ci"] == "FAIL":
-        lines.append("╰─ 💥 CI falhando")
+        lines.append("┗━ 💥 CI falhando")
     elif r["ci"] == "PENDING":
-        lines.append("╰─ ⏳ CI rodando")
-
-    if r["pending_squads"]:
-        lines.append(f"╰─ ⛔ squads pendentes: {', '.join(r['pending_squads'])}")
-    if r["pending_people"]:
-        lines.append(f"╰─ ⛔ reviewers pendentes: {', '.join(r['pending_people'])}")
+        lines.append("┗━ ⏳ CI rodando")
 
     lines.append(comments_line(r))
+
+    if r["pending_people"]:
+        lines.append("┗━ ⛔ reviewers pendentes:")
+        lines += [f"   ┗━ {p}" for p in r["pending_people"]]
+
+    if r["pending_squads"]:
+        lines.append("┗━ ⛔ squads pendentes:")
+        lines += [f"   ┗━ {s}" for s in r["pending_squads"]]
 
     return lines
 
@@ -171,12 +176,12 @@ def comments_line(r):
     n = r["unresolved_comments"]
     comment_word = "comentário" if n == 1 else "comentários"
     suffix = "s" if n != 1 else ""
-    return f"╰─ 💬 {n} {comment_word} não resolvido{suffix}"
+    return f"┗━ 💬 {n} {comment_word} não resolvido{suffix}"
 
 
 def ready_lines(r):
     """Clean PRs — link + comment count."""
-    return [f"╰─ 🔗 {r['url']}", comments_line(r)]
+    return [f"┗━ 🔗 {r['url']}", comments_line(r)]
 
 
 print(f"📋 Meus PRs abertos — {total} no total em {repos} repo(s)")
