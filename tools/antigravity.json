@@ -1,0 +1,9 @@
+{
+  "tool": "antigravity",
+  "target_root": "~/.gemini/config",
+  "links": [
+    { "from": "assets/docs/AGENTS.md", "to": "AGENTS.md" },
+    { "from": "assets/skills", "to": "skills" }
+  ],
+  "external_links": []
+}

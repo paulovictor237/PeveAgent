@@ -10,7 +10,7 @@ disable-model-invocation: true
 ## Flow Overview
 
 ```
-1 Identify PR → 1b Stash → 2 Fetch → 3 Summary →
+1 Identify PR → 1b Stash → 1c Read PR scope → 2 Fetch → 3 Summary →
 LOOP per comment: [4 Review → 5 Progress/Resolve → (6 CLAUDE.md) → 6b Commit] →
 7 Next file → repeat LOOP until pr-next-comment.sh returns no pending comment →
 8 Final commit → 9 Push → 9b Unstash → 10 Summary
@@ -41,7 +41,7 @@ Scripts in `~/.claude/skills/pr-comments-flow/scripts/` (set `SKILL_SCRIPTS=~/.c
 ## Step 1 — Identify PR
 
 ```bash
-gh pr view --json number,title,url 2>/dev/null
+gh pr view --json number,title,url,body 2>/dev/null
 ```
 
 If found, proceed. Inform:
@@ -79,6 +79,28 @@ git stash --include-untracked
 - If output is `No local changes to save` → `HAS_STASH=false`
 - If command fails for another reason → warn user and ask whether to continue
 - Do not inform user on success.
+
+---
+
+## Step 1c — Read PR scope
+
+Read the `body` from Step 1 (if Step 1 used a user-supplied number, fetch it: `gh pr view {PR_NUMBER} --json title,body`).
+
+Extract and hold for the whole session — this is `PR_SCOPE`:
+- **Goal** — what the PR sets out to do (feature, refactor, bugfix, chore).
+- **Explicit non-goals** — anything the description defers or declares out of scope.
+- **Referenced spec** — handoff, Jira ticket, design doc named in the body.
+
+If the body is empty or says nothing about intent, set `PR_SCOPE = unknown` and judge comments on their own merit.
+
+Inform the user in one or two lines, then proceed:
+
+```
+🎯 PR SCOPE: {one-line goal}
+   Out of scope: {non-goals, or "none stated"}
+```
+
+`PR_SCOPE` weights every recommendation in Step 4c — it never silences a comment. See **Scope-Weighted Recommendation** in Guiding Principles.
 
 ---
 
@@ -183,7 +205,26 @@ Write detailed code block of proposed change above, then ask:
 
 Use EXACTLY these 4 options and descriptions — do not rename, drop, or merge them. AskUserQuestion accepts max 4 options — never add a 5th.
 
-Recommendation rule: decide which option best fits your assessment of the comment (e.g. `Apply` if the change is correct and worth making, `Skip` if already addressed or not applicable). Append " (Recommended)" to that option's label and move it to FIRST position; keep the others in the order below. ALL 4 options must appear in every question — recommending one never removes the others:
+Recommendation rule: decide which option best fits your assessment of the comment, weighed against `PR_SCOPE` from Step 1c. Append " (Recommended)" to that option's label and move it to FIRST position; keep the others in the order below. ALL 4 options must appear in every question — recommending one never removes the others.
+
+Weigh the comment on two axes:
+
+1. **Merit** — is the reviewer technically right? Verify the claim against the code; never take it on faith. A wrong premise is a `Skip` regardless of scope.
+2. **Scope fit** — does fixing it belong in THIS PR, given `PR_SCOPE`?
+
+| Situation | Lean |
+|---|---|
+| Right, and inside the PR's stated goal | `Apply` |
+| Right, and a regression this PR introduced | `Apply` — always in scope, even if the goal never mentioned it |
+| Right, user-visible bug or crash on a touched path | `Apply` — severity outranks scope |
+| Right, but pre-existing and unrelated to the goal | `Skip` — say it is valid, out of scope, suggest a follow-up |
+| Right, but the described fix makes things worse | `Skip` — explain the trade-off; do not apply a net-negative change |
+| Explicitly listed as a non-goal in the description | `Skip` — cite the description |
+| Style/preference with no behavioral effect on a refactor PR | `Skip` |
+| Premise wrong, already handled elsewhere, or not applicable | `Skip` |
+| Needs a product/architecture decision above this PR | `Ignore (Keep Open)` — leave it for the reviewer |
+
+When scope is the deciding factor, state that explicitly in the assessment shown to the user, so the recommendation is auditable. If `PR_SCOPE = unknown`, use Merit alone and say so.
 
 Descriptions are schema-required — keep them exactly this short, never longer:
 
@@ -222,7 +263,7 @@ Wait for response.
 ```
 
 Then go to Step 6.
-- **Skip** — no code change. Before resolving, ALWAYS post a reply on the thread in Portuguese explaining why the comment is being skipped (e.g. "Já tratado em outro ponto do PR" / "Decidimos manter a abordagem atual porque…"):
+- **Skip** — no code change. Before resolving, ALWAYS post a reply on the thread in Portuguese explaining why the comment is being skipped (e.g. "Já tratado em outro ponto do PR" / "Decidimos manter a abordagem atual porque…"). When scope was the reason, acknowledge the point is valid and name the boundary (e.g. "Procede, mas está fora do escopo deste PR, que trata só de {goal} — vale abrir tarefa própria."):
 
 ```bash
 ~/.claude/skills/pr-comments-flow/scripts/pr-reply.sh {COMMENT_ID} "{EXPLICAÇÃO_EM_PORTUGUÊS}"
@@ -416,6 +457,8 @@ Format:
 - **Language** — Always respond in English.
 - **Resumable** — After interruption or context compaction, run `pr-progress.sh` + `pr-next-comment.sh` to resume; never re-apply already-handled comments.
 - **Loop Discipline** — One comment fully handled (Steps 4→6b) before fetching the next. Never batch.
+- **Read Scope First** — Always read the PR description (Step 1c) BEFORE the first comment. Never enter the loop without `PR_SCOPE`.
+- **Scope-Weighted Recommendation** — Recommendations weigh Merit (is the reviewer right?) against Scope fit (does it belong in THIS PR?). Scope adjusts the recommendation; it never hides a comment or skips its display. Regressions introduced by the PR and user-visible crashes are always in scope.
 - **Recommend** — Tag best-fit option with "(Recommended)" and list it first in every Step 4c question.
 - **Apply Explains** — Apply and Apply + CLAUDE.md always post the Portuguese reply `"Ajustado conforme sugerido."` on the thread before resolving.
 - **Skip Explains** — Skip always posts a Portuguese reply on the thread justifying the decision before resolving.

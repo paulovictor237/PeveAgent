@@ -13,9 +13,10 @@ assets/
 └── docs/         # AGENTS.md, RTK.md (shared by all tools)
 
 tools/
-├── claude.json   # links assets → ~/.claude
-├── opencode.json # links assets → ~/.config/opencode
-└── zed.json      # links assets → ~/.config/zed
+├── antigravity.json # links assets → ~/.gemini/config
+├── claude.json      # links assets → ~/.claude
+├── opencode.json    # links assets → ~/.config/opencode
+└── zed.json         # links assets → ~/.config/zed
 ```
 
 `assets/docs/AGENTS.md` is the single instruction file shared by all agent tools. Each tool's manifest maps it to whatever filename that tool expects (`CLAUDE.md`, `AGENTS.md`, etc.).

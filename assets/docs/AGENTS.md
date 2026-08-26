@@ -1,25 +1,3 @@
-
-
-## Vocabulary Enrichment Mode
-
-- **Output Format**: Only when the user's phrasing is unusual, awkward, or clearly non-native (skip for clean English, skill/tool outputs, and command invocations like `/foo`), prefix the reply with one inline line, no header, no rule:
-
-  🇺🇸 *"<alternative>"* — brief tone/nuance note
-
-- Then converse on the next line. Correct + enrich before answering.
-
-## Ponytail Mode (ALWAYS ON)
-
-- **Every response** follows the ponytail ladder: YAGNI → stdlib → native platform → existing dep → one-liner → minimal code. Default intensity: **ultra**.
-- No unrequested abstractions, no boilerplate, no scaffolding "for later." Deletion over addition. Shortest diff wins.
-- Deliberate simplifications tagged with `# ponytail:` naming the ceiling and upgrade path.
-- Code first, then ≤3 lines: what was skipped, when to add it. Explanation longer than the code → delete the explanation.
-- Off only when user says "stop ponytail" or "normal mode."
-
-## Code Style
-
-- **NEVER add comments** — no inline, block, docstrings, or JSDoc. Code must be self-explanatory.
-
 ## Tool Preferences
 
 - **GitHub:** use `gh` CLI via Bash. Never use MCP for GitHub.
@@ -37,22 +15,40 @@
 - **python** for complex logic, structured data (JSON, YAML, CSV).
 - **Golden rule:** script replaces multiple tool calls → use script.
 
-## Frontend Validation
-
-- **Always use `agent-browser` skill** for screenshots, screen recording, evidence gathering, or validating frontend changes.
-
-## Intent-First Behavior
-- **Clarify before acting**: ambiguous or multi-step → state interpretation + confirm first
-- **Ask questions**: use `ask_user_question` when intent unclear — never guess
-- **State the plan**: non-trivial work → outline steps first, wait for approval
-- **Destructive ops**: confirm before rm, force-overwrite, branch resets, large batch edits
-
 ## Config Files
 
 - **CLAUDE.md / AGENTS.md must always be token-safe:** terse, no redundancy, no filler, no examples unless critical. Every line must justify its token cost.
 
-@RTK.md
+# RTK - Rust Token Killer
 
-# graphify
-- **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
-When user types `/graphify`, invoke Skill tool with `skill: "graphify"` before anything else.
+**Usage**: Token-optimized CLI proxy (60-90% savings on dev operations)
+
+## Meta Commands (always use rtk directly)
+
+```bash
+rtk gain              # Show token savings analytics
+rtk gain --history    # Show command usage history with savings
+rtk discover          # Analyze Claude Code history for missed opportunities
+rtk proxy <cmd>       # Execute raw command without filtering (for debugging)
+```
+
+## Installation Verification
+
+```bash
+rtk --version         # Should show: rtk X.Y.Z
+rtk gain              # Should work (not "command not found")
+which rtk             # Verify correct binary
+```
+
+⚠️ **Name collision**: If `rtk gain` fails, you may have reachingforthejack/rtk (Rust Type Kit) installed instead.
+
+## Hook-Based Usage
+
+All other commands are automatically rewritten by the Claude Code hook.
+Example: `git status` → `rtk git status` (transparent, 0 tokens overhead)
+
+Refer to CLAUDE.md for full command reference.
+
+## Code Style
+
+- **NEVER add comments** — no inline, block, docstrings, or JSDoc. Code must be self-explanatory.

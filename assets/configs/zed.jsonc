@@ -17,7 +17,7 @@
     },
   },
   "context_servers": {},
-  "diff_view_style": "split",
+  "diff_view_style": "unified",
   "project_panel": {
     "auto_fold_dirs": false,
   },
@@ -168,7 +168,7 @@
       "default_config_options": {
         "effort": "medium",
         "mode": "bypassPermissions",
-        "model": "sonnet",
+        "model": "opus[1m]",
       },
       "type": "registry",
     },

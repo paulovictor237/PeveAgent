@@ -3,7 +3,6 @@
   "target_root": "~/.claude",
   "links": [
     { "from": "assets/docs/AGENTS.md", "to": "CLAUDE.md" },
-    { "from": "assets/docs/RTK.md", "to": "RTK.md" },
     { "from": "assets/configs/claude-settings.json", "to": "settings.json" },
     { "from": "assets/configs/claude-mcp.json", "to": ".mcp.json" },
     { "from": "assets/skills", "to": "skills" },
