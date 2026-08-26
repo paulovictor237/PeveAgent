@@ -132,6 +132,7 @@ claude plugin install mattpocock-skills@mattpocock-skills
 ```
 
 ### Ponytail
+
 Lazy-senior-dev ruleset — forces the minimal solution that works.
 
 - Repo: https://github.com/DietrichGebert/ponytail

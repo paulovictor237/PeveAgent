@@ -20,8 +20,8 @@
 
 ## Tool Preferences
 
-- **GitHub:** use `gh` CLI via Bash. Never use MCP for GitHub.
-- **Atlassian (Jira/Confluence):** use `acli` CLI via Bash. Never use MCP for Atlassian.
+- **GitHub:** use `gh` CLI via Bash.
+- **Atlassian (Jira/Confluence):** use `acli` CLI via Bash.
 
 ## LSP (Language Server Protocol)
 

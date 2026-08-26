@@ -50,7 +50,6 @@ scripts/
 ## Key Config Files
 
 - `assets/configs/claude-settings.json` — Claude Code permissions, hooks, plugins
-- `assets/configs/claude-mcp.json` — MCP server definitions
 - `assets/docs/AGENTS.md` — Master instruction file (synced to `~/.claude/CLAUDE.md`)
 - `tools/claude.json` — Defines what gets linked into `~/.claude/`
 

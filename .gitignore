@@ -23,7 +23,6 @@ pi/agent/auth.json
 __pycache__
 
 # playwright
-.playwright-mcp
 docs/superpowers
 
 .temp/*

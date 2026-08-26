@@ -41,11 +41,9 @@
     "php-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "playground@claude-plugins-official": false,
-    "context7@claude-plugins-official": false,
     "superpowers@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
-    "context-mode@context-mode": true,
     "caveman@caveman": true,
     "rust-analyzer-lsp@claude-plugins-official": true
   },
