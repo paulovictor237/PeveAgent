@@ -112,8 +112,26 @@ Third-party skill collection.
 
 - Repo: https://github.com/henrilhos/skills
 
-### Ponytail
+### mattpocock/skills
 
+Real-engineering skills: TDD, planning, domain modeling, codebase handoffs.
+
+- Repo: https://github.com/mattpocock/skills
+
+Install via skills.sh (any agent):
+
+```bash
+npx skills@latest add mattpocock/skills
+```
+
+Or as a Claude Code plugin:
+
+```bash
+claude plugin marketplace add mattpocock/skills
+claude plugin install mattpocock-skills@mattpocock-skills
+```
+
+### Ponytail
 Lazy-senior-dev ruleset — forces the minimal solution that works.
 
 - Repo: https://github.com/DietrichGebert/ponytail
