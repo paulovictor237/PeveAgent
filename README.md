@@ -106,6 +106,12 @@ OMP (Oh My Pi):
 omp plugin install context-mode
 ```
 
+### henrilhos/skills
+
+Third-party skill collection.
+
+- Repo: https://github.com/henrilhos/skills
+
 ### Ponytail
 
 Lazy-senior-dev ruleset — forces the minimal solution that works.

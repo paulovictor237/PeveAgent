@@ -17,7 +17,7 @@
     },
   },
   "context_servers": {},
-  "diff_view_style": "unified",
+  "diff_view_style": "split",
   "project_panel": {
     "auto_fold_dirs": false,
   },
