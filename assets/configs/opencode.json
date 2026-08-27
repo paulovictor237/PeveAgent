@@ -7,5 +7,20 @@
       // "git commit *": "ask",
       // "git push *": "ask"
     }
+  },
+  "mcp": {
+    "context-mode": {
+      "type": "local",
+      "command": ["node", "/Users/paulo.duarte/.omp/plugins/node_modules/context-mode/server.bundle.mjs"],
+      "enabled": true
+    },
+    "figma": {
+      "type": "local",
+      "command": ["npx", "-y", "figma-developer-mcp", "--stdio"],
+      "environment": {
+        "FIGMA_API_KEY": "{env:FIGMA_API_KEY}"
+      },
+      "enabled": true
+    }
   }
 }

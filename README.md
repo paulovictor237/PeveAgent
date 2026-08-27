@@ -15,6 +15,7 @@ assets/
 tools/
 ├── antigravity.json # links assets → ~/.gemini/config
 ├── claude.json      # links assets → ~/.claude
+├── codex.json       # links assets → ~/.codex
 ├── opencode.json    # links assets → ~/.config/opencode
 └── zed.json         # links assets → ~/.config/zed
 ```

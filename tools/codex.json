@@ -1,0 +1,9 @@
+{
+  "tool": "codex",
+  "target_root": "~/.codex",
+  "links": [
+    { "from": "assets/docs/AGENTS.md", "to": "AGENTS.md" },
+    { "from": "assets/skills", "to": "skills" }
+  ],
+  "external_links": []
+}

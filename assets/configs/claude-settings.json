@@ -55,12 +55,12 @@
       }
     }
   },
-  "language": "english",
+  "language": "portugues-br",
   "alwaysThinkingEnabled": false,
   "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "skipAutoPermissionPrompt": true,
-  "model": "opus[1m]"
+  "model": "haiku"
 }
