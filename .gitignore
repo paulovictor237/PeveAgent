@@ -27,3 +27,4 @@ docs/superpowers
 
 .temp/*
 !.temp/.gitkeep
+./assets/skills/.system
