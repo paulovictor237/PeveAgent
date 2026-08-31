@@ -102,6 +102,15 @@
       "skillFolderHash": "770ac15b05583df0aea49071ca312a380cfb639a",
       "installedAt": "2026-08-26T18:25:27.256Z",
       "updatedAt": "2026-08-26T18:25:27.256Z"
+    },
+    "mole-mac-cleanup": {
+      "source": "bjesuiter/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/bjesuiter/skills.git",
+      "skillPath": "skills/mole-mac-cleanup/SKILL.md",
+      "skillFolderHash": "a3772c0f9af797814683c49135cef6a56f722ef5",
+      "installedAt": "2026-08-28T17:10:20.736Z",
+      "updatedAt": "2026-08-28T17:10:20.736Z"
     }
   },
   "dismissed": {

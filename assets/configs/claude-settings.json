@@ -45,7 +45,8 @@
     "frontend-design@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "caveman@caveman": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -61,6 +62,5 @@
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "skipAutoPermissionPrompt": true,
-  "model": "haiku"
+  "skipAutoPermissionPrompt": true
 }

@@ -169,6 +169,7 @@
     },
     "codex-acp": {
       "default_config_options": {
+        "model": "gpt-5.6-terra",
         "mode": "agent-full-access",
         "reasoning_effort": "medium",
       },
