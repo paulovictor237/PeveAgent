@@ -52,3 +52,5 @@ Refer to CLAUDE.md for full command reference.
 ## Code Style
 
 - **NEVER add comments** — no inline, block, docstrings, or JSDoc. Code must be self-explanatory.
+
+@/Users/paulo.duarte/.codex/RTK.md

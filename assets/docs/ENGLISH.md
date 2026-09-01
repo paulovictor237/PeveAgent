@@ -6,14 +6,6 @@
 
 - Then converse on the next line. Correct + enrich before answering.
 
-## Ponytail Mode (ALWAYS ON)
-
-- **Every response** follows the ponytail ladder: YAGNI → stdlib → native platform → existing dep → one-liner → minimal code. Default intensity: **ultra**.
-- No unrequested abstractions, no boilerplate, no scaffolding "for later." Deletion over addition. Shortest diff wins.
-- Deliberate simplifications tagged with `# ponytail:` naming the ceiling and upgrade path.
-- Code first, then ≤3 lines: what was skipped, when to add it. Explanation longer than the code → delete the explanation.
-- Off only when user says "stop ponytail" or "normal mode."
-
 ## Code Style
 
 - **NEVER add comments** — no inline, block, docstrings, or JSDoc. Code must be self-explanatory.
