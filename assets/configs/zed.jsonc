@@ -42,12 +42,12 @@
   "theme": {
     "mode": "dark",
     "light": "One Light",
-    "dark": "Pink Cat Boo",
+    "dark": "One Dark",
   },
   "icon_theme": {
-    "mode": "dark",
+    "mode": "light",
     "light": "Catppuccin Mocha",
-    "dark": "Catppuccin Mocha",
+    "dark": "Bearded Icon Theme",
   },
   "agent": {
     "sandbox_permissions": {
