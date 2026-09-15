@@ -37,6 +37,12 @@
       "skillPath": "skills/gpt-tasteskill/SKILL.md",
       "computedHash": "cc8f0c601d8240a124e1d11634351a2be7b8a72fd807c75e5b6bf7afcd5ddee0"
     },
+    "hatch-pet": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/hatch-pet/SKILL.md",
+      "computedHash": "83655c6cbedb1da1f64b2487fbec0fd54ac411ba2c9c48826a514d5cb7385808"
+    },
     "image-to-code": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",

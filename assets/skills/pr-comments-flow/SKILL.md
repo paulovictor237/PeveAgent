@@ -1,6 +1,6 @@
 ---
 name: pr-comments-flow
-description: "Step-by-step interactive flow to review, apply, skip, or reply to open GitHub PR review comments. Triggers on: /pr-comments-flow, 'review PR comments', 'go through PR comments', 'address review feedback', 'respond to PR review', 'resolve review threads'."
+description: "Step-by-step interactive flow to review, apply, skip, or reply to open GitHub PR review comments. Supports an --auto mode that self-applies comments which don't change established business rules, only consulting the user when a comment would. Triggers on: /pr-comments-flow, 'review PR comments', 'go through PR comments', 'address review feedback', 'respond to PR review', 'resolve review threads'."
 allowed-tools: Bash, Read, Edit, Write, Glob, Grep, AskUserQuestion, TodoWrite
 disable-model-invocation: true
 ---
@@ -17,6 +17,17 @@ LOOP per comment: [4 Review → 5 Progress/Resolve → (6 CLAUDE.md) → 6b Comm
 ```
 
 The loop ends ONLY when `pr-next-comment.sh` returns empty/no pending comment. Never stop mid-loop because the conversation is long; state lives in `/tmp/pr-{N}-progress.json`, so after a context compaction resume by running `pr-progress.sh` then `pr-next-comment.sh`.
+
+## Modes
+
+Default mode is **Interactive** (Step 4c asks via `AskUserQuestion` for every comment).
+
+**`--auto` mode** — invoked as `/pr-comments-flow --auto` or `/pr-comments-flow --auto {PR_NUMBER}`. Changes Step 4 behavior only; every other step is unchanged:
+
+- Still perform Merit, Scope, and **Cost-Benefit** assessment (see Step 4c) for every comment.
+- If the comment does **not** change an already-established business rule (pure code quality: naming, extraction, typing, duplication, style, performance, test coverage, etc.) → decide and act on your own judgment, following the same Merit/Scope/Cost-Benefit criteria used in Interactive mode. No `AskUserQuestion` call for this comment.
+- If the comment **does** change an established business rule (validation logic, permission/access rules, pricing/fee calculation, state machine transitions, anything that alters what the system does for the user, not just how the code is written) → this is the ONE case that still requires stopping and asking the user via `AskUserQuestion`, exactly as in Step 4c. Business-rule changes are never auto-applied, regardless of how confident the assessment is.
+- Whichever path is taken, still perform Step 4d actions (Edit, reply, resolve) and Steps 5–7 normally. In the self-decided path, print the same display block from Step 4c (for traceability) followed by one line stating the decision and its justification (Merit / Scope / Cost-Benefit), instead of the question.
 
 ## Available Scripts
 
@@ -207,16 +218,18 @@ Use EXACTLY these 4 options and descriptions — do not rename, drop, or merge t
 
 Recommendation rule: decide which option best fits your assessment of the comment, weighed against `PR_SCOPE` from Step 1c. Append " (Recommended)" to that option's label and move it to FIRST position; keep the others in the order below. ALL 4 options must appear in every question — recommending one never removes the others.
 
-Weigh the comment on two axes:
+Weigh the comment on three axes:
 
 1. **Merit** — is the reviewer technically right? Verify the claim against the code; never take it on faith. A wrong premise is a `Skip` regardless of scope.
 2. **Scope fit** — does fixing it belong in THIS PR, given `PR_SCOPE`?
+3. **Cost-Benefit** — does the implementation cost (code churn, new abstractions, added indirection, review/test burden) actually justify the benefit? This axis exists specifically to prevent overengineering: a technically-correct suggestion whose fix is disproportionate to the problem it solves is a `Skip`, even when Merit and Scope both point to `Apply`.
 
 | Situation | Lean |
 |---|---|
-| Right, and inside the PR's stated goal | `Apply` |
+| Right, inside the PR's stated goal, and the fix is proportionate | `Apply` |
 | Right, and a regression this PR introduced | `Apply` — always in scope, even if the goal never mentioned it |
-| Right, user-visible bug or crash on a touched path | `Apply` — severity outranks scope |
+| Right, user-visible bug or crash on a touched path | `Apply` — severity outranks scope and cost |
+| Right and in scope, but the fix requires disproportionate effort/abstraction for the benefit gained | `Skip` — overengineering; explain the cost/benefit trade-off, suggest a lighter alternative if one exists |
 | Right, but pre-existing and unrelated to the goal | `Skip` — say it is valid, out of scope, suggest a follow-up |
 | Right, but the described fix makes things worse | `Skip` — explain the trade-off; do not apply a net-negative change |
 | Explicitly listed as a non-goal in the description | `Skip` — cite the description |
@@ -224,7 +237,7 @@ Weigh the comment on two axes:
 | Premise wrong, already handled elsewhere, or not applicable | `Skip` |
 | Needs a product/architecture decision above this PR | `Ignore (Keep Open)` — leave it for the reviewer |
 
-When scope is the deciding factor, state that explicitly in the assessment shown to the user, so the recommendation is auditable. If `PR_SCOPE = unknown`, use Merit alone and say so.
+When scope or cost-benefit is the deciding factor, state that explicitly in the assessment shown to the user, so the recommendation is auditable. If `PR_SCOPE = unknown`, use Merit and Cost-Benefit alone and say so.
 
 Descriptions are schema-required — keep them exactly this short, never longer:
 
@@ -458,8 +471,10 @@ Format:
 - **Resumable** — After interruption or context compaction, run `pr-progress.sh` + `pr-next-comment.sh` to resume; never re-apply already-handled comments.
 - **Loop Discipline** — One comment fully handled (Steps 4→6b) before fetching the next. Never batch.
 - **Read Scope First** — Always read the PR description (Step 1c) BEFORE the first comment. Never enter the loop without `PR_SCOPE`.
-- **Scope-Weighted Recommendation** — Recommendations weigh Merit (is the reviewer right?) against Scope fit (does it belong in THIS PR?). Scope adjusts the recommendation; it never hides a comment or skips its display. Regressions introduced by the PR and user-visible crashes are always in scope.
+- **Scope-Weighted Recommendation** — Recommendations weigh Merit (is the reviewer right?), Scope fit (does it belong in THIS PR?), and Cost-Benefit (does the fix's cost justify its benefit?). These adjust the recommendation; they never hide a comment or skip its display. Regressions introduced by the PR and user-visible crashes always outrank scope and cost.
+- **Guard Against Overengineering** — Cost-Benefit is evaluated for every comment, in both Interactive and `--auto` mode. A merited, in-scope suggestion whose implementation cost is disproportionate to its benefit is still a `Skip` — technical correctness alone never justifies applying it.
 - **Recommend** — Tag best-fit option with "(Recommended)" and list it first in every Step 4c question.
 - **Apply Explains** — Apply and Apply + CLAUDE.md always post the Portuguese reply `"Ajustado conforme sugerido."` on the thread before resolving.
 - **Skip Explains** — Skip always posts a Portuguese reply on the thread justifying the decision before resolving.
 - **Honor Annotations** — TAB-appended notes on a selected option modify the action; apply them before executing.
+- **Auto Mode Business-Rule Gate** — In `--auto` mode, only comments that change an established business rule require `AskUserQuestion`; pure code-quality comments are decided and applied autonomously, using the same Merit/Scope/Cost-Benefit assessment as Interactive mode.

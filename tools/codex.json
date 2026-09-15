@@ -3,7 +3,8 @@
   "target_root": "~/.codex",
   "links": [
     { "from": "assets/docs/AGENTS.md", "to": "AGENTS.md" },
-    { "from": "assets/skills", "to": "skills" }
+    { "from": "assets/skills", "to": "skills" },
+    { "from": "assets/pets", "to": "pets" }
   ],
   "external_links": []
 }
