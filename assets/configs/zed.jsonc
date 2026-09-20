@@ -1,48 +1,21 @@
 {
-  // "autosave": {
-  //   "after_delay": {
-  //     "milliseconds": 1000,
-  //   },
-  // },
-  //
-  //
+  "diff_view_style": "unified",
+  "git_panel": {
+    "group_by": "staging",
+    "tree_view": true
+  },
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000,
+    },
+  },
   "markdown_preview": {
+    "open_markdown_files_in_preview": true,
     "max_width": 1200.0,
   },
   "format_on_save": "on",
-  "language_models": {
-    "opencode": {
-      "show_free_models": true,
-      "show_zen_models": true,
-    },
-  },
-  "diff_view_style": "split",
   "project_panel": {
     "auto_fold_dirs": false,
-  },
-  "git_panel": { "sort_by_path": false, "tree_view": true },
-  "outline_panel": { "button": false },
-  // "collaboration_panel": { "button": false },
-  "search": { "button": false },
-  "debugger": { "button": false },
-  "cli_default_open_behavior": "new_window",
-  "edit_predictions": {
-    "mode": "eager",
-    "provider": "zed",
-    "open_ai_compatible_api": {
-      "prompt_format": "deepseek_coder",
-      "model": "deepseek-v4-flash",
-      "api_url": "https://api.deepseek.com",
-    },
-    "ollama": {
-      "api_url": "http://localhost:11434",
-      "model": "qwen2.5-coder:7b-base",
-    },
-  },
-  "theme": {
-    "mode": "dark",
-    "light": "One Light",
-    "dark": "One Dark",
   },
   "icon_theme": {
     "mode": "light",
@@ -51,127 +24,49 @@
   },
   "agent": {
     "sandbox_permissions": {
-      "allow_unsandboxed": true,
-      "network_hosts": [
-        "skills.sh",
-        "api.github.com",
-        "raw.githubusercontent.com",
-      ],
+      "allow_all_hosts": true,
+      "allow_fs_write_all": true
     },
-    "thinking_display": "always_collapsed",
-    "default_profile": "YOLO",
+    "default_profile": "yolo",
     "profiles": {
-      "YOLO": {
+      "yolo": {
         "name": "YOLO",
         "tools": {
-          "ask_user": true,
-          "copy_path": true,
-          "create_directory": true,
-          "delete_path": true,
-          "diagnostics": true,
-          "edit_file": true,
-          "fetch": true,
-          "find_path": true,
-          "grep": true,
-          "list_directory": true,
-          "move_path": true,
-          "read_file": true,
+          "write_file": true,
+          "terminal": true,
           "spawn_agent": true,
           "skill": true,
-          "terminal": true,
-          "write_file": true,
+          "read_file": true,
+          "move_path": true,
+          "list_directory": true,
+          "grep": true,
+          "find_path": true,
+          "fetch": true,
+          "edit_file": true,
+          "diagnostics": true,
+          "delete_path": true,
+          "create_directory": true,
+          "copy_path": true,
+          "ask_user": true
         },
         "enable_all_context_servers": false,
-        "context_servers": {},
-      },
+        "context_servers": {}
+      }
     },
-    "tool_permissions": {
-      "default": "allow",
-    },
-    "default_model": {
-      "effort": "medium",
-      "provider": "openai-subscribed",
-      "model": "gpt-5.6-terra",
-      "enable_thinking": false,
-    },
-    "favorite_models": [
-      {
-        "provider": "openai",
-        "model": "gpt-5.5",
-        "enable_thinking": true,
-        "effort": "medium",
-      },
-      {
-        "provider": "copilot_chat",
-        "model": "claude-haiku-4.5",
-        "enable_thinking": true,
-      },
-      {
-        "provider": "google",
-        "model": "gemini-3.5-flash",
-        "enable_thinking": false,
-        "effort": "medium",
-      },
-      {
-        "provider": "openrouter",
-        "model": "nex-agi/nex-n2-pro:free",
-        "enable_thinking": true,
-      },
-      {
-        "provider": "opencode",
-        "model": "go/minimax-m3",
-        "enable_thinking": false,
-      },
-      {
-        "provider": "opencode",
-        "model": "go/deepseek-v4-pro",
-        "enable_thinking": true,
-        "effort": "high",
-      },
-      {
-        "provider": "opencode",
-        "model": "go/kimi-k2.7-code",
-        "enable_thinking": false,
-      },
-      {
-        "provider": "deepseek",
-        "model": "deepseek-v4-pro",
-        "enable_thinking": true,
-        "effort": "high",
-      },
-      {
-        "provider": "deepseek",
-        "model": "deepseek-v4-flash",
-        "enable_thinking": true,
-        "effort": "high",
-      },
-      {
-        "provider": "opencode",
-        "model": "go/glm-5.2",
-        "enable_thinking": false,
-      },
-      {
-        "provider": "openai-subscribed",
-        "model": "gpt-5.6-sol",
-        "enable_thinking": true,
-        "effort": "low",
-      },
-      {
-        "provider": "openai-subscribed",
-        "model": "gpt-5.6-luna",
-        "enable_thinking": true,
-        "effort": "medium",
-      },
-      {
-        "provider": "openai-subscribed",
-        "model": "gpt-5.6-terra",
-        "enable_thinking": false,
-        "effort": "medium",
-      },
-    ],
-    "model_parameters": [],
+    "expand_terminal_card": false,
+    "expand_edit_card": false,
+    "thinking_display": "always_collapsed",
   },
   "agent_servers": {
+    "opencode": {
+      "type": "registry",
+    },
+    "claude-acp": {
+      "default_config_options": {
+        "mode": "plan",
+      },
+      "type": "registry",
+    },
     "antigravity-acp": {
       "default_config_options": {
         "mode": "yolo",
@@ -183,14 +78,6 @@
         "model": "gpt-5.6-terra",
         "mode": "agent-full-access",
         "reasoning_effort": "low",
-      },
-      "type": "registry",
-    },
-    "claude-acp": {
-      "default_config_options": {
-        "effort": "medium",
-        "mode": "bypassPermissions",
-        "model": "opus[1m]",
       },
       "type": "registry",
     },

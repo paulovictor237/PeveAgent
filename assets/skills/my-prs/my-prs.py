@@ -191,7 +191,7 @@ print()
 
 def group_by_repo(prs):
     groups = {}
-    for r in prs:
+    for r in sorted(prs, key=lambda r: r["num"]):
         groups.setdefault(r["repo"], []).append(r)
     return groups
 
