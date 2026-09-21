@@ -7,6 +7,35 @@ disable-model-invocation: true
 
 # Skill: Interactive PR Comment Review
 
+## ⛔ RULE ZERO — Cost vs. Real Gain (MAXIMUM PRIORITY)
+
+This rule outranks every other instruction in this skill. It is re-evaluated for
+EVERY comment, with no exception, in Interactive mode and in `--auto` mode alike.
+
+**Before proposing or applying anything, answer: what does this cost, and what is
+the real gain?**
+
+- A suggestion can be technically correct and still not be worth doing. Being
+  right is not a reason to apply it.
+- The default answer for a comment whose gain is marginal is `Skip` — not `Apply`.
+  The burden of proof is on applying, never on skipping.
+- **Overengineering is the failure mode to avoid.** New abstractions, extra
+  layers, generic solutions for a single case, premature extraction, indirection
+  "for the future": treat all of these as high cost and, unless the gain is
+  concrete and immediate, `Skip` them.
+- Good idea, tiny practical gain → `Skip`, explain the trade-off, and offer the
+  lighter alternative if one exists.
+
+**Cost** = lines touched, new files/abstractions, added indirection, re-test and
+re-review burden, regression risk, reader's cognitive load.
+**Gain** = real, observable benefit for the user, or for whoever reads or
+maintains this code next — not conformity to a principle in the abstract.
+
+Only three things override Rule Zero: a **regression introduced by this PR**, a
+**user-visible bug or crash** on a touched path, and a **security issue**. Those
+are always `Apply`, whatever the cost.
+
+
 ## Flow Overview
 
 ```
@@ -16,6 +45,8 @@ LOOP per comment: [4 Review → 5 Progress/Resolve → (6 CLAUDE.md) → 6b Comm
 8 Final commit → 9 Push → 9b Unstash → 10 Summary
 ```
 
+Every pass through the LOOP starts by applying [RULE ZERO](#-rule-zero--cost-vs-real-gain-maximum-priority) to the comment at hand.
+
 The loop ends ONLY when `pr-next-comment.sh` returns empty/no pending comment. Never stop mid-loop because the conversation is long; state lives in `/tmp/pr-{N}-progress.json`, so after a context compaction resume by running `pr-progress.sh` then `pr-next-comment.sh`.
 
 ## Modes
@@ -24,7 +55,8 @@ Default mode is **Interactive** (Step 4c asks via `AskUserQuestion` for every co
 
 **`--auto` mode** — invoked as `/pr-comments-flow --auto` or `/pr-comments-flow --auto {PR_NUMBER}`. Changes Step 4 behavior only; every other step is unchanged:
 
-- Still perform Merit, Scope, and **Cost-Benefit** assessment (see Step 4c) for every comment.
+- [RULE ZERO](#-rule-zero--cost-vs-real-gain-maximum-priority) applies unchanged, and its verdict line (Step 4a) is still printed for every comment. Autonomy is never a licence to apply a low-gain, high-cost change: with no user in the loop, the bias toward `Skip` on marginal gain gets *stronger*, not weaker.
+- Still perform Cost-Benefit, Merit, and Scope assessment (see Step 4c) for every comment.
 - If the comment does **not** change an already-established business rule (pure code quality: naming, extraction, typing, duplication, style, performance, test coverage, etc.) → decide and act on your own judgment, following the same Merit/Scope/Cost-Benefit criteria used in Interactive mode. No `AskUserQuestion` call for this comment.
 - If the comment **does** change an established business rule (validation logic, permission/access rules, pricing/fee calculation, state machine transitions, anything that alters what the system does for the user, not just how the code is written) → this is the ONE case that still requires stopping and asking the user via `AskUserQuestion`, exactly as in Step 4c. Business-rule changes are never auto-applied, regardless of how confident the assessment is.
 - Whichever path is taken, still perform Step 4d actions (Edit, reply, resolve) and Steps 5–7 normally. In the self-decided path, print the same display block from Step 4c (for traceability) followed by one line stating the decision and its justification (Merit / Scope / Cost-Benefit), instead of the question.
@@ -164,6 +196,17 @@ If output is empty or reports no pending comments, all comments are handled — 
 
 If `duplicate_count > 0`, note: `⚠️ This comment appeared {N+1}x from different reviewers.`
 
+**Rule Zero gate (mandatory, per comment).** Before moving to 4b, re-read
+[RULE ZERO](#-rule-zero--cost-vs-real-gain-maximum-priority) and state its
+verdict for THIS comment in one line:
+
+```
+⚖️ RULE ZERO: cost={low|medium|high} · real gain={low|medium|high} → {worth it | not worth it}
+```
+
+A `high` cost against a `low` gain means the recommendation in 4c is `Skip`,
+regardless of how correct the comment is. Never enter 4c without this line.
+
 ### 4b. Get file context
 
 ```bash
@@ -218,11 +261,11 @@ Use EXACTLY these 4 options and descriptions — do not rename, drop, or merge t
 
 Recommendation rule: decide which option best fits your assessment of the comment, weighed against `PR_SCOPE` from Step 1c. Append " (Recommended)" to that option's label and move it to FIRST position; keep the others in the order below. ALL 4 options must appear in every question — recommending one never removes the others.
 
-Weigh the comment on three axes:
+Weigh the comment on three axes, **in this order of priority**:
 
-1. **Merit** — is the reviewer technically right? Verify the claim against the code; never take it on faith. A wrong premise is a `Skip` regardless of scope.
-2. **Scope fit** — does fixing it belong in THIS PR, given `PR_SCOPE`?
-3. **Cost-Benefit** — does the implementation cost (code churn, new abstractions, added indirection, review/test burden) actually justify the benefit? This axis exists specifically to prevent overengineering: a technically-correct suggestion whose fix is disproportionate to the problem it solves is a `Skip`, even when Merit and Scope both point to `Apply`.
+1. **Cost-Benefit (Rule Zero — decides first)** — does the implementation cost (code churn, new abstractions, added indirection, re-test/re-review burden, regression risk) actually justify the real gain? This axis exists to prevent overengineering. A technically-correct, in-scope suggestion whose fix is disproportionate to the problem it solves is a `Skip`, even when Merit and Scope both point to `Apply`. Marginal gain → `Skip`.
+2. **Merit** — is the reviewer technically right? Verify the claim against the code; never take it on faith. A wrong premise is a `Skip` regardless of scope.
+3. **Scope fit** — does fixing it belong in THIS PR, given `PR_SCOPE`?
 
 | Situation | Lean |
 |---|---|
@@ -472,7 +515,7 @@ Format:
 - **Loop Discipline** — One comment fully handled (Steps 4→6b) before fetching the next. Never batch.
 - **Read Scope First** — Always read the PR description (Step 1c) BEFORE the first comment. Never enter the loop without `PR_SCOPE`.
 - **Scope-Weighted Recommendation** — Recommendations weigh Merit (is the reviewer right?), Scope fit (does it belong in THIS PR?), and Cost-Benefit (does the fix's cost justify its benefit?). These adjust the recommendation; they never hide a comment or skip its display. Regressions introduced by the PR and user-visible crashes always outrank scope and cost.
-- **Guard Against Overengineering** — Cost-Benefit is evaluated for every comment, in both Interactive and `--auto` mode. A merited, in-scope suggestion whose implementation cost is disproportionate to its benefit is still a `Skip` — technical correctness alone never justifies applying it.
+- **Rule Zero Outranks Everything** — See [RULE ZERO](#-rule-zero--cost-vs-real-gain-maximum-priority). Cost vs. real gain is assessed for every comment, in both Interactive and `--auto` mode, and its verdict is printed in Step 4a. A merited, in-scope suggestion whose implementation cost is disproportionate to its real gain is still a `Skip` — technical correctness alone never justifies applying it, and overengineering is the specific failure mode this guards against. Only a regression this PR introduced, a user-visible bug/crash, or a security issue overrides it.
 - **Recommend** — Tag best-fit option with "(Recommended)" and list it first in every Step 4c question.
 - **Apply Explains** — Apply and Apply + CLAUDE.md always post the Portuguese reply `"Ajustado conforme sugerido."` on the thread before resolving.
 - **Skip Explains** — Skip always posts a Portuguese reply on the thread justifying the decision before resolving.
