@@ -111,6 +111,15 @@
       "skillFolderHash": "a3772c0f9af797814683c49135cef6a56f722ef5",
       "installedAt": "2026-08-28T17:10:20.736Z",
       "updatedAt": "2026-08-28T17:10:20.736Z"
+    },
+    "typesafe-ai": {
+      "source": "typesafe-ai/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/typesafe-ai/skills.git",
+      "skillPath": "skills/typesafe-ai/SKILL.md",
+      "skillFolderHash": "678c375b883794bf4292715a43acbba5c84681aa",
+      "installedAt": "2026-09-20T19:03:58.795Z",
+      "updatedAt": "2026-09-20T19:03:58.795Z"
     }
   },
   "dismissed": {
