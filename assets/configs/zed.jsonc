@@ -1,4 +1,9 @@
 {
+  "language_models": {
+    "opencode": {
+      "show_zen_models": false
+    }
+  },
   "diff_view_style": "unified",
   "git_panel": {
     "group_by": "staging",
@@ -23,6 +28,12 @@
     "dark": "Bearded Icon Theme",
   },
   "agent": {
+    "default_model": {
+      "effort": "max",
+      "provider": "opencode",
+      "model": "go/gpt-5.6-luna",
+      "enable_thinking": true
+    },
     "sandbox_permissions": {
       "allow_all_hosts": true,
       "allow_fs_write_all": true
