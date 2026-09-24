@@ -1,13 +1,13 @@
 {
   "language_models": {
     "opencode": {
-      "show_zen_models": false
-    }
+      "show_zen_models": false,
+    },
   },
   "diff_view_style": "unified",
   "git_panel": {
     "group_by": "staging",
-    "tree_view": true
+    "tree_view": true,
   },
   "autosave": {
     "after_delay": {
@@ -15,7 +15,7 @@
     },
   },
   "markdown_preview": {
-    "open_markdown_files_in_preview": true,
+    // "open_markdown_files_in_preview": true,
     "max_width": 1200.0,
   },
   "format_on_save": "on",
@@ -32,11 +32,11 @@
       "effort": "max",
       "provider": "opencode",
       "model": "go/gpt-5.6-luna",
-      "enable_thinking": true
+      "enable_thinking": true,
     },
     "sandbox_permissions": {
       "allow_all_hosts": true,
-      "allow_fs_write_all": true
+      "allow_fs_write_all": true,
     },
     "default_profile": "yolo",
     "profiles": {
@@ -58,11 +58,11 @@
           "delete_path": true,
           "create_directory": true,
           "copy_path": true,
-          "ask_user": true
+          "ask_user": true,
         },
         "enable_all_context_servers": false,
-        "context_servers": {}
-      }
+        "context_servers": {},
+      },
     },
     "expand_terminal_card": false,
     "expand_edit_card": false,

@@ -66,5 +66,5 @@
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "skipAutoPermissionPrompt": true,
-  "model": "opus[1m]"
+  "model": "sonnet"
 }
