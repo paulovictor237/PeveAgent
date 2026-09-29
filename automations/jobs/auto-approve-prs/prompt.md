@@ -1,7 +1,7 @@
 ---
 enabled: true
 mode: script
-schedule: "every 30m"
+schedule: "*/30 8-17 * * 1-5"
 timeout_minutes: 5
 notify: on_failure
 ---
