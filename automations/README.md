@@ -34,11 +34,11 @@ Env vars on every run: `PEVE_JOB`, `PEVE_RUN_ID`, `PEVE_RUN_LOG`, `PEVE_JOB_DIR`
 |---|---|
 | `↑↓` / `jk` | navigate jobs |
 | `space` → `enter` | mark and apply enable/disable |
-| `x` | run selected job now |
+| `r` | run selected job now |
 | `l` | latest run log (live while running; `↑↓` scrolls, `g` end, `esc` back) |
 | `e` | edit `prompt.md` (`$VISUAL`/`$EDITOR`, else `zed`) |
 | `c` | clear recent runs |
-| `a` | install/remove the scheduler |
+| `s` | install/remove the scheduler |
 | `q` | quit |
 
 ## CLI

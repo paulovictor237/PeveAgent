@@ -142,7 +142,7 @@ class App:
         status = live_status(info) if info else "-"
         badge = paint(f"{SPINNER[self.frame % len(SPINNER)]} running", "cyan") if status == "running" else paint(status, "dim")
         header = [f"{paint('LOG', 'bold')}  {paint(name or '-', 'bold')}  {badge}  {paint(str(path or ''), 'dim')}", ""]
-        footer = ["", self.keybar([("↑↓", "scroll"), ("g", "end"), ("x", "run"), ("e", "edit"), ("esc", "back")], "log")]
+        footer = ["", self.keybar([("↑↓", "scroll"), ("g", "end"), ("r", "run"), ("e", "edit"), ("esc", "back")], "log")]
         height = max(1, rows - len(header) - len(footer))
         try:
             content = open(path, errors="replace").read().splitlines() if path else []
@@ -154,7 +154,7 @@ class App:
         end = len(content) - self.log_offset
         body = content[max(0, end - height):end]
         if self.log_offset:
-            footer[-1] = self.keybar([("↑↓", f"scroll (-{self.log_offset})"), ("g", "end"), ("x", "run"), ("e", "edit"), ("esc", "back")], "log")
+            footer[-1] = self.keybar([("↑↓", f"scroll (-{self.log_offset})"), ("g", "end"), ("r", "run"), ("e", "edit"), ("esc", "back")], "log")
         return header + body + [""] * (height - len(body)) + footer
 
     def flash_line(self):
@@ -185,8 +185,8 @@ class App:
                 self.keybar([("enter", "apply"), ("esc", "cancel"), ("␣", "mark/unmark")], branch="└"),
             ]
         return [
-            self.keybar([("x", "run"), ("l", "log"), ("e", "edit"), ("␣", "toggle"), ("↑↓", "navigate")], "job", "├"),
-            self.keybar([("a", "scheduler"), ("c", "clear runs"), ("q", "quit")], "app", "└"),
+            self.keybar([("r", "run"), ("l", "log"), ("e", "edit"), ("␣", "toggle"), ("↑↓", "navigate")], "job", "├"),
+            self.keybar([("s", "scheduler"), ("c", "clear runs"), ("q", "quit")], "app", "└"),
         ]
 
     def say(self, text, style="green"):
@@ -216,16 +216,15 @@ class App:
             self.pending ^= {self.selected}
         elif key == "enter":
             self.apply_pending()
-        elif key == "x":
+        elif key == "r":
             self.ask_run()
         elif key == "l" and self.selected:
             self.view, self.log_offset = "log", 0
         elif key == "e":
             self.edit_selected()
         elif key == "c":
-            clear_history()
-            self.say("run history cleared")
-        elif key == "a":
+            self.confirm = ("clear run history?", self.clear_runs)
+        elif key == "s":
             self.ask_scheduler()
         return True
 
@@ -238,7 +237,7 @@ class App:
             self.log_offset = max(0, self.log_offset - 1)
         elif key == "g":
             self.log_offset = 0
-        elif key == "x":
+        elif key == "r":
             self.ask_run()
         elif key == "e":
             self.edit_selected()
@@ -278,6 +277,10 @@ class App:
         spawn_run(name, "panel")
         self.say(f"▶ {name} started")
         time.sleep(0.3)
+
+    def clear_runs(self):
+        clear_history()
+        self.say("run history cleared")
 
     def ask_scheduler(self):
         if self.scheduler_active:
