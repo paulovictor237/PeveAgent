@@ -21,7 +21,7 @@
     "reveal": "always",
     "hide": "never"
   },
-  // Execução única e idempotente: cria os symlinks de assets/ para as ferramentas conforme tools/*.json.
+  // Execução única e idempotente: cria os symlinks de assets/ para as ferramentas conforme tools/Users/paulo.duarte/workspace/outros/PeveAgent/*.json.
   // Faz backup .bkp do que já existir no destino.
   {
     "label": "Link all tools",

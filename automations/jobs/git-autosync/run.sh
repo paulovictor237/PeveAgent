@@ -2,7 +2,7 @@
 set -uo pipefail
 
 REPOS=(
-  "/Users/paulo.duarte/Documents/Obsidian Vault"
+  "/Users/paulo.duarte/workspace/outros/Obsidian Vault"
   "$PEVE_REPO_ROOT"
 )
 
@@ -18,7 +18,7 @@ sync_repo() {
   fi
   if ! git pull -q --rebase --autostash; then
     git rebase --abort 2>/dev/null
-    echo "conflito no rebase, abortado"
+    echo "pull --rebase falhou, rebase abortado"
     return 1
   fi
   if [[ -n "$(git log '@{u}..HEAD' --oneline 2>/dev/null)" ]]; then

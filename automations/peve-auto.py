@@ -475,6 +475,7 @@ STATUS_STYLE = {
     "timeout": "red",
     "died": "red",
 }
+STATUS_ORDER = ["running", "died", "failed", "timeout", "invalid", "missed", "ok", "skipped", "-"]
 SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 ANSI = re.compile(r"\033\[[0-9;?]*[A-Za-z]")
 
@@ -535,11 +536,24 @@ def job_rows(paint, jobs, state, moment):
     return rows
 
 
-def render_jobs(paint):
-    rows = job_rows(paint, all_jobs(), read_state(), now())
+def status_rank(job, state):
+    status = "invalid" if job["error"] else live_status(state.get(job["name"], {}))
+    rank = STATUS_ORDER.index(status) if status in STATUS_ORDER else len(STATUS_ORDER)
+    return (rank, not job["enabled"], job["name"])
+
+
+def render_jobs(paint, ranked=False):
+    jobs, state = all_jobs(), read_state()
+    headers = ["JOB", "MODO", "AGENDA", "ÚLTIMA", "PRÓXIMA"]
+    if ranked:
+        jobs.sort(key=lambda job: status_rank(job, state))
+    rows = job_rows(paint, jobs, state, now())
     if not rows:
         return [paint("nenhum job", "dim")]
-    return table(paint, ["JOB", "MODO", "AGENDA", "ÚLTIMA", "PRÓXIMA"], rows)
+    if ranked:
+        headers = ["Nº"] + headers
+        rows = [[paint(f"#{index}", "dim")] + row for index, row in enumerate(rows, 1)]
+    return table(paint, headers, rows)
 
 
 def last_log_line(path):
@@ -595,7 +609,7 @@ def render_dashboard(paint, frame=0, interval=1):
     return (
         [render_title(paint), ""]
         + [paint("JOBS", "bold")]
-        + render_jobs(paint)
+        + render_jobs(paint, ranked=True)
         + ["", paint("RODANDO", "bold")]
         + render_running(paint, frame)
         + ["", paint("ÚLTIMAS EXECUÇÕES", "bold")]
@@ -744,6 +758,10 @@ def cmd_tick(_args):
                 update_state(job["name"], status="invalid", error=job["error"])
                 continue
             info = state.get(job["name"], {})
+            signature = job["schedule_obj"].label
+            if not job["schedule_obj"].at and info.get("schedule_sig") != signature:
+                update_state(job["name"], schedule_sig=signature, last_slot=moment.isoformat(timespec="minutes"))
+                continue
             grace = int(job["missed_run_grace_minutes"])
             slot, missed = job["schedule_obj"].due(moment, last_slot_of(info), grace, "missed_run_grace_minutes" in job["explicit"])
             if slot is None:

@@ -1,5 +1,5 @@
 ---
-enabled: false
+enabled: true
 mode: script
 schedule: "every 30m"
 timeout_minutes: 5

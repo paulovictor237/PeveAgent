@@ -11,5 +11,5 @@ notify: on_failure
 
 Todo dia, faz commit e push dos seguintes projetos:
 
-- /Users/paulo.duarte/Documents/Obsidian Vault
+- /Users/paulo.duarte/workspace/outros/Obsidian Vault
 - este repositório (PeveAgent)
