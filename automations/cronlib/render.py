@@ -15,7 +15,6 @@ STATUS_STYLE = {
     "timeout": "red",
     "died": "red",
 }
-STATUS_ORDER = ["running", "died", "failed", "timeout", "invalid", "missed", "ok", "skipped", "-"]
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 ANSI = re.compile(r"\033\[[0-9;?]*[A-Za-z]")
@@ -89,13 +88,8 @@ def job_status(job, state):
     return "invalid" if job["error"] else live_status(state.get(job["name"], {}))
 
 
-def rank_jobs(jobs, state):
-    def rank(job):
-        status = job_status(job, state)
-        position = STATUS_ORDER.index(status) if status in STATUS_ORDER else len(STATUS_ORDER)
-        return (position, not job["enabled"], job["name"])
-
-    return sorted(jobs, key=rank)
+def rank_jobs(jobs):
+    return sorted(jobs, key=lambda job: (not job["enabled"], job["name"]))
 
 
 def job_row(paint, job, state, moment, pending=False):

@@ -100,7 +100,7 @@ class App:
     def refresh(self):
         self.state = read_state()
         self.scheduler_active = launchd_loaded()
-        self.jobs = rank_jobs(all_jobs(), self.state)
+        self.jobs = rank_jobs(all_jobs())
         names = [job["name"] for job in self.jobs]
         self.pending &= set(names)
         if self.selected not in names:
