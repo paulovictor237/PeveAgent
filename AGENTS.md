@@ -13,6 +13,7 @@ bash scripts/link.sh                  # Link all tools
 bash scripts/link.sh claude             # Link specific tools only
 bash scripts/link.sh --dry-run        # Preview without changes
 bash scripts/link.sh --reverse        # Pull live files back from targets, then re-link
+automations/peve-auto.py --help       # Scheduled jobs (launchd); see automations/README.md
 ```
 
 No build step. No test suite. This is a config hub, not compiled software.

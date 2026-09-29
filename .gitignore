@@ -29,4 +29,6 @@ docs/superpowers
 !.temp/.gitkeep
 ./assets/skills/.system
 assets/skills/.system/
-scripts/auto-approve-prs.log
+
+# automations runtime
+automations/.state/
