@@ -21,10 +21,10 @@ log() {
   printf '%s %s\n' "$(date '+%H:%M:%S')" "$*"
 }
 
-command -v gh >/dev/null || { echo "gh não encontrado"; exit 1; }
-command -v jq >/dev/null || { echo "jq não encontrado"; exit 1; }
+command -v gh >/dev/null || { echo "gh not found"; exit 1; }
+command -v jq >/dev/null || { echo "jq not found"; exit 1; }
 
-ME="$(gh api user -q .login)" || { echo "falha ao obter usuário do gh"; exit 1; }
+ME="$(gh api user -q .login)" || { echo "failed to get gh user"; exit 1; }
 
 build_query() {
   local i=0 name fragments=""
@@ -49,9 +49,9 @@ QUERY="$(build_query)"
 
 JQ_FILTER='
   .data | to_entries[] | .value as $r |
-  if $r == null then ["ERRO", "0", "repo", "-", "-", "repositório inacessível"]
+  if $r == null then ["ERROR", "0", "repo", "-", "-", "repository not accessible"]
   else
-    (if $r.pullRequests.pageInfo.hasNextPage then ["ERRO", "0", $r.nameWithOwner, "-", "-", "mais PRs abertos que o limite, alguns não foram verificados"] else empty end),
+    (if $r.pullRequests.pageInfo.hasNextPage then ["ERROR", "0", $r.nameWithOwner, "-", "-", "more open PRs than the limit, some were not checked"] else empty end),
     ($r.pullRequests.nodes[] |
       (.author.login // "ghost") as $author |
       (.headRefOid) as $head |
@@ -70,11 +70,11 @@ approve() {
   local action="$1" repo="$2" number="$3" author="$4" url="$5" title="$6" label
   [[ "$action" == "REAPPROVE" ]] && label="REAPPR" || label="APPR "
   if $DRY_RUN; then
-    log "DRY  $label $repo#$number PR de $author: $title $url"
+    log "DRY  $label $repo#$number PR by $author: $title $url"
   elif gh pr review "$number" --repo "$repo" --approve >/dev/null 2>&1; then
-    log "$label $repo#$number PR de $author: $title $url"
+    log "$label $repo#$number PR by $author: $title $url"
   else
-    log "ERRO $repo#$number falha ao aprovar $url"
+    log "ERROR $repo#$number failed to approve $url"
     return 1
   fi
 }
@@ -82,7 +82,7 @@ approve() {
 run_cycle() {
   local rows approved=0 skipped=0 errors=0
   rows="$(gh api graphql -f query="$QUERY" | jq -r --arg me "$ME" --arg cutoff "$CUTOFF_ISO" --argjson skipOwn "$SKIP_OWN_PRS" --argjson skipDrafts "$SKIP_DRAFTS" "$JQ_FILTER")" \
-    || { log "ERRO falha na consulta GraphQL"; return 1; }
+    || { log "ERROR GraphQL query failed"; return 1; }
 
   while IFS=$'\t' read -r action number repo author url title; do
     [[ -z "$action" ]] && continue
@@ -94,8 +94,8 @@ run_cycle() {
           errors=$((errors + 1))
         fi
         ;;
-      ERRO)
-        log "ERRO $repo $title"
+      ERROR)
+        log "ERROR $repo $title"
         errors=$((errors + 1))
         ;;
       SKIP_*)
@@ -105,9 +105,9 @@ run_cycle() {
     esac
   done <<< "$rows"
 
-  log "CICLO aprovados=$approved ignorados=$skipped erros=$errors"
+  log "CYCLE approved=$approved skipped=$skipped errors=$errors"
   (( errors == 0 ))
 }
 
-log "INÍCIO usuário=$ME org=$OWNER repos=${REPO_NAMES[*]} corte=$CUTOFF_DATE dry_run=$DRY_RUN"
+log "START user=$ME org=$OWNER repos=${REPO_NAMES[*]} cutoff=$CUTOFF_DATE dry_run=$DRY_RUN"
 run_cycle

@@ -6,14 +6,14 @@ timeout_minutes: 5
 notify: on_failure
 ---
 
-Aprova PRs abertos de px-center/{px-mobile-painel, px-mobile-motorista, px-painel} via gh CLI. Aprova sem revisar o código (inclui dependabot, [HOTFIX] e [RELEASE]).
+Approves open PRs in px-center/{px-mobile-painel, px-mobile-motorista, px-painel} via gh CLI. Approves without reviewing the code (includes dependabot, [HOTFIX] and [RELEASE]).
 
-Regras:
-- Ignora PRs próprios, drafts e criados antes de CUTOFF_DATE
-- Ignora PRs já aprovados por mim no commit atual
-- Reaprova se entrou commit novo depois da aprovação
+Rules:
+- Skips my own PRs, drafts and PRs created before CUTOFF_DATE
+- Skips PRs I already approved at the current commit
+- Re-approves when a new commit lands after my approval
 
-Env sobrescrevíveis: OWNER, REPOS, CUTOFF_DATE, CUTOFF_TIME_UTC, VERBOSE, SKIP_DRAFTS, SKIP_OWN_PRS, DRY_RUN.
-Simular: `DRY_RUN=true automations/peve-auto.py run auto-approve-prs`
+Overridable env: OWNER, REPOS, CUTOFF_DATE, CUTOFF_TIME_UTC, VERBOSE, SKIP_DRAFTS, SKIP_OWN_PRS, DRY_RUN.
+Dry run: `DRY_RUN=true automations/cron.py run auto-approve-prs`
 
-Log: APPR aprovado · REAPPR reaprovado · SKIP ignorado · DRY simulado · ERRO falha · CICLO resumo.
+Log: APPR approved · REAPPR re-approved · SKIP skipped · DRY simulated · ERROR failure · CYCLE summary.

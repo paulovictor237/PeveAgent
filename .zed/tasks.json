@@ -1,19 +1,19 @@
 [
-  // Loop contínuo (a cada 1s): painel das automações — agendador, jobs, o que está rodando e últimas execuções.
-  // Só visualiza; não dispara jobs. q sai, r atualiza.
+  // Automations control panel: state, runs, logs.
+  // ↑↓ navigate, space toggle, x run, l log, e edit, c clear runs, a scheduler, q quit. enter confirms, esc cancels.
   {
-    "label": "Automations watch",
-    "command": "python3 automations/peve-auto.py watch",
+    "label": "Automations",
+    "command": "python3 automations/cron.py",
     "cwd": "$ZED_WORKTREE_ROOT",
     "use_new_terminal": true,
     "allow_concurrent_runs": false,
     "reveal": "always",
     "hide": "never"
   },
-  // Execução única: lista meus PRs abertos na px-center, separando prontos pra merge dos que precisam de atenção
-  // (CI, conflitos, reviewers pendentes e comentários não resolvidos).
+  // One-shot: lists my open PRs in px-center, splitting merge-ready ones from those needing attention
+  // (CI, conflicts, pending reviewers and unresolved comments).
   {
-    "label": "Meus PRs",
+    "label": "My PRs",
     "command": "clear && python3 ~/.claude/skills/my-prs/my-prs.py",
     "cwd": "$ZED_WORKTREE_ROOT",
     "use_new_terminal": false,
@@ -21,8 +21,8 @@
     "reveal": "always",
     "hide": "never"
   },
-  // Execução única e idempotente: cria os symlinks de assets/ para as ferramentas conforme tools/Users/paulo.duarte/workspace/outros/PeveAgent/*.json.
-  // Faz backup .bkp do que já existir no destino.
+  // One-shot and idempotent: symlinks assets/ into each tool per tools/*.json.
+  // Backs up existing targets as .bkp.
   {
     "label": "Link all tools",
     "command": "bash scripts/link.sh",

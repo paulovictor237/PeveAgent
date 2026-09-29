@@ -18,20 +18,20 @@ sync_repo() {
   fi
   if ! git pull -q --rebase --autostash; then
     git rebase --abort 2>/dev/null
-    echo "pull --rebase falhou, rebase abortado"
+    echo "pull --rebase failed, rebase aborted"
     return 1
   fi
   if [[ -n "$(git log '@{u}..HEAD' --oneline 2>/dev/null)" ]]; then
     git push -q || return 1
     echo "push ok"
   else
-    echo "nada para enviar"
+    echo "nothing to push"
   fi
 }
 
 for repo in "${REPOS[@]}"; do
   echo "== $repo"
-  sync_repo "$repo" || { echo "FALHOU: $repo"; failed=1; }
+  sync_repo "$repo" || { echo "FAILED: $repo"; failed=1; }
 done
 
 exit "$failed"

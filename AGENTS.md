@@ -13,7 +13,7 @@ bash scripts/link.sh                  # Link all tools
 bash scripts/link.sh claude             # Link specific tools only
 bash scripts/link.sh --dry-run        # Preview without changes
 bash scripts/link.sh --reverse        # Pull live files back from targets, then re-link
-automations/peve-auto.py --help       # Scheduled jobs (launchd); see automations/README.md
+automations/cron.py                   # Automations control panel (launchd jobs); see automations/README.md
 ```
 
 No build step. No test suite. This is a config hub, not compiled software.
@@ -34,8 +34,8 @@ assets/
 
 tools/               # Symlink manifests: define target_root and files per tool
 scripts/
-├── link.sh          # Main idempotent linking script
-└── send-random-photo-to-simulator.sh
+└── link.sh          # Main idempotent linking script
+automations/         # Scheduled jobs: cron.py + cronlib/ + jobs/<name>/prompt.md
 ```
 
 ## Adding a New Skill

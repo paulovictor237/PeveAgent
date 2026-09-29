@@ -9,4 +9,4 @@ timeout_minutes: 15
 notify: always
 ---
 
-Resuma os commits das últimas 24h deste repositório em até 5 bullets.
+Summarize the last 24h of commits in this repository in up to 5 bullets.

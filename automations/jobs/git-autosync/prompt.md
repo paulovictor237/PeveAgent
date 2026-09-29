@@ -9,7 +9,7 @@ timeout_minutes: 10
 notify: on_failure
 ---
 
-Todo dia, faz commit e push dos seguintes projetos:
+Every day, commits and pushes the following projects:
 
 - /Users/paulo.duarte/workspace/outros/Obsidian Vault
-- este repositório (PeveAgent)
+- this repository (PeveAgent)
