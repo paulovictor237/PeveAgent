@@ -1,0 +1,36 @@
+[
+  // Loop contínuo (a cada 300s): aprova PRs abertos de px-mobile-painel, px-mobile-motorista e px-painel.
+  // Ignora PRs próprios, drafts e anteriores a 2026-09-28. Reaprova se houver commit novo.
+  // Log em scripts/auto-approve-prs.log. Aprova sem revisar o código.
+  {
+    "label": "Auto-approve PRs",
+    "command": "bash scripts/auto-approve-prs.sh",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  },
+  // Execução única: lista meus PRs abertos na px-center, separando prontos pra merge dos que precisam de atenção
+  // (CI, conflitos, reviewers pendentes e comentários não resolvidos).
+  {
+    "label": "Meus PRs",
+    "command": "clear && python3 ~/.claude/skills/my-prs/my-prs.py",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  },
+  // Execução única e idempotente: cria os symlinks de assets/ para as ferramentas conforme tools/*.json.
+  // Faz backup .bkp do que já existir no destino.
+  {
+    "label": "Link all tools",
+    "command": "bash scripts/link.sh",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never"
+  }
+]

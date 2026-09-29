@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790148431908,
+  "lastUpdated": 1790692477721,
   "skills": [
     {
       "skillId": "import-memory",
@@ -27,7 +27,7 @@
       "name": "regras-de-negocio-px",
       "description": "Use quando alguém perguntar como a plataforma PX funciona — regras de negócio, fluxos, status, cálculos, validações, ou comportamento de telas do painel/app do motorista. Responde consultando o código-fonte real dos repositórios PX via Devin MCP (DeepWiki), sempre com citações de arquivo.",
       "source": "plugin",
-      "updatedAt": "2026-09-17T16:54:17.359231Z",
+      "updatedAt": "2026-06-29T19:41:22.774777Z",
       "backingPluginId": "plugin_01PQAteKHfWxDqHEipKPE7EN"
     },
     {
