@@ -8,18 +8,18 @@
     "use_new_terminal": true,
     "allow_concurrent_runs": false,
     "reveal": "always",
-    "hide": "never"
+    "hide": "never",
   },
   // One-shot: lists my open PRs in px-center, splitting merge-ready ones from those needing attention
   // (CI, conflicts, pending reviewers and unresolved comments).
   {
     "label": "My PRs",
-    "command": "clear && python3 ~/.claude/skills/my-prs/my-prs.py",
+    "command": "python3 scripts/my-prs.py",
     "cwd": "$ZED_WORKTREE_ROOT",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
-    "hide": "never"
+    "hide": "never",
   },
   // One-shot and idempotent: symlinks assets/ into each tool per tools/*.json.
   // Backs up existing targets as .bkp.
@@ -30,6 +30,6 @@
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
-    "hide": "never"
-  }
+    "hide": "never",
+  },
 ]
