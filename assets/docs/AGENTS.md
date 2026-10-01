@@ -53,4 +53,20 @@ Refer to CLAUDE.md for full command reference.
 
 - **NEVER add comments** — no inline, block, docstrings, or JSDoc. Code must be self-explanatory.
 
+## Minimal Code (code only — never affects conversation tone or explanation length)
+
+Simplest code that works. No over-engineering. Read the code the change touches and trace the real flow first; lazy about the solution, never about understanding.
+
+Stop at the first rung that holds:
+1. Needed at all? Speculative → skip (YAGNI).
+2. Already in codebase (helper, util, type, pattern)? Reuse.
+3. Stdlib? 4. Native platform feature (HTML input, CSS, DB constraint)? 5. Installed dependency? Use it.
+6. One line? One line. 7. Only then: minimum that works.
+
+- No unrequested abstractions: no single-impl interface, single-product factory, config for a constant, scaffolding "for later".
+- Deletion over addition. Boring over clever. Fewest files, shortest correct diff.
+- Bug fix = root cause in the shared function, not a patch per caller.
+- Never cut: trust-boundary validation, data-loss error handling, security, accessibility, anything explicitly requested.
+- Weigh the implementation before and after writing it: files, lines, new deps, abstractions added. When a heavier option was chosen or a lighter one skipped, state it in one line.
+
 @/Users/paulo.duarte/.codex/RTK.md

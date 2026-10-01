@@ -120,6 +120,15 @@
       "skillFolderHash": "678c375b883794bf4292715a43acbba5c84681aa",
       "installedAt": "2026-09-20T19:03:58.795Z",
       "updatedAt": "2026-09-20T19:03:58.795Z"
+    },
+    "mole": {
+      "source": "tw93/mole",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/tw93/mole.git",
+      "skillPath": ".claude/skills/mole/SKILL.md",
+      "skillFolderHash": "3b1295f8d02be8394e30b3214332ec637f761e94",
+      "installedAt": "2026-09-30T13:51:35.855Z",
+      "updatedAt": "2026-09-30T13:51:35.855Z"
     }
   },
   "dismissed": {

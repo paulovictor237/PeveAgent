@@ -168,7 +168,7 @@ def history_table(paint, job=None, limit=8):
     if not records:
         return [paint("no runs", "dim")]
     rows = []
-    for record in records:
+    for record in reversed(records):
         status = record["status"]
         rows.append([
             paint(short_time(dt.datetime.fromisoformat(record["started"])), "dim"),

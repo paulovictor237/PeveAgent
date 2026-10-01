@@ -1,4 +1,6 @@
 {
+  "theme": "One Dark",
+  "cli_default_open_behavior": "existing_window",
   "language_models": {
     "opencode": {
       "show_zen_models": false,
@@ -24,7 +26,7 @@
   },
   "icon_theme": {
     "mode": "light",
-    "light": "Bearded Icon Theme",
+    "light": "Base Charmed Icons",
     "dark": "Bearded Icon Theme",
   },
   "agent": {
