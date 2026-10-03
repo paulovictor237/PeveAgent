@@ -17,6 +17,15 @@ CUTOFF_ISO="${CUTOFF_DATE}T${CUTOFF_TIME_UTC}Z"
 DRY_RUN="${DRY_RUN:-false}"
 $DRY_RUN && VERBOSE=true
 
+retry() {
+  local i
+  for i in 1 2 3; do
+    "$@" && return 0
+    (( i < 3 )) && sleep 5
+  done
+  return 1
+}
+
 log() {
   printf '%s %s\n' "$(date '+%H:%M:%S')" "$*"
 }
@@ -24,7 +33,7 @@ log() {
 command -v gh >/dev/null || { echo "gh not found"; exit 1; }
 command -v jq >/dev/null || { echo "jq not found"; exit 1; }
 
-ME="$(gh api user -q .login)" || { echo "failed to get gh user"; exit 1; }
+ME="$(retry gh api user -q .login)" || { echo "failed to get gh user"; exit 1; }
 
 build_query() {
   local i=0 name fragments=""
@@ -71,18 +80,19 @@ approve() {
   [[ "$action" == "REAPPROVE" ]] && label="REAPPR" || label="APPR "
   if $DRY_RUN; then
     log "DRY  $label $repo#$number PR by $author: $title $url"
-  elif gh pr review "$number" --repo "$repo" --approve >/dev/null 2>&1; then
+  elif out="$(retry gh pr review "$number" --repo "$repo" --approve 2>&1)"; then
     log "$label $repo#$number PR by $author: $title $url"
   else
-    log "ERROR $repo#$number failed to approve $url"
+    log "ERROR $repo#$number failed to approve $url: $out"
     return 1
   fi
 }
 
 run_cycle() {
-  local rows approved=0 skipped=0 errors=0
-  rows="$(gh api graphql -f query="$QUERY" | jq -r --arg me "$ME" --arg cutoff "$CUTOFF_ISO" --argjson skipOwn "$SKIP_OWN_PRS" --argjson skipDrafts "$SKIP_DRAFTS" "$JQ_FILTER")" \
-    || { log "ERROR GraphQL query failed"; return 1; }
+  local json rows approved=0 skipped=0 errors=0
+  json="$(retry gh api graphql -f query="$QUERY")" || { log "ERROR GraphQL query failed"; return 1; }
+  rows="$(jq -r --arg me "$ME" --arg cutoff "$CUTOFF_ISO" --argjson skipOwn "$SKIP_OWN_PRS" --argjson skipDrafts "$SKIP_DRAFTS" "$JQ_FILTER" <<< "$json")" \
+    || { log "ERROR failed to parse GraphQL response"; return 1; }
 
   while IFS=$'\t' read -r action number repo author url title; do
     [[ -z "$action" ]] && continue

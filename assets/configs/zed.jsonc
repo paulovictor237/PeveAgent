@@ -11,11 +11,11 @@
     "group_by": "staging",
     "tree_view": true,
   },
-  "autosave": {
-    "after_delay": {
-      "milliseconds": 1000,
-    },
-  },
+  // "autosave": {
+  //   "after_delay": {
+  //     "milliseconds": 1000,
+  //   },
+  // },
   "markdown_preview": {
     // "open_markdown_files_in_preview": true,
     "max_width": 1200.0,
